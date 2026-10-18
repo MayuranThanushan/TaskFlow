@@ -7,6 +7,7 @@ export type Session =
 
 export interface AuthState {
   session: Session
+  updateProfile: (displayName: string) => Promise<boolean>
   refresh: () => Promise<void>
   signIn: (values: Credentials) => Promise<void>
   register: (values: Registration) => Promise<void>

@@ -148,3 +148,5 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
 .activity-list li { padding: 24px; border: 1px solid #e0e6de; border-radius: 12px; background: white; overflow-wrap: anywhere; }
 .activity-list h2 { font-size: 19px; line-height: 1.4; margin: 0 0 12px; }
 .activity-list p, .activity-list time { color: #637060; font-size: 13px; }
+
+.profile-card { max-width: 640px; margin-inline: auto; overflow-wrap: anywhere; }

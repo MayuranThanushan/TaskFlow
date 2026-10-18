@@ -1,0 +1,19 @@
+# Profile display-name editing (step 20)
+
+Authenticated users can change their own display name through `PATCH /api/v1/users/me`, with JSON `{ "displayName": "Alex Morgan" }`. The response is the same three-field ProfileDto as login/me: string id, displayName and email. Responses use no-store caching. The existing current-profile read remains `GET /api/v1/auth/me`.
+
+The account comes only from the validated session principal. The endpoint requires authentication and a client/session-bound CSRF token. A missing account returns 401. Unknown body properties (including IDs, email, roles, credentials and security stamps), duplicate properties, missing/null/non-string/blank names and trimmed names over 100 UTF-16 code units return 400. Surrounding whitespace is trimmed; internal spaces and Unicode are retained. A normalized no-op returns the current DTO without writing or changing audit timestamps.
+
+Identity UserManager persists the name, preserving credentials, email, username, creation time and security stamp. It retains optimistic concurrency checks; a failed concurrency update returns 409 and never returns an unpersisted success DTO. Other unexpected persistence failures receive the existing safe server error. No new cookie is issued, ticket expiry is not extended and other valid sessions continue working. Subsequent profile/member reads use the stored name. Profile changes are not project activity events. No migration or dependency change is needed.
+
+The authenticated navigation links to `/profile`. The form shows account ID/email as text and edits only the display name. Client validation focuses invalid input; the form locks while saving and shows inline server errors, retryable safe failures, a profile-specific conflict message and success status. Successful saves update shared session state/navigation immediately. Local draft input survives failed saves. A different account remounts the form and delayed responses from the previous account cannot replace its session/profile. A 401 removes private form data and returns to sign-in. Long account text wraps on small screens.
+
+## Verification
+
+All 108 backend tests passed against isolated MySQL with no skips (34 non-database and 74 live), including three new profile API cases for validation, CSRF/auth/mass-assignment denial, self-only persistence, exact DTO shape, unchanged credentials/stamp/creation time, preserved sessions/expiry, no-op timestamps and injected concurrency failure without persisted changes.
+
+All 91 frontend tests passed, including seven profile cases for protected navigation, trimmed safe text, body allowlisting, validation/boundaries, duplicate-save prevention, retained input/retry, server field/conflict messages, session expiry and late previous-account responses. Type checking, ESLint, Release and production publishing pass. EF reports no pending model changes. Existing CI includes the new cases; hosted CI and Docker/selected-host execution remain pending release verification.
+
+The published Production HTTPS app passed Edge checks for the protected profile deep link, validation focus, trimmed save and navigation update, reload/re-login persistence, unchanged account email/ID, rejection of extra fields and the updated owner name in project membership. Desktop and 390px mobile screenshots were reviewed with no horizontal overflow. The existing project/task/dashboard/activity journeys also passed against this build. Production smoke verified migrations, readiness, cookies/CSRF and a persisted-key restart. The disposable database was removed and verification services stopped.
+
+Next is step 21: complete browser journeys, accessibility/responsive checks and focused security/performance review.

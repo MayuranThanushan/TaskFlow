@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 105 backend tests (71 requiring MySQL) and 84 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 108 backend tests (74 requiring MySQL) and 91 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -8,7 +8,7 @@ PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime
 
 Only `taskflow_test` or a name beginning `taskflow_test_` is accepted. A non-root test account is required. Safety tests exercise rejection of development/production database names and privileged/missing accounts before a connection is attempted. These guards reduce accidental misuse; always supply an isolated test database and restricted credentials.
 
-Local mode (no TASKFLOW_TEST_CONNECTION): 34 checks run and 31 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
+Local mode (no TASKFLOW_TEST_CONNECTION): 34 checks run and 74 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
 
 With a dedicated connection already configured:
 
@@ -91,3 +91,5 @@ Step 17 adds five live task query tests and six frontend cases. All 95 backend a
 Step 18 adds five live dashboard/progress tests and six frontend overview checks; all 100 backend and 78 frontend tests passed. The aggregate tests force concurrent creation and a clock advance to verify a consistent snapshot and captured UTC time. Scope, overdue equality/completion/deletion, progress rounding and mutation refresh are covered. See [dashboard](dashboard.md).
 
 Step 19 adds five live activity reader tests and six frontend feed cases; all 105 backend and 84 frontend tests passed. Coverage includes visible event types, deleted-task/removed-actor history, immutable public routes, safe summary redaction, precise inclusive time bounds, ordering/paging and a forced concurrent mutation snapshot. See [activity](activity.md).
+
+Step 20 adds three live profile API cases and seven frontend cases. All 108 backend and 91 frontend tests pass. Validation/mass-assignment/CSRF rejection, current-user persistence, no-op timestamps, unchanged credentials/session expiry, conflict persistence, form retry/expiry and delayed cross-account responses are covered. See [profile](profile.md).

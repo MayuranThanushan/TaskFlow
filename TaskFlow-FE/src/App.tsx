@@ -10,6 +10,7 @@ import { AuthPage } from './features/auth/AuthPage'
 import { TasksPage, NewTaskPage, TaskDetailPage, EditTaskPage } from './features/tasks/TaskPages'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { ActivityPage } from './features/activity/ActivityPage'
+import { ProfilePage } from './features/profile/ProfilePage'
 import './App.css'
 
 function AppLayout() {
@@ -20,7 +21,7 @@ function AppLayout() {
   const location = useLocation()
   const previousPath = useRef(location.pathname)
   useEffect(() => {
-    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work' }
+    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/profile': 'Profile', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work' }
     document.title = `${titles[location.pathname] ?? (location.pathname.endsWith('/activity') ? 'Project activity' : location.pathname.startsWith('/tasks/') ? 'Task' : location.pathname.endsWith('/tasks') ? 'Tasks' : location.pathname.endsWith('/tasks/new') ? 'Create task' : location.pathname.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
@@ -44,6 +45,7 @@ function AppLayout() {
         {session.status === 'authenticated' ? <>
           <NavLink to="/dashboard">Overview</NavLink>
           <NavLink to="/projects">Projects</NavLink>
+          <NavLink to="/profile">Profile</NavLink>
           <span className="user-name">{session.user.displayName}</span>
           <button className="button subtle" disabled={pending} onClick={() => void logout()}>{pending ? 'Signing out...' : 'Sign out'}</button>
         </> : session.status === 'anonymous' ? <>
@@ -86,6 +88,7 @@ export default function App({ client = api }: { client?: ApiClient }) {
       <Route path="register" element={<AuthPage key="register" mode="register" />} />
     </Route>
     <Route element={<ProtectedRoute />}>
+      <Route path="profile" element={<ProfilePage />} />
       <Route path="dashboard" element={<DashboardPage client={client} />} />
       <Route path="projects" element={<ProjectsPage client={client} />} />
       <Route path="projects/new" element={<NewProjectPage client={client} />} />

@@ -1,6 +1,6 @@
 # API contract amendments: implementation baseline
 
-Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF, health/readiness and project create/list/detail/edit/delete and membership routes, plus task creation/list/detail/edit/status/delete, and dashboard totals and activity reading are implemented; profile-update remains planned. Unchanged Word specification routes remain in scope.
+Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF, health/readiness and project create/list/detail/edit/delete and membership routes, plus task creation/list/detail/edit/status/delete, and dashboard totals and activity reading are implemented; profile display-name editing is implemented. Unchanged Word specification routes remain in scope.
 
 ## Common contracts
 
@@ -86,7 +86,7 @@ Activity DTO: id, projectId, actorUserId, optional taskId, actionType, details, 
 
 ## Foundation endpoint amendment (step 04)
 
-GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with no-store caching. It checks process liveness only, without querying MySQL. Error responses carry traceId and all responses include X-Trace-Id. See [API foundation](../api-foundation.md) for implementation and verification details. Authentication/CSRF routes above are now implemented; business/profile-update routes remain pending their feature steps.
+GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with no-store caching. It checks process liveness only, without querying MySQL. Error responses carry traceId and all responses include X-Trace-Id. See [API foundation](../api-foundation.md) for implementation and verification details. Authentication/CSRF routes above are now implemented; the planned MVP business/profile-update routes are implemented.
 
 ## Authentication implementation amendment (step 07)
 

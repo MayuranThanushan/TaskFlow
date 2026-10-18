@@ -78,3 +78,5 @@ A separate real-TLS check exercised registration/login/me through Vite's HTTPS p
 Frontend type-check/lint/24 tests/build pass. The migration snapshot is checked separately; no schema change is needed for these endpoints. GitHub CI uses the same live backend tests; no hosted workflow run is claimed.
 
 Implementation references: [ASP.NET Core antiforgery](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0), [rate limiting](https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-10.0), and [Identity stamp validation](https://source.dot.net/Microsoft.AspNetCore.Identity/SecurityStampValidator.cs.html).
+
+Step 20 adds authenticated, CSRF-protected `PATCH /api/v1/users/me` for display-name editing with the same ProfileDto. Email/ID/credentials are read-only and updates do not renew authentication tickets. See [profile editing](profile.md) for the contract, UI and verification.

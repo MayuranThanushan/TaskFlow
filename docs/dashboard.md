@@ -26,6 +26,6 @@ All 100 backend tests passed with real MySQL and zero skips (34 non-database and
 
 All 78 frontend tests passed, including six new overview cases for protection, real totals, loading/empty states, safe failure/retry/refresh/navigation, expiry and late previous-account responses. Existing auth tests use an explicit zero dashboard fixture. Type checking, ESLint, Release and production builds passed; no migration is pending. Existing CI discovers the tests. Hosted CI, Docker execution and selected-host verification remain pending.
 
-Step 19 [activity reading](activity.md) is implemented. Next is step 20 profile display-name editing.
+Step 19 [activity reading](activity.md) is implemented. Step 20 [profile editing](profile.md) is implemented; next is step 21 verification.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge zero/populated totals, owner/member scope, overdue/completion, cross-tab explicit refresh, assignment/removal, task/project deletion and 0/100 project progress. Desktop/mobile screenshots were captured and the mobile layout inspected without horizontal overflow. Existing project/task/account/removal/query checks also passed. The disposable database was removed and verification services stopped.

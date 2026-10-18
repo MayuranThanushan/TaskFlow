@@ -44,6 +44,20 @@ public sealed class AccountService(UserManager<ApplicationUser> users, SignInMan
         return user is null ? null : ToProfile(user);
     }
 
+    public async Task<ProfileUpdateResult> UpdateProfileAsync(ClaimsPrincipal principal, string displayName)
+    {
+        var name = displayName.Trim();
+        if (name.Length is < 1 or > 100) throw new ArgumentException("Invalid display name.", nameof(displayName));
+        var user = await users.GetUserAsync(principal);
+        if (user is null) return new(null);
+        if (user.DisplayName == name) return new(ToProfile(user));
+        user.DisplayName = name;
+        var result = await users.UpdateAsync(user);
+        if (result.Succeeded) return new(ToProfile(user));
+        if (result.Errors.Any(error => error.Code == "ConcurrencyFailure")) return new(null, true);
+        throw new InvalidOperationException("Profile update failed.");
+    }
+
     public async Task LogoutAsync(ClaimsPrincipal principal)
     {
         var user = await users.GetUserAsync(principal)

@@ -99,6 +99,8 @@ export class ApiClient {
     throw new ApiError('Please try the request again.')
   }
 
+  updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } }) }
+
   currentUser() { return this.request<Profile>({ url: '/auth/me' }, false) }
   register(values: Registration) { return this.request<Profile>({ url: '/auth/register', method: 'post', data: values }, false) }
 

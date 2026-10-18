@@ -84,6 +84,18 @@ export function AuthProvider({ children, client = api }: { children: ReactNode; 
     }
   }, [client, commit])
 
+  const updateProfile = useCallback(async (displayName: string) => {
+    if (current.current.status !== 'authenticated') return false
+    const identity = current.current.user.id
+    const version = ++operation.current
+    const user = await client.updateProfile(displayName)
+    if (!alive.current || version !== operation.current || current.current.status !== 'authenticated'
+      || current.current.user.id !== identity || user.id !== identity) return false
+    operation.current++
+    commit({ status: 'authenticated', user })
+    return true
+  }, [client, commit])
+
   const register = useCallback(async (values: Registration) => { await client.register(values) }, [client])
-  return <AuthContext.Provider value={{ session, refresh, signIn, signOut, register }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ session, refresh, signIn, signOut, register, updateProfile }}>{children}</AuthContext.Provider>
 }

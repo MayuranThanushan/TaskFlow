@@ -20,7 +20,7 @@ using TaskFlow.Tests.Fixtures;
 namespace TaskFlow.Tests;
 
 [Collection(MySqlCollection.Name)]
-public class AuthTests(MySqlFixture fixture)
+public partial class AuthTests(MySqlFixture fixture)
 {
     private const string Password = "ExampleOnly-Pass123!";
 
