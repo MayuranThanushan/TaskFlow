@@ -1,5 +1,7 @@
 # Initial setup review
 
+Current status and developer entry point: [step 23 handoff](handoff.md). The entries below are chronological verification history, including historical test counts and next-step notes.
+
 Date: 18 October 2026. Updated through delivery step 07. This records observed local evidence; it does not certify unimplemented features.
 
 ## Verified
@@ -117,3 +119,7 @@ The complete local browser, accessibility/responsive and focused security/perfor
 ## Step 22 update
 
 Portable release/migration artifacts and checksum receipts, separate migration secrets, schema-match readiness, backup/recovery tooling and a restricted-role Production rehearsal are complete. All 110 backend/92 frontend tests and 16 operations checks pass. No schema/dependency change is required. See [release runbook](release-runbook.md). Docker/hosted CI and actual-host verification remain release gates; next is step 23 documentation/demo handoff.
+
+## Step 23 documentation and demo handoff
+
+Completed the current README, accepted architecture/ERD, Development OpenAPI export and inventory check, demo walkthrough, SRS acceptance matrix and final clean-artifact recovery evidence. External container/hosted CI/selected-host gates remain pending; see the [handoff](handoff.md).

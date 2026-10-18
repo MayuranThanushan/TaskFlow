@@ -1,0 +1,32 @@
+{
+  "step": 23,
+  "date": "2026-10-18",
+  "applicationSourceRevision": "bab434a00993b7e1d83e09abe00001d945d0cae4",
+  "checks": {
+    "isolatedTrackedCheckoutLockedRestore": true,
+    "isolatedCheckoutBackendBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "isolatedCheckoutFrontendNpmCiAndBuild": true,
+    "httpsOpenApiExportTlsVerified": true,
+    "normalizedExportRepeatable": true,
+    "missingRouteRejected": true,
+    "openApiPaths": 17,
+    "openApiOperations": 24,
+    "localMarkdownLinksChecked": 125,
+    "existingBackendTrx": {
+      "passed": 110,
+      "skipped": 0,
+      "rerun": false
+    },
+    "operationsTestsRerunPassed": 16,
+    "releaseAndAppChecksumReceiptsVerified": true
+  },
+  "pending": [
+    "Docker container execution",
+    "Hosted GitHub CI",
+    "Selected-host deployment verification",
+    "Host backup scheduling and recovery acceptance"
+  ]
+}

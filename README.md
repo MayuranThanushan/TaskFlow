@@ -1,86 +1,77 @@
 # TaskFlow
 
-Project and task management application using React/TypeScript, ASP.NET Core, and MySQL. The API foundation, Identity persistence, application entities and initial MySQL migration are implemented. Account endpoints, frontend authentication and protected navigation are implemented. Portable deployment configuration is prepared; project creation, listing and detail are implemented. Project editing and task workflows follow.
+TaskFlow is a private project and task workspace: secure accounts, owner-managed membership, task assignment/status/priority/deadlines, searchable lists, dashboard progress, activity history and editable display names.
 
-## Workspace
+The MVP and local verification are complete. Portable release and recovery tooling are ready. Docker execution, hosted CI and verification on a selected hosting target remain release gates; nothing has been published. Start with the [demo and developer handoff](docs/handoff.md).
 
-```text
-TaskFlow.slnx
-TaskFlow-BE/
-  TaskFlow.Api/                 HTTP endpoints and composition root
-  TaskFlow.Application/         Use cases, DTOs, and interfaces
-  TaskFlow.Domain/              Entities and business rules
-  TaskFlow.Infrastructure/      Persistence and Identity implementations
-  TaskFlow.Tests/               Existing xUnit project
-TaskFlow-FE/                   React application, Vite, TypeScript
-Documents/                     Original requirements and delivery plan
-docs/
-  decisions/                   Architecture decisions
-  contracts/                   Amendments to API/database source documents
-  setup-review.md              Verified setup and remaining gaps
-```
+## Clean checkout setup
 
-Keep these directory names. Dependency direction is Application → Domain; Infrastructure → Application/Domain; Api → Application/Infrastructure. The existing references already follow this rule.
-
-## Local prerequisites
-
-- .NET SDK 10.0.400 (the root global.json allows compatible SDK patches).
-- Node 22.15.0 and npm 11.3.0 are the verified local versions. `TaskFlow-FE/.nvmrc` records Node; package.json declares supported engine ranges.
-- MySQL server target: 8.4.11. EF Core/Identity 10.0.11 and Oracle MySQL provider 10.0.9 are pinned and verified against live MySQL. See [the toolchain guide](docs/toolchain.md) for the full matrix and [database setup](docs/database-setup.md) for completed live-server checks and local database instructions.
-
-## Run the current starters
-
-From the repository root, restore and build:
+Prerequisites: .NET SDK from global.json (10.0.400 with compatible patches), Node 22.15.0/npm 11.3.0, MySQL 8.4.11 and Python 3.12+ for operations checks. See [pinned toolchain](docs/toolchain.md). Commands below use PowerShell from the repository root.
 
 ```powershell
 dotnet restore TaskFlow.slnx --locked-mode
 dotnet tool restore
-dotnet build TaskFlow.slnx --no-restore
-dotnet run --project TaskFlow-BE/TaskFlow.Api --launch-profile http
+npm --prefix TaskFlow-FE ci
 ```
 
-The HTTP API listens at `http://localhost:5140`. OpenAPI is `/openapi/v1.json` in Development. The weather template endpoint has been removed; GET /api/v1/health/live reports process liveness; business endpoints arrive in later tasks. For the HTTPS profile use `--launch-profile https` (port 7258) and a trusted local development certificate. Certificate trust is a machine-level setup step.
-
-In another terminal:
+Provision an empty development database and a separate non-root integration database using [database setup](docs/database-setup.md) and [testing](docs/testing.md). The clean-checkout Compose option is `Copy-Item .env.example .env`, set two distinct private passwords, then `docker compose up -d --wait mysql`. It creates taskflow_dev on loopback port 3306 with user taskflow. Set ConnectionStrings__TaskFlow privately to that database's connection string; Compose does not export it into your terminal. The optional portable MySQL files under .local are machine-specific and are not in a checkout.
 
 ```powershell
-cd TaskFlow-FE
-npm ci
-npm run dev
+# ConnectionStrings__TaskFlow must already contain your development connection.
+dotnet build TaskFlow.slnx --no-restore
+dotnet ef database update --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --no-build
+./scripts/Export-DevCertificate.ps1
 ```
 
-Open the local URL printed by Vite (normally `http://localhost:5173`). Vite forwards relative /api requests to the backend. Verify with http://localhost:5173/api/v1/health/live. See [API foundation](docs/api-foundation.md) for proxy overrides, health semantics, trace IDs and error responses.
+For a fresh machine, explicitly trust the localhost certificate with `dotnet dev-certs https --trust`. Export creates ignored private settings without changing machine trust. Start the API in this terminal:
+
+```powershell
+$taskflowCert = Get-Content .local/dev-certs/settings.json -Raw | ConvertFrom-Json
+$env:ASPNETCORE_Kestrel__Certificates__Default__Path = $taskflowCert.pfxPath
+$env:ASPNETCORE_Kestrel__Certificates__Default__Password = $taskflowCert.password
+dotnet run --project TaskFlow-BE/TaskFlow.Api --launch-profile https
+```
+
+Start the frontend in another terminal from the root:
+
+```powershell
+$taskflowCert = Get-Content .local/dev-certs/settings.json -Raw | ConvertFrom-Json
+$env:TASKFLOW_API_TARGET = 'https://localhost:7258'
+$env:TASKFLOW_HTTPS_PFX = $taskflowCert.pfxPath
+$env:TASKFLOW_HTTPS_PASSWORD = $taskflowCert.password
+$env:TASKFLOW_API_CA = $taskflowCert.certificatePath
+npm --prefix TaskFlow-FE run dev
+```
+
+Open https://localhost:5173, register, then sign in. Registration does not sign in automatically. HTTPS is required for secure cookies; HTTP cannot establish an authenticated session. Check `/api/v1/health/live` for process health and `/api/v1/health/ready` for database/schema readiness. No automatic migrations or seeded demo accounts run at startup. See [authentication](docs/authentication.md) for session and CSRF details.
 
 ## Verification
 
+Set TASKFLOW_TEST_CONNECTION privately to a separate taskflow_test or taskflow_test_* database using a non-root account before backend acceptance tests:
+
 ```powershell
-dotnet test TaskFlow.slnx --no-restore
-cd TaskFlow-FE
-npm run typecheck
-npm test
-npm run build
-npm run lint
+$env:TASKFLOW_REQUIRE_MYSQL = 'true'
+dotnet build TaskFlow.slnx --configuration Release --no-restore
+dotnet test TaskFlow.slnx --configuration Release --no-build --no-restore --logger 'trx;LogFileName=backend.trx' --results-directory TestResults/backend
+python scripts/verify_test_results.py TestResults/backend/backend.trx
+npm --prefix TaskFlow-FE run typecheck
+npm --prefix TaskFlow-FE run lint
+npm --prefix TaskFlow-FE run test:ci
+npm --prefix TaskFlow-FE run build
+python -m unittest discover -s tests/operations -v
 ```
 
-The backend has 110 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 35 API/policy/provider/deployment/safety checks and 75 live persistence/auth/readiness/project-foundation/project-API checks. Without that connection the 75 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 92 API client, authentication/navigation and project/task checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
+Latest local results: 110 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 75 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
 
-Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
+## Architecture and contracts
 
-## Implementation baseline
+- [Accepted architecture and ERD](docs/architecture.md), [decisions](docs/decisions/README.md) and [original architecture plan](Documents/Architecture-Plan.md).
+- [OpenAPI snapshot and regeneration](docs/contracts/README.md), [API amendments](docs/contracts/api-baseline.md), [database amendments](docs/contracts/database-baseline.md).
+- [Acceptance matrix, demo walkthrough, evidence and limitations](docs/handoff.md).
+- [Ordered delivery backlog](Documents/Delivery-Backlog.md) and original Word specifications under Documents.
 
-- [Architecture decisions](docs/decisions/README.md)
-- [API contract amendments](docs/contracts/api-baseline.md)
-- [Database contract amendments](docs/contracts/database-baseline.md)
-- [Setup verification and outstanding prerequisites](docs/setup-review.md)
-- [Architecture plan](Documents/Architecture-Plan.md)
-- [Ordered delivery backlog](Documents/Delivery-Backlog.md)
+Backend: Domain entities, Application contracts/policies, Infrastructure persistence/services, API transport/composition, Tests. Frontend: React/TypeScript under TaskFlow-FE/src, with feature folders, a shared API client and protected routes. Production serves the built frontend and API from one HTTPS origin.
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 and the portable preparation/local rehearsal for step 09 are complete. Container execution and selected-host verification remain pending. Step 10 project-access policy and transactional activity foundation are complete; see [project foundation](docs/project-foundation.md). Step 11 [project creation, listing and detail](docs/projects.md) are complete. Step 12 owner-only editing and confirmed soft deletion are complete. Step 13 [project membership](docs/project-membership.md) is complete. Step 14 [task creation, listing and detail](docs/tasks.md) is complete. Step 15 [task editing, status and soft deletion](docs/task-mutations.md) is complete. Step 16 [assignment cleanup and concurrency](docs/assignment-concurrency.md) is verified. Step 17 [task filtering, sorting and pagination](docs/task-queries.md) is complete. Step 18 [dashboard totals and project progress](docs/dashboard.md) is complete. Step 19 [project activity reader and UI](docs/activity.md) is complete. Step 20 [profile display-name editing](docs/profile.md) is complete. Step 21 [browser, accessibility and security/performance review](docs/verification-review.md) is complete. Step 22 [portable release/recovery preparation](docs/release-runbook.md) and local Production rehearsal are complete; container/hosted CI and selected-host gates remain pending. Next is step 23: documentation and demo handoff. The local verification databases are migrated; their portable server is stopped.
+## Release and operations
 
-For account requests use [the HTTPS authentication setup](docs/authentication.md). HTTP remains suitable for liveness checks only; auth requests over HTTP are rejected. The API has registration/login/me/logout and CSRF bootstrap endpoints; the [frontend account screens and protected navigation](docs/frontend-authentication.md) are implemented and verified in Edge.
-
-## Portable deployment
-
-See [deployment configuration and verification](docs/deployment.md) for the single-origin HTTPS host, private MySQL, mounted secrets, explicit migrations, persistent keys and smoke commands. `scripts/Publish-App.ps1` produces a combined API/React release. `compose.deploy.yaml` and `deploy/Dockerfile` provide portable Linux images. The published Production app passed local HTTPS/browser/restart checks; Docker/hosted CI execution and a public hosting target are still pending. Nothing has been published.
-
-The [release runbook](docs/release-runbook.md) covers source/checksum receipts, separate migration/runtime accounts, rollout/rollback and verified [backups/recovery](docs/backup-recovery.md). Run `python -m unittest discover -s tests/operations -v` for the 16 operations safety checks. No public deployment or hosted CI run is claimed.
+[Deployment](docs/deployment.md), [release runbook](docs/release-runbook.md) and [backup/recovery](docs/backup-recovery.md) cover private MySQL, mounted secrets, separate migration/runtime accounts, persisted protection keys, explicit migrations and rollback. `scripts/Prepare-Release.ps1` produces app, migration SQL/bundle and checksum receipts. Production does not expose OpenAPI. Keep credentials, database files, keys, backups, dependencies and generated output outside Git; never put secrets in Vite client variables.

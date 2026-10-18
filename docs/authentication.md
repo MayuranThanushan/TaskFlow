@@ -18,7 +18,7 @@ Profile is exactly `{id, displayName, email}`; ID is a decimal string. There is 
 
 Duplicate normalized email returns 409, including database uniqueness races. Invalid data, unknown fields and duplicate JSON keys return 400. Validation keys use JSON property names. Invalid, unknown and locked-account sign-ins return generic 401 Problem Details with no login redirect. Unknown accounts perform a dummy password-hash verification to reduce the fast failure path; this is not a constant-time timing guarantee.
 
-Controllers are authenticated by default through a global authorization filter. Liveness, CSRF bootstrap, registration and login explicitly allow anonymous callers. Resource-level owner/member authorization is still required when project/task operations are implemented.
+Controllers are authenticated by default through a global authorization filter. Liveness, CSRF bootstrap, registration and login explicitly allow anonymous callers. Resource-level owner/member authorization is enforced by the implemented project/task use cases.
 
 ## CSRF and session lifecycle
 

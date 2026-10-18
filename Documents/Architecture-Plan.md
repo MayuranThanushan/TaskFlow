@@ -1,5 +1,7 @@
 # TaskFlow architecture plan
 
+Current implementation: see the [accepted as-built architecture and ERD](../docs/architecture.md) and [handoff](../docs/handoff.md). The following is the original planning baseline.
+
 Prepared: 18 October 2026. Status: adopted implementation baseline. Delivery step 01 is recorded in [the decision register](../docs/decisions/README.md); API and database amendments are authoritative for the explicitly refined contracts.
 
 ## Document review

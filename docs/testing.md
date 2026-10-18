@@ -54,7 +54,7 @@ npm run test:ci
 npm run build
 ```
 
-Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. The 24 frontend tests cover authentication screens, protected navigation, session lifecycle, pending/error states, safe redirects and CSRF/API behavior. See [frontend authentication](frontend-authentication.md) for coverage and the separate real-Edge HTTPS verification. Browser end-to-end CI remains later work; jsdom is not a real-browser substitute.
+Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. The 92 frontend tests cover authentication, navigation, session lifecycle, errors, CSRF/API behavior and the implemented project/task/dashboard/activity/profile features. See [frontend authentication](frontend-authentication.md) for coverage and the separate real-Edge HTTPS verification. The separate [published-app browser suite](../tests/browser/README.md) covers real-browser journeys; it has been run locally and is not part of the hosted workflow.
 
 ## GitHub Actions
 

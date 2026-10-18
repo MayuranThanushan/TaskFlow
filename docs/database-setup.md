@@ -1,5 +1,7 @@
 # Database implementation and setup
 
+For current acceptance results and setup entry points, see the [handoff](handoff.md) and [README](../README.md). The verification counts below retain step 05-08 history.
+
 Delivery step 05 is complete. The initial migration has been applied to clean MySQL 8.4.11 development and test databases. These are local verification databases, not production services.
 
 ## Implemented
@@ -10,9 +12,9 @@ Delivery step 05 is complete. The initial migration has been applied to clean My
 - DateTime values are written as UTC DATETIME(6); non-UTC values are rejected. Reads restore DateTimeKind.Utc. Nullable task deadlines round-trip correctly.
 - Saving changes normalizes bounded names/descriptions, validates enum values, stamps creation/update times using TimeProvider, rejects ordinary activity edits/deletes and prevents accidental hard deletion of projects/tasks.
 - Global filters hide soft-deleted projects and their memberships/tasks/activity. Individually deleted task history remains visible within an active project. IgnoreQueryFilters is reserved for deliberate internal retention operations.
-- Identity persistence is registered in dependency injection with the agreed password, uniqueness and lockout policy. Cookie authentication and account endpoints remain step 07 work.
+- Identity persistence is registered in dependency injection with the agreed password, uniqueness and lockout policy. Cookie authentication and account endpoints were subsequently delivered in step 07.
 
-Filters enforce active-record visibility, **not user authorization**. Owner/member eligibility, project locking, member-removal assignment cleanup and automatic activity creation are use-case work in later feature steps. Changing an entity through the DbContext alone does not yet establish those access/business rules. Do not add public generic CRUD controllers around this context.
+Filters enforce active-record visibility, **not user authorization**. Owner/member eligibility, project locking, member-removal assignment cleanup and activity creation are enforced by the subsequently implemented use cases. Changing an entity through the DbContext alone does not yet establish those access/business rules. Do not add public generic CRUD controllers around this context.
 
 ## Version correction
 

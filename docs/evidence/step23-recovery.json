@@ -1,0 +1,41 @@
+{
+  "releaseSource": {
+    "revision": "bab434a00993b7e1d83e09abe00001d945d0cae4",
+    "dirty": false
+  },
+  "startedAtUtc": "2026-10-18T13:23:32Z",
+  "checks": {
+    "unmigratedReadiness503": true,
+    "separateMigrationAndIdempotence": true,
+    "runtimeDdlDenied": true,
+    "backupWritesDenied": true,
+    "allTableBusinessDataFingerprintsMatch": true,
+    "existingRestoreTargetRejected": true,
+    "protectionKeyHashesMatch": true,
+    "preRecoveryCookieRejected": true,
+    "reloginLargeIdsAssignmentProgressSoftDeleteHistory": true,
+    "restrictedRuntimeMembershipRemovalReadditionAndTaskEditing": true,
+    "compatibleBinaryRollbackAndSessionRestart": true,
+    "currentBinaryRollForwardReady": true,
+    "receiptChecksumsValid": true
+  },
+  "backupSeconds": 1.337,
+  "restoreSeconds": 1.761,
+  "tableCounts": {
+    "__efmigrationshistory": 1,
+    "activitylogs": 9,
+    "aspnetroleclaims": 0,
+    "aspnetroles": 0,
+    "aspnetuserclaims": 0,
+    "aspnetuserlogins": 0,
+    "aspnetuserroles": 0,
+    "aspnetusers": 2,
+    "aspnetusertokens": 0,
+    "projectmembers": 1,
+    "projects": 2,
+    "tasks": 2
+  },
+  "migrations": [
+    "20261018085115_InitialCreate"
+  ]
+}
