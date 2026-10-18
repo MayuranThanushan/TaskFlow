@@ -54,7 +54,7 @@ npm run test:ci
 npm run build
 ```
 
-Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. Current shell tests cover visible availability information/landmarks and keyboard access to the home link. Account forms, loading/error interactions and business workflows will gain tests when those features exist. Browser end-to-end tests remain later work; jsdom is not a real-browser substitute.
+Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. The 24 frontend tests cover authentication screens, protected navigation, session lifecycle, pending/error states, safe redirects and CSRF/API behavior. See [frontend authentication](frontend-authentication.md) for coverage and the separate real-Edge HTTPS verification. Browser end-to-end CI remains later work; jsdom is not a real-browser substitute.
 
 ## GitHub Actions
 
@@ -69,4 +69,4 @@ The workflow passed actionlint v1.7.12 validation locally. All invoked applicati
 
 References: [xUnit shared context](https://xunit.net/docs/shared-context), [Testing Library setup](https://testing-library.com/docs/react-testing-library/setup/), and [GitHub .NET build/test guidance](https://docs.github.com/en/actions/tutorials/build-and-test-code/net).
 
-Step 07 authentication coverage and real HTTPS verification are detailed in [authentication.md](authentication.md). No browser account form tests exist before step 08.
+Step 07 authentication coverage and real HTTPS verification are detailed in [authentication.md](authentication.md). Step 08 frontend coverage and browser verification are detailed in [frontend-authentication.md](frontend-authentication.md).

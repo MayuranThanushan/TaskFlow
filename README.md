@@ -62,7 +62,7 @@ npm run build
 npm run lint
 ```
 
-The backend has 30 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 15 API/provider/safety checks and 15 live persistence/auth checks. Without that connection the 15 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library is configured with two component checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
+The backend has 30 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 15 API/provider/safety checks and 15 live persistence/auth checks. Without that connection the 15 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 24 API client and authentication/navigation checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -75,6 +75,6 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 07 are complete. Next is step 08: frontend authentication screens, application shell/navigation, API client and session-expiry handling. The local verification databases are migrated; their portable server is stopped.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 are complete. Next is step 09: early deployment configuration and smoke verification in a selected environment. The local verification databases are migrated; their portable server is stopped.
 
-For account requests use [the HTTPS authentication setup](docs/authentication.md). HTTP remains suitable for liveness checks only; auth requests over HTTP are rejected. The API has registration/login/me/logout and CSRF bootstrap endpoints; the frontend account UI is not implemented yet.
+For account requests use [the HTTPS authentication setup](docs/authentication.md). HTTP remains suitable for liveness checks only; auth requests over HTTP are rejected. The API has registration/login/me/logout and CSRF bootstrap endpoints; the [frontend account screens and protected navigation](docs/frontend-authentication.md) are implemented and verified in Edge.

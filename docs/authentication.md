@@ -1,6 +1,6 @@
 # Authentication and secure sessions
 
-Delivery step 07 implements the account API. Frontend account forms and navigation remain step 08. No email verification, recovery, password/email editing, or third-party sign-in flow is included.
+Delivery step 07 implements the account API. Step 08 adds [frontend account forms and navigation](frontend-authentication.md). No email verification, recovery, password/email editing, or third-party sign-in flow is included.
 
 ## API contract
 
@@ -73,8 +73,8 @@ Data-protection keys persist under ignored .local/data-protection by default. Se
 
 The live backend suite contains 30 tests and passed with no skips. Auth checks cover registration/profile shape, cookie flags, no automatic registration sign-in, duplicate email, JSON validation, exact password handling, generic failures, lockout, CSRF binding/freshness, default authorization, 401/403 without redirects, rate limiting despite spoofed forwarding headers, expiry without renewal, all-device logout, replay rejection and failed stamp persistence.
 
-A separate real-TLS check exercised registration/login/me through Vite's HTTPS proxy, restarted the API with persisted data-protection keys and verified the existing session, then refreshed CSRF and logged out. TLS certificate checks stayed enabled on both hops. Synthetic accounts were removed; API, Vite and MySQL processes were stopped afterward. This was a protocol-level check, not a browser UI test. Browser account interactions arrive with step 08.
+A separate real-TLS check exercised registration/login/me through Vite's HTTPS proxy, restarted the API with persisted data-protection keys and verified the existing session, then refreshed CSRF and logged out. TLS certificate checks stayed enabled on both hops. Synthetic accounts were removed; API, Vite and MySQL processes were stopped afterward. This protocol check is supplemented by the step 08 [real Edge account flow](frontend-authentication.md#verification).
 
-Frontend type-check/lint/two component tests/build pass. The migration snapshot is checked separately; no schema change is needed for these endpoints. GitHub CI uses the same live backend tests; no hosted workflow run is claimed.
+Frontend type-check/lint/24 tests/build pass. The migration snapshot is checked separately; no schema change is needed for these endpoints. GitHub CI uses the same live backend tests; no hosted workflow run is claimed.
 
 Implementation references: [ASP.NET Core antiforgery](https://learn.microsoft.com/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0), [rate limiting](https://learn.microsoft.com/en-us/aspnet/core/performance/rate-limit?view=aspnetcore-10.0), and [Identity stamp validation](https://source.dot.net/Microsoft.AspNetCore.Identity/SecurityStampValidator.cs.html).

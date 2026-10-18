@@ -1,7 +1,7 @@
 :root {
   font-family: 'Segoe UI', system-ui, sans-serif;
-  color: #172b36;
-  background: #f6f8f7;
+  color: #172e2a;
+  background: #f7f8f4;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -10,4 +10,12 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
 a { color: inherit; }
-a:focus-visible { outline: 3px solid #287c66; outline-offset: 6px; }
+button, input { font: inherit; }
+button, a, input { -webkit-tap-highlight-color: transparent; }
+a:focus-visible, button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible { outline: 3px solid #35806a; outline-offset: 4px; }
+button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .65; }
+h1, h2, p { margin-top: 0; }
+p { line-height: 1.65; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+main:focus { outline: none; }
