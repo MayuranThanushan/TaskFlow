@@ -62,7 +62,7 @@ npm run build
 npm run lint
 ```
 
-The backend has 35 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 19 API/provider/deployment/safety checks and 16 live persistence/auth/readiness checks. Without that connection the 16 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 24 API client and authentication/navigation checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
+The backend has 59 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 34 API/policy/provider/deployment/safety checks and 25 live persistence/auth/readiness/project-foundation checks. Without that connection the 25 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 24 API client and authentication/navigation checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -75,7 +75,7 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 and the portable preparation/local rehearsal for step 09 are complete. Container execution and selected-host verification remain pending. Next feature task is step 10: project-access policy and transactional activity foundation. The local verification databases are migrated; their portable server is stopped.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 and the portable preparation/local rehearsal for step 09 are complete. Container execution and selected-host verification remain pending. Step 10 project-access policy and transactional activity foundation are complete; see [project foundation](docs/project-foundation.md). Next feature task is step 11: project creation, authorized listing/detail and frontend forms/pages. The local verification databases are migrated; their portable server is stopped.
 
 For account requests use [the HTTPS authentication setup](docs/authentication.md). HTTP remains suitable for liveness checks only; auth requests over HTTP are rejected. The API has registration/login/me/logout and CSRF bootstrap endpoints; the [frontend account screens and protected navigation](docs/frontend-authentication.md) are implemented and verified in Edge.
 

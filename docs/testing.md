@@ -1,14 +1,14 @@
 # Testing and continuous integration
 
-The suite now contains 35 backend tests (16 requiring MySQL) and 24 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 59 backend tests (25 requiring MySQL) and 24 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
-PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime fixture validates the connection before access, applies migrations once per collection, verifies the MySQL 8.4 server line, and creates a fresh DbContext for each test. Collection execution is serialized. Each persistence mutation test owns a transaction and rolls it back. Authentication HTTP tests span request scopes and instead remove only the synthetic accounts created by their own host. The fixture does not delete databases or wipe shared tables. Database/container startup and shutdown belong to the runner.
+PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime fixture validates the connection before access, applies migrations once per collection, verifies the MySQL 8.4 server line, and creates a fresh DbContext for each test. Collection execution is serialized. Each persistence mutation test owns a transaction and rolls it back. Authentication HTTP tests span request scopes and instead remove only the synthetic accounts created by their own host. Project-foundation transaction tests commit across independent contexts, then remove only their own synthetic projects, memberships, tasks, activity and accounts in FK order. The fixture does not delete databases or wipe shared tables. Database/container startup and shutdown belong to the runner.
 
 Only `taskflow_test` or a name beginning `taskflow_test_` is accepted. A non-root test account is required. Safety tests exercise rejection of development/production database names and privileged/missing accounts before a connection is attempted. These guards reduce accidental misuse; always supply an isolated test database and restricted credentials.
 
-Local mode (no TASKFLOW_TEST_CONNECTION): 19 checks run and 16 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
+Local mode (no TASKFLOW_TEST_CONNECTION): 34 checks run and 25 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
 
 With a dedicated connection already configured:
 
@@ -71,3 +71,5 @@ The workflow passed actionlint v1.7.12 validation locally. Backend/frontend chec
 References: [xUnit shared context](https://xunit.net/docs/shared-context), [Testing Library setup](https://testing-library.com/docs/react-testing-library/setup/), and [GitHub .NET build/test guidance](https://docs.github.com/en/actions/tutorials/build-and-test-code/net).
 
 Step 07 authentication coverage and real HTTPS verification are detailed in [authentication.md](authentication.md). Step 08 frontend coverage and browser verification are detailed in [frontend-authentication.md](frontend-authentication.md).
+
+Step 10 adds permission-matrix, safe denial mapping and live transaction/locking checks. See [project foundation](project-foundation.md) for real rollback, no-op, task-scope and waiting-writer verification. Backend Release tests passed all 59 cases without skips. Existing frontend files/dependencies are unchanged by step 10.

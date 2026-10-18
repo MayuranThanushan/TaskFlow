@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using TaskFlow.Application.Features.Projects;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -75,6 +76,18 @@ public class ApiFoundationTests
         await AssertProblem(await client.GetAsync("/_tests/failure"), HttpStatusCode.NotFound);
     }
 
+    [Theory]
+    [InlineData(ProjectAccessDecision.Unauthenticated, HttpStatusCode.Unauthorized)]
+    [InlineData(ProjectAccessDecision.NotFound, HttpStatusCode.NotFound)]
+    [InlineData(ProjectAccessDecision.Forbidden, HttpStatusCode.Forbidden)]
+    public async Task ProjectAccessDenialsUseSafeProblemResponses(ProjectAccessDecision decision, HttpStatusCode expected)
+    {
+        await using var factory = CreateProbeFactory("Testing");
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        var problem = await AssertProblem(await client.GetAsync($"/_tests/project-denial/{decision}"), expected);
+        Assert.DoesNotContain("Project access was denied", problem.ToString());
+    }
+
     private static WebApplicationFactory<Program> CreateProbeFactory(string environment) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -100,6 +113,9 @@ public class ApiFoundationTests
 [Route("_tests")]
 public class FoundationProbeController : ControllerBase
 {
+    [HttpGet("project-denial/{decision}")]
+    public IActionResult ProjectDenial(ProjectAccessDecision decision) => throw new ProjectAccessException(decision);
+
     [HttpGet("failure")]
     public IActionResult Failure() => throw new InvalidOperationException("secret-marker");
 

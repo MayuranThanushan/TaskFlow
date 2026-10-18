@@ -29,7 +29,7 @@ Date: 18 October 2026. Updated through delivery step 07. This records observed l
 
 Package selection is now resolved by [decision 0004](decisions/0004-runtime-and-database-provider.md): keep .NET 10, use EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 (MySql.Data 26.7.0). The selected MySQL server target is 8.4.11. This explicitly supersedes the earlier proposed Pomelo provider. Exact dependencies and reproducible commands are in [toolchain.md](toolchain.md).
 
-NuGet restore and backend build pass with zero warnings/errors. 35 tests pass with a dedicated MySQL test connection: 19 API/provider/deployment/safety checks and 16 live persistence/auth/readiness checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
+NuGet restore and backend build pass with zero warnings/errors. 59 tests pass with a dedicated MySQL test connection: 34 API/policy/provider/deployment/safety checks and 25 live persistence/auth/readiness/project-foundation checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
 
 No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable MySQL under ignored .local/mysql, with separate local development/test credentials. The initial migration was applied to both isolated databases and live constraints verified. The server is stopped; no Windows service was installed. Compose remains an unexecuted alternative.
 
@@ -46,7 +46,8 @@ No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable M
 | Shared database fixtures, frontend test script, CI | 06 | Complete: fixture guards, Vitest setup and validated GitHub workflow |
 | Account API and frontend authentication | 07, 08 | Complete; see authentication.md and frontend-authentication.md |
 | Portable deployment and smoke rehearsal | 09 | Prepared and verified locally; container/selected-host checks pending |
-| Resource permissions and business features | 10 onward | Not implemented |
+| Project-access and atomic activity foundation | 10 | Complete; see project-foundation.md |
+| Project/task business features | 11 onward | Not implemented |
 
 Only rows marked pending remain unimplemented. Initial migration and live persistence verification are complete; shared integration infrastructure was completed in step 06.
 
@@ -67,3 +68,7 @@ Registration, login, current-user and logout APIs are implemented with cookie se
 ## Steps 08 and 09 update
 
 Frontend account screens, protected navigation, session lifecycle and API/CSRF handling pass 24 frontend tests and real Edge HTTPS checks. Step 09 prepares portable app/migration images, private MySQL and mounted secrets/keys. The combined published app passed a Production HTTPS rehearsal with a clean database, idempotent migration bundle, readiness transitions, SPA deep links, browser authentication and session recovery after restart. All 35 backend tests pass with live MySQL and no skips. Docker is unavailable, so container execution and a selected public host remain pending release gates; Compose and the expanded workflow passed configuration/actionlint validation. See [deployment](deployment.md). Next feature task is step 10.
+
+## Step 10 update
+
+Current-state project/task access, the owner/member permission matrix, safe denial responses, parent-row-locked READ COMMITTED mutations and atomic activity persistence are implemented. All 59 backend tests pass with live MySQL and no skips, including real activity insert rollback and a waiting writer rechecking membership after lock release. No schema change is pending. No project/task HTTP routes or UI are added yet; those begin in step 11. See [project foundation](project-foundation.md).

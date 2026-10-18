@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TaskFlow.Infrastructure.Identity;
 using TaskFlow.Infrastructure.Persistence;
 using TaskFlow.Application.Features.Auth;
+using TaskFlow.Application.Features.Projects;
+using TaskFlow.Infrastructure.Projects;
 
 namespace TaskFlow.Infrastructure;
 
@@ -32,6 +34,8 @@ public static class DependencyInjection
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        services.AddScoped<IProjectAccess, ProjectAccess>();
+        services.AddScoped<IProjectTransactions, ProjectTransactions>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddSingleton<UnknownUserPasswordCheck>();
         return services;
