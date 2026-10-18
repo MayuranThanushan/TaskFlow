@@ -4,3 +4,11 @@ GET {{TaskFlow.Api_HostAddress}}/openapi/v1.json
 Accept: application/json
 
 ###
+
+GET {{TaskFlow.Api_HostAddress}}/api/v1/health/live
+Accept: application/json
+
+###
+
+GET {{TaskFlow.Api_HostAddress}}/api/v1/not-found
+Accept: application/problem+json

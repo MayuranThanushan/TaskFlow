@@ -83,3 +83,7 @@ Activity DTO: id, projectId, actorUserId, optional taskId, actionType, details, 
 4. Members cannot delete tasks/manage membership; outsiders cannot enumerate private resource IDs.
 5. Soft-deleted project/task visibility, atomic unassignment/history, and aggregates agree.
 6. Progress, overdue instant equality, ordering ties, null deadlines and pagination boundaries match this contract.
+
+## Foundation endpoint amendment (step 04)
+
+GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with no-store caching. It checks process liveness only, without querying MySQL. Error responses carry traceId and all responses include X-Trace-Id. See [API foundation](../api-foundation.md) for implementation and verification details. All business/authentication routes above remain pending their feature steps.

@@ -1,6 +1,6 @@
 # TaskFlow ordered delivery backlog
 
-Prepared: 18 October 2026. Steps 01 through 03 are complete: [decision register](../docs/decisions/README.md), [API amendment](../docs/contracts/api-baseline.md), [database amendment](../docs/contracts/database-baseline.md), and [toolchain matrix](../docs/toolchain.md). Exact package pins, NuGet lockfiles, EF tooling and provider compatibility checks are in place. The repository/scaffold foundation is complete, including a local main branch, formatting rules, template cleanup and a minimal frontend shell. Steps 04 through 23 remain pending. Live MySQL verification remains pending steps 05/06. No remote issues or deployments have been created.
+Prepared: 18 October 2026. Steps 01 through 04 are complete: [decision register](../docs/decisions/README.md), [API amendment](../docs/contracts/api-baseline.md), [database amendment](../docs/contracts/database-baseline.md), and [toolchain matrix](../docs/toolchain.md). Exact package pins, NuGet lockfiles, EF tooling and provider compatibility checks are in place. The repository/scaffold foundation is complete, including a local main branch, formatting rules, template cleanup and a minimal frontend shell. API conventions, validation/errors, logging, health and local proxy are verified; see [API foundation](../docs/api-foundation.md). Steps 05 through 23 remain pending. Live MySQL verification remains pending steps 05/06. No remote issues or deployments have been created.
 
 Read [Architecture-Plan.md](Architecture-Plan.md) first. The sequence below refines the existing implementation plan into small, reviewable steps. Existing TF identifiers are retained as traceability references, not renumbered issues. Work from top to bottom; complete the relevant frontend, API, database, and tests together.
 
@@ -58,4 +58,4 @@ Tests, pagination conventions, errors and activity writes begin with their featu
 
 The original phase estimates add up to **33–51 developer working days**, while the same document also says 5–8 weeks. These are not equivalent at a five-day workweek: 33–51 days is about 7–11 working weeks. Use the daily estimates only as a rough learning-project budget, then re-estimate after the authenticated shell is working; no calendar deadline is assumed.
 
-**Steps 01 through 03 are complete. Next: step 04, API conventions, health checks and frontend development proxy.** The existing TaskFlow-FE/TaskFlow-BE layout is preserved. Live MySQL verification remains pending steps 05/06.
+**Steps 01 through 04 are complete. Next: step 05, Identity/application entities, EF mappings and the initial migration.** A real MySQL environment is required to validate the migration; no live database has been provisioned yet.

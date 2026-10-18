@@ -39,7 +39,7 @@ dotnet build TaskFlow.slnx --no-restore
 dotnet run --project TaskFlow-BE/TaskFlow.Api --launch-profile http
 ```
 
-The HTTP API listens at `http://localhost:5140`. OpenAPI is `/openapi/v1.json` in Development. The weather template endpoint has been removed; business and health endpoints are introduced in later tasks. For the HTTPS profile use `--launch-profile https` (port 7258) and a trusted local development certificate. Certificate trust is a machine-level setup step.
+The HTTP API listens at `http://localhost:5140`. OpenAPI is `/openapi/v1.json` in Development. The weather template endpoint has been removed; GET /api/v1/health/live reports process liveness; business endpoints arrive in later tasks. For the HTTPS profile use `--launch-profile https` (port 7258) and a trusted local development certificate. Certificate trust is a machine-level setup step.
 
 In another terminal:
 
@@ -49,7 +49,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite (normally `http://localhost:5173`). The starter frontend is not connected to the API yet. Proxy configuration, health endpoints, and standardized errors belong to backlog step 04.
+Open the local URL printed by Vite (normally `http://localhost:5173`). Vite forwards relative /api requests to the backend. Verify with http://localhost:5173/api/v1/health/live. See [API foundation](docs/api-foundation.md) for proxy overrides, health semantics, trace IDs and error responses.
 
 ## Verification
 
@@ -61,7 +61,7 @@ npm run build
 npm run lint
 ```
 
-The backend currently has one provider/Identity schema-generation compatibility test; it does not verify live MySQL or business behavior. The empty template test has been removed. Vitest and Testing Library are installed but have no configured test script or meaningful suite yet. Add behavior tests with the features and integration infrastructure in step 06.
+The backend has nine passing tests covering API foundation behavior and provider/Identity schema generation. They do not verify live MySQL or unimplemented business features. Vitest and Testing Library are installed but have no configured test script or meaningful suite yet. Add behavior tests with the features and integration infrastructure in step 06.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -74,4 +74,4 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 03 are complete. Next is step 04: add API conventions, health checks and the frontend development proxy. Live MySQL provisioning and migrations remain pending steps 05/06.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 04 are complete. Next is step 05: implement Identity/application entities, EF mappings and the initial database migration. Live MySQL provisioning and migrations remain pending steps 05/06.

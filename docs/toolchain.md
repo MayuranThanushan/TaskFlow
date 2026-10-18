@@ -9,6 +9,7 @@ Date: 18 October 2026. Step 02 completed for dependency selection, pinning and p
 | ASP.NET Core runtime baseline / OpenAPI | 10.0.11 | Installed runtime / Api project |
 | EF Core and Relational | 10.0.11 | Infrastructure reference and NuGet locks |
 | Identity EF persistence | 10.0.11 | Infrastructure project |
+| ASP.NET HTTP test host | 10.0.11 | Tests project and NuGet lock |
 | EF Design and dotnet-ef | 10.0.11 | Api project / .config/dotnet-tools.json |
 | MySql.EntityFrameworkCore | 10.0.9 | Infrastructure project |
 | MySql.Data | 26.7.0 | NuGet transitive lock |
