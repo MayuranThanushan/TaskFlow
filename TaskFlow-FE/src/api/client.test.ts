@@ -80,6 +80,21 @@ describe('API client', () => {
     await client.register({ displayName: 'Alex', email: 'a@b.com', password: 'p' })
     expect(state.calls.find(call => call.url === '/auth/register')!.headers.get('X-CSRF-TOKEN')).toBe('token-3')
   })
+  it('cancels a write if identity changes while its CSRF token is pending', async () => {
+    let release!: () => void
+    let started!: () => void
+    const waiting = new Promise<void>(resolve => { started = resolve })
+    const gate = new Promise<void>(resolve => { release = resolve })
+    let writes = 0
+    const client = createApiClient(async config => {
+      if (config.url === '/auth/csrf') { started(); await gate; return reply(config, 200, { requestToken: 'old-identity-token' }) }
+      writes++; return reply(config, 201)
+    })
+    const pending = client.request({ url: '/projects', method: 'post', data: { name: 'Private draft' } })
+    const rejected = expect(pending).rejects.toThrow('Your account changed.')
+    await waiting; client.forgetSession(); release()
+    await rejected; expect(writes).toBe(0)
+  })
   it('accepts only safe internal return destinations', () => {
     for (const path of ['//evil.test', 'https://evil.test', '/login', '/register', '/\\evil.test']) expect(returnPath(path)).toBe('/dashboard')
     expect(returnPath('/dashboard?view=mine#tasks')).toBe('/dashboard?view=mine#tasks')

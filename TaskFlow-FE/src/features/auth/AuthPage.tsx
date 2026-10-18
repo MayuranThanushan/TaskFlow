@@ -73,14 +73,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   return <div className="auth-grid">
     <aside className="auth-story" aria-label="About TaskFlow">
       <p className="eyebrow">A little more clarity.</p>
-      <h1>Make room<br />for good work.</h1>
+      <p className="story-title">Make room<br />for good work.</p>
       <p>Bring your projects, tasks, and team into one thoughtful workspace.</p>
       <div className="story-lines" aria-hidden="true"><span /><span /><span /></div>
       <p className="story-footnote">Less chasing. More moving forward.</p>
     </aside>
     <section className="auth-card" aria-labelledby="form-title">
       <p className="eyebrow">{registering ? 'Start with a fresh page' : 'Good to see you again'}</p>
-      <h2 id="form-title">{registering ? 'Create your account' : 'Sign in to TaskFlow'}</h2>
+      <h1 id="form-title">{registering ? 'Create your account' : 'Sign in to TaskFlow'}</h1>
       <p className="muted">{registering ? 'A place to organize what matters.' : 'Pick up where you left off.'}</p>
       {notice && !error && <p className="notice" role="status">{notice}</p>}
       {error && <div className="error-summary" role="alert" tabIndex={-1} ref={summary}>{error}</div>}

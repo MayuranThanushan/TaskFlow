@@ -1,0 +1,357 @@
+{
+  "environment": "Local Windows Production HTTPS + MySQL 8.4.11; deployed-host/container/hosted CI unverified",
+  "testTools": {
+    "playwright-core": "1.61.1",
+    "axe-core": "4.14.0"
+  },
+  "automatedTests": {
+    "backendPassed": 109,
+    "backendSkipped": 0,
+    "frontendPassed": 92
+  },
+  "suiteScripts": [
+    {
+      "script": "authentication.cjs",
+      "passed": true,
+      "durationMs": 3995
+    },
+    {
+      "script": "journeys.cjs",
+      "passed": true,
+      "durationMs": 28748
+    },
+    {
+      "script": "profile.cjs",
+      "passed": true,
+      "durationMs": 64433
+    },
+    {
+      "script": "review.cjs",
+      "passed": true,
+      "durationMs": 19902
+    }
+  ],
+  "fullSuiteReview": {
+    "startedAtUtc": "2026-10-18T12:41:49.729Z",
+    "browser": "155.0.4283.62",
+    "accessibilityScans": 30,
+    "detectedViolations": 0,
+    "horizontalOverflowScans": 0,
+    "incompleteReviewed": [
+      {
+        "view": "home",
+        "width": 1440,
+        "findings": [
+          {
+            "id": "color-contrast",
+            "count": 1,
+            "nodes": [
+              {
+                "target": [
+                  ".text-link > span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "view": "home",
+        "width": 320,
+        "findings": [
+          {
+            "id": "color-contrast",
+            "count": 1,
+            "nodes": [
+              {
+                "target": [
+                  ".text-link > span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "minimumFormBoundaryContrast": 3.24,
+    "keyboard": [
+      "Skip link reaches main",
+      "Required email receives focus with associated error",
+      "Route navigation focuses main",
+      "Delete cancellation has safe initial focus and restores trigger on Escape",
+      "Focused inputs have a visible outline",
+      "Safe API error recovers on explicit retry"
+    ],
+    "security": [
+      "Stored HTML remains text",
+      "Outsider direct task write denied with unchanged owner DTO and activity count",
+      "Localhost excluded by framework HSTS defaults; selected-host verification remains required",
+      "CSRF required; no cross-origin credential grant; CSP framing/script restrictions; nosniff; Production OpenAPI hidden"
+    ],
+    "fixture": {
+      "fixtureActiveTasks": 100,
+      "visibleProjects": 25,
+      "visibleTasks": 122,
+      "warmupsPerOperation": 3,
+      "samplesPerOperation": 20,
+      "concurrency": 1,
+      "transport": "local HTTPS round trip including response body; cold starts excluded"
+    },
+    "performance": [
+      {
+        "name": "profile-read",
+        "samples": 20,
+        "p50Ms": 10.35,
+        "p95Ms": 13.23,
+        "maxMs": 14.07,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "projects",
+        "samples": 20,
+        "p50Ms": 18.06,
+        "p95Ms": 19.35,
+        "maxMs": 19.5,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "project-detail",
+        "samples": 20,
+        "p50Ms": 12.21,
+        "p95Ms": 15.28,
+        "maxMs": 15.45,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "members",
+        "samples": 20,
+        "p50Ms": 14.29,
+        "p95Ms": 16.5,
+        "maxMs": 16.66,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-filter-sort-page",
+        "samples": 20,
+        "p50Ms": 20.33,
+        "p95Ms": 23.88,
+        "maxMs": 24.37,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-detail",
+        "samples": 20,
+        "p50Ms": 12.39,
+        "p95Ms": 13.16,
+        "maxMs": 14.83,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "dashboard",
+        "samples": 20,
+        "p50Ms": 14.42,
+        "p95Ms": 16.24,
+        "maxMs": 16.38,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "activity",
+        "samples": 20,
+        "p50Ms": 16.05,
+        "p95Ms": 18.51,
+        "maxMs": 19.17,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-status",
+        "samples": 20,
+        "p50Ms": 21.98,
+        "p95Ms": 23.93,
+        "maxMs": 25.77,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "project-edit",
+        "samples": 20,
+        "p50Ms": 18.53,
+        "p95Ms": 22.27,
+        "maxMs": 22.47,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "profile-edit",
+        "samples": 20,
+        "p50Ms": 16.74,
+        "p95Ms": 18.92,
+        "maxMs": 20.35,
+        "underTwoSeconds": true
+      }
+    ],
+    "pageErrors": []
+  },
+  "additionalSameAccountCriticalJourneyReview": {
+    "startedAtUtc": "2026-10-18T12:43:13.226Z",
+    "browser": "155.0.4283.62",
+    "accessibilityScans": 30,
+    "detectedViolations": 0,
+    "horizontalOverflowScans": 0,
+    "incompleteReviewed": [
+      {
+        "view": "home",
+        "width": 1440,
+        "findings": [
+          {
+            "id": "color-contrast",
+            "count": 1,
+            "nodes": [
+              {
+                "target": [
+                  ".text-link > span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "view": "home",
+        "width": 320,
+        "findings": [
+          {
+            "id": "color-contrast",
+            "count": 1,
+            "nodes": [
+              {
+                "target": [
+                  ".text-link > span[aria-hidden=\"true\"]"
+                ],
+                "summary": "Fix any of the following:\n  Element content contains only non-text characters"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "minimumFormBoundaryContrast": 3.24,
+    "keyboard": [
+      "Skip link reaches main",
+      "Required email receives focus with associated error",
+      "Route navigation focuses main",
+      "Delete cancellation has safe initial focus and restores trigger on Escape",
+      "Focused inputs have a visible outline",
+      "Safe API error recovers on explicit retry"
+    ],
+    "security": [
+      "E2E-001: same newly registered UI account creates project/task, changes status, verifies dashboard, reloads and signs out",
+      "Stored HTML remains text",
+      "Outsider direct task write denied with unchanged owner DTO and activity count",
+      "Localhost excluded by framework HSTS defaults; selected-host verification remains required",
+      "CSRF required; no cross-origin credential grant; CSP framing/script restrictions; nosniff; Production OpenAPI hidden"
+    ],
+    "fixture": {
+      "fixtureActiveTasks": 100,
+      "visibleProjects": 1,
+      "visibleTasks": 100,
+      "warmupsPerOperation": 3,
+      "samplesPerOperation": 20,
+      "concurrency": 1,
+      "transport": "local HTTPS round trip including response body; cold starts excluded"
+    },
+    "performance": [
+      {
+        "name": "profile-read",
+        "samples": 20,
+        "p50Ms": 10.19,
+        "p95Ms": 12.78,
+        "maxMs": 13.33,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "projects",
+        "samples": 20,
+        "p50Ms": 15.62,
+        "p95Ms": 17,
+        "maxMs": 17.26,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "project-detail",
+        "samples": 20,
+        "p50Ms": 12.82,
+        "p95Ms": 14,
+        "maxMs": 14.5,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "members",
+        "samples": 20,
+        "p50Ms": 14.78,
+        "p95Ms": 15.33,
+        "maxMs": 15.81,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-filter-sort-page",
+        "samples": 20,
+        "p50Ms": 19.9,
+        "p95Ms": 23.25,
+        "maxMs": 27.98,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-detail",
+        "samples": 20,
+        "p50Ms": 13.05,
+        "p95Ms": 14.47,
+        "maxMs": 14.57,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "dashboard",
+        "samples": 20,
+        "p50Ms": 15.17,
+        "p95Ms": 16.42,
+        "maxMs": 17.86,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "activity",
+        "samples": 20,
+        "p50Ms": 19.41,
+        "p95Ms": 21.25,
+        "maxMs": 24.58,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "task-status",
+        "samples": 20,
+        "p50Ms": 24.87,
+        "p95Ms": 28.44,
+        "maxMs": 29.06,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "project-edit",
+        "samples": 20,
+        "p50Ms": 19.83,
+        "p95Ms": 23,
+        "maxMs": 23.17,
+        "underTwoSeconds": true
+      },
+      {
+        "name": "profile-edit",
+        "samples": 20,
+        "p50Ms": 18.29,
+        "p95Ms": 21.04,
+        "maxMs": 21.97,
+        "underTwoSeconds": true
+      }
+    ],
+    "pageErrors": []
+  },
+  "manualIncompleteDisposition": "The aria-hidden decorative home-link arrow contains only non-text characters; reviewed at both widths, with functional meaning supplied by visible link text.",
+  "productionLogCanaries": "Body/query/header sentinel absent; owned disposable databases removed and services stopped."
+}

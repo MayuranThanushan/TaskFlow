@@ -1,0 +1,40 @@
+const { chromium } = require('playwright-core');
+(async () => {
+ const { launch, origin, artifact, submitLogin } = require('./support.cjs');
+ const browser = await launch(chromium);
+ try {
+ const context=await browser.newContext({viewport:{width:1440,height:1000}});
+ const page=await context.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(origin+'/dashboard?view=mine#tasks');
+ await page.getByRole('heading',{name:'Sign in to TaskFlow'}).waitFor();
+ await page.getByRole('link',{name:'Create an account',exact:true}).click();
+ await page.getByLabel('Your name').fill('Browser test');
+ await page.getByLabel('Email address').fill(process.env.BROWSER_TEST_EMAIL);
+ await page.getByLabel('Password',{exact:true}).fill('Synthetic-UI-Pass123!');
+ await page.getByRole('button',{name:'Create account',exact:true}).click();
+ await page.getByText('Account created. Sign in to continue.').waitFor();
+ if(await page.getByLabel('Password',{exact:true}).inputValue())throw Error('Registration password leaked into login');
+ await page.getByLabel('Password',{exact:true}).fill('Wrong-Password123!');
+ await submitLogin(page);
+ await page.getByRole('alert').filter({hasText:'Email or password is incorrect'}).waitFor();
+ await page.getByLabel('Password',{exact:true}).fill('Synthetic-UI-Pass123!');
+ await submitLogin(page);
+ await page.getByRole('heading',{name:'Welcome back, Browser test.'}).waitFor();
+ if(!page.url().endsWith('/dashboard?view=mine#tasks'))throw Error('Return URL lost');
+ await page.reload(); await page.getByRole('heading',{name:'Welcome back, Browser test.'}).waitFor();
+ const cookies=await context.cookies();const auth=cookies.find(c=>c.name==='__Host-TaskFlow.Auth');
+ if(!auth?.httpOnly || !auth.secure || auth.sameSite!=='Lax')throw Error('Cookie security mismatch');
+ if(await page.evaluate(()=>localStorage.length+sessionStorage.length))throw Error('Unexpected browser storage');
+ await page.screenshot({path:artifact('auth-dashboard-desktop.png'),fullPage:true});
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.getByRole('heading',{name:'Sign in to TaskFlow'}).waitFor();
+ await page.reload();await page.getByRole('heading',{name:'Sign in to TaskFlow'}).waitFor();
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:artifact('auth-login-mobile.png'),fullPage:true});
+ if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile horizontal overflow');
+ await page.setViewportSize({width:1440,height:1000});
+ await page.screenshot({path:artifact('auth-login-desktop.png'),fullPage:true});
+ if(errors.length)throw Error(errors.join('\n'));
+ console.log('Edge HTTPS UI: protected redirect, registration, failed/successful login, return URL, reload, secure HttpOnly cookie, no token storage, logout/reload and mobile layout passed.');
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e.message);process.exitCode=1});

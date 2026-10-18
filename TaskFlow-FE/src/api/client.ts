@@ -81,6 +81,8 @@ export class ApiClient {
       try {
         const headers = AxiosHeaders.from(config.headers as RawAxiosHeaders | undefined)
         if (unsafe) headers.set('X-CSRF-TOKEN', await this.csrf())
+        // A draft must not be sent under an identity that changed during token acquisition.
+        if (identity !== this.identityVersion) throw new ApiError('Your account changed. Please try again.')
         return (await this.transport.request<T>({ ...config, baseURL: "/api/v1", withCredentials: true, headers })).data
       } catch (error) {
         const failure = asApiError(error)

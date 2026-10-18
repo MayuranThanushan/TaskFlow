@@ -40,7 +40,7 @@ function AppLayout() {
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="app-header">
-      <Link className="brand" to={session.status === 'authenticated' ? '/dashboard' : '/'} aria-label="TaskFlow home"><span className="brand-mark" aria-hidden="true">T</span>TaskFlow</Link>
+      <Link className="brand" to={session.status === 'authenticated' ? '/dashboard' : '/'}><span className="brand-mark" aria-hidden="true">T</span>TaskFlow</Link>
       <nav aria-label="Main navigation">
         {session.status === 'authenticated' ? <>
           <NavLink to="/dashboard">Overview</NavLink>
