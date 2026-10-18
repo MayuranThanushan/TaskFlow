@@ -13,7 +13,7 @@ const item = (title = 'First task', id = taskId): TaskItem => ({ id, projectId, 
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
+  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeErrors: { title: ['Please choose a valid title.'] } as Record<string, string[]>, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (config.url?.startsWith('/auth/')) return auth.adapter(config)
@@ -33,7 +33,7 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
     }
     if (config.method === 'patch' || config.method === 'delete') {
       const data = config.data ? JSON.parse(config.data) : undefined; state.writes.push({ path: path.pathname, method: config.method, data }); await state.writeWait
-      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { errors: { title: ['Please choose a valid title.'] } })
+      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { errors: state.writeErrors })
       const found = state.tasks.find(task => '/tasks/' + task.id === path.pathname.replace(/\/status$/, ''))
       if (!found) return reply(config, 404)
       if (config.method === 'delete') { state.tasks = state.tasks.filter(task => task !== found); return reply(config, 204) }
@@ -46,6 +46,21 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
   return state
 }
 describe('Task pages', () => {
+  it('does not restore an assignment cleared by removal while an owner edit form was open', async () => {
+    const state = setup('/tasks/' + taskId + '/edit', [{ ...item(), assigneeId: memberId }]); const user = userEvent.setup()
+    await screen.findByLabelText('Task title'); await waitFor(() => expect(screen.getByLabelText('Assignee')).toHaveValue(memberId))
+    // Another request removed the member and cleared the persisted assignment.
+    state.tasks = state.tasks.map(task => ({ ...task, assigneeId: null }))
+    await user.clear(screen.getByLabelText('Task title')); await user.type(screen.getByLabelText('Task title'), 'Safe stale edit'); await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('heading', { name: 'Safe stale edit' })).toBeVisible(); expect(state.writes[0].data).toEqual({ title: 'Safe stale edit' }); expect(state.tasks[0].assigneeId).toBeNull(); expect(screen.getByText('Unassigned', { exact: true })).toBeVisible()
+  })
+  it('retains a rejected stale-assignee draft and lets the owner explicitly retry without that assignment', async () => {
+    const state = setup('/tasks/' + taskId + '/edit', [item()]); const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Description (optional)'), 'Keep this work'); await waitFor(() => expect(screen.getByLabelText('Assignee')).toBeEnabled()); await user.selectOptions(screen.getByLabelText('Assignee'), memberId)
+    state.writeStatus = 400; state.writeErrors = { assigneeId: ['Choose the project owner or a current member.'] }
+    await user.click(screen.getByRole('button', { name: 'Save changes' })); expect(await screen.findByRole('alert')).toBeVisible(); expect(screen.getByLabelText('Assignee')).toHaveAccessibleDescription('Choose the project owner or a current member.'); expect(screen.getByLabelText('Description (optional)')).toHaveValue('Keep this work'); expect(state.writes).toHaveLength(1)
+    state.writeStatus = 200; await user.selectOptions(screen.getByLabelText('Assignee'), ''); await user.click(screen.getByRole('button', { name: 'Save changes' })); expect(await screen.findByRole('heading', { name: 'First task' })).toBeVisible(); expect(state.writes).toHaveLength(2); expect(state.writes[1].data).toEqual({ description: 'Keep this work' }); expect(state.tasks[0].assigneeId).toBeNull()
+  })
   it('prefills editing and submits only changed fields while preserving untouched microsecond deadlines', async () => {
     const state = setup('/tasks/' + taskId, [{ ...item(), description: 'Context', priority: 'High', assigneeId: memberId, dueDateUtc: '2026-11-01T12:00:00.123456Z' }]); const user = userEvent.setup()
     await user.click(await screen.findByRole('link', { name: 'Edit task' })); expect(await screen.findByLabelText('Task title')).toHaveValue('First task'); expect(screen.getByLabelText('Description (optional)')).toHaveValue('Context')

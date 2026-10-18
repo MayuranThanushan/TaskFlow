@@ -16,7 +16,7 @@ Membership writes lock the parent project first and recheck access inside the sh
 
 Removal deletes the non-owner membership, clears that user's active task assignments and records MemberRemoved plus a TaskUnassigned event for each affected task. It preserves assignments on soft-deleted tasks and leaves other assignees untouched. Additions record MemberAdded. Activity details contain backend-created user IDs, with task IDs attached to unassignment events. All domain and activity changes commit together; activity insertion failure rolls back membership and task changes.
 
-This implements assignment cleanup required by the membership contract now. Step 16 will extend verification to concurrent assignment/removal once task mutation endpoints exist; those writes must use the same parent lock and current assignee eligibility checks. No schema or dependency change is required.
+This implements assignment cleanup required by the membership contract now. Step 16 [assignment concurrency verification](assignment-concurrency.md) covers both lock orderings and removed-member writes across the task mutation endpoints, using that same parent lock and current assignee eligibility checks. No schema or dependency change is required.
 
 ## Frontend and verification
 

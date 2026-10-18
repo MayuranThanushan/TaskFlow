@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 82 backend tests (48 requiring MySQL) and 64 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 90 backend tests (56 requiring MySQL) and 66 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -83,3 +83,5 @@ Step 13 adds three live membership HTTP/database tests and five frontend member-
 Step 14 adds six live task API tests and ten frontend task checks; all 76 backend and 57 frontend tests passed. Coverage includes activity rollback, assignee eligibility/removal races, UTC conversion, visibility, query ordering/paging, form errors and account-switch safety. See [tasks](tasks.md).
 
 Step 15 adds six live task mutation API tests and seven frontend cases; all 82 backend and 64 frontend tests passed. See [task mutations](task-mutations.md) for omission/null semantics, no-op timestamps, retained deletion history, mutation rollback and edit/delete concurrency.
+
+Step 16 adds eight live HTTP/database cases with bounded parent-lock gates, both removal/assignment orderings, removed-member writes, cleanup scope/readdition and failed-removal rollback with a queued assignment. Two frontend tests cover stale assignee drafts. All 90 backend and 66 frontend tests passed. See [assignment concurrency](assignment-concurrency.md).

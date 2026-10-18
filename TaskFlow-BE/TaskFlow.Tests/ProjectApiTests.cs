@@ -325,7 +325,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         private readonly WebApplicationFactory<Program> factory;
         public List<ApplicationUser> Users { get; } = [];
         public FixedClock Clock { get; } = new();
-        public ProjectHost(MySqlFixture fixture, IInterceptor? failure = null)
+        public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
@@ -336,7 +336,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
                     services.AddDataProtection().UseEphemeralDataProtectionProvider();
-                    if (failure is not null) services.AddDbContext<TaskFlowDbContext>(options => options.AddInterceptors(failure));
+                    if (interceptors.Length > 0) services.AddDbContext<TaskFlowDbContext>(options => options.AddInterceptors(interceptors));
                 });
             });
         }

@@ -30,6 +30,6 @@ All 82 backend tests passed with real MySQL and zero skips (34 non-database, 48 
 
 All 64 frontend tests passed, including seven new mutation cases for changed-only editing/precision preservation, optional clearing/no-op forms, pending status updates, member controls, confirmed deletion/cancellation, error recovery and account-switch stale-response handling. Type-check, ESLint, Release/production builds pass. No model change is pending. Hosted CI, Docker execution and selected-host verification remain pending.
 
-Next is step 16: complete member-removal/assignment cleanup concurrency verification across the task mutation endpoints. Existing cleanup and task-creation race coverage remain in place.
+Step 16 [assignment/removal concurrency](assignment-concurrency.md) is now verified across creation, editing and status mutations, including both lock orderings and rollback. Next is step 17 filtering/sorting/pagination.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge owner/member editing, nullable clearing with omitted-value preservation, status/reload/progress refresh, member deletion 403, owner confirmation/Escape/deletion/list refresh and deleted deep-link rejection. Mobile edit/confirmation layouts passed overflow checks, and the confirmation screenshot was inspected. The disposable database was removed and verification services stopped.
