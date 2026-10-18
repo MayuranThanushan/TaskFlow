@@ -36,6 +36,7 @@ public static class DependencyInjection
         }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
         services.AddScoped<TaskFlow.Application.Features.Tasks.ITaskService, TaskService>();
         services.AddScoped<TaskFlow.Application.Features.Dashboard.IDashboardService, DashboardService>();
+        services.AddScoped<TaskFlow.Application.Features.Activity.IActivityService, ActivityService>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();

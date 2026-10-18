@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 100 backend tests (66 requiring MySQL) and 78 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 105 backend tests (71 requiring MySQL) and 84 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -89,3 +89,5 @@ Step 16 adds eight live HTTP/database cases with bounded parent-lock gates, both
 Step 17 adds five live task query tests and six frontend cases. All 95 backend and 72 frontend checks pass. Explicit ordering/page expectations, combined filter scope, repeated/invalid queries, maximum/empty/far pages and a forced count/create overlap verify the database contract; frontend checks cover URL controls/history/recovery and superseded responses. See [task queries](task-queries.md).
 
 Step 18 adds five live dashboard/progress tests and six frontend overview checks; all 100 backend and 78 frontend tests passed. The aggregate tests force concurrent creation and a clock advance to verify a consistent snapshot and captured UTC time. Scope, overdue equality/completion/deletion, progress rounding and mutation refresh are covered. See [dashboard](dashboard.md).
+
+Step 19 adds five live activity reader tests and six frontend feed cases; all 105 backend and 84 frontend tests passed. Coverage includes visible event types, deleted-task/removed-actor history, immutable public routes, safe summary redaction, precise inclusive time bounds, ordering/paging and a forced concurrent mutation snapshot. See [activity](activity.md).
