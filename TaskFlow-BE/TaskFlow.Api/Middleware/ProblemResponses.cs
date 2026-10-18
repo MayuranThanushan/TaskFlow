@@ -24,7 +24,8 @@ public static class ProblemResponses
     {
         context.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
         context.Response.Headers.CacheControl = "no-store";
-        return context.Response.WriteAsJsonAsync(problem,
+        // Preserve derived ValidationProblemDetails fields when writing outside MVC.
+        return context.Response.WriteAsJsonAsync((object)problem,
             options: (System.Text.Json.JsonSerializerOptions?)null,
             contentType: "application/problem+json", cancellationToken: context.RequestAborted);
     }

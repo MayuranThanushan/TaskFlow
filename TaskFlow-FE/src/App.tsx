@@ -7,6 +7,7 @@ import { AuthProvider } from './features/auth/AuthProvider'
 import { useAuth } from './features/auth/auth-context'
 import { GuestRoute, ProtectedRoute } from './features/auth/RouteGates'
 import { AuthPage } from './features/auth/AuthPage'
+import { TasksPage, NewTaskPage, TaskDetailPage } from './features/tasks/TaskPages'
 import './App.css'
 
 function AppLayout() {
@@ -18,7 +19,7 @@ function AppLayout() {
   const previousPath = useRef(location.pathname)
   useEffect(() => {
     const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work' }
-    document.title = `${titles[location.pathname] ?? (location.pathname.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
+    document.title = `${titles[location.pathname] ?? (location.pathname.startsWith('/tasks/') ? 'Task' : location.pathname.endsWith('/tasks') ? 'Tasks' : location.pathname.endsWith('/tasks/new') ? 'Create task' : location.pathname.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
   }, [location.pathname])
@@ -100,6 +101,9 @@ export default function App({ client = api }: { client?: ApiClient }) {
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="projects" element={<ProjectsPage client={client} />} />
       <Route path="projects/new" element={<NewProjectPage client={client} />} />
+      <Route path="projects/:projectId/tasks" element={<TasksPage client={client} />} />
+      <Route path="projects/:projectId/tasks/new" element={<NewTaskPage client={client} />} />
+      <Route path="tasks/:taskId" element={<TaskDetailPage client={client} />} />
       <Route path="projects/:projectId/edit" element={<EditProjectPage client={client} />} />
       <Route path="projects/:projectId" element={<ProjectDetailPage client={client} />} />
     </Route>

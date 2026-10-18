@@ -26,6 +26,12 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             await ProblemResponses.WriteAsync(context, ProblemResponses.Create(context, status));
             return true;
         }
+        if (exception is TaskFlow.Application.Features.Tasks.TaskValidationException invalid)
+        {
+            var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(new Dictionary<string, string[]> { [invalid.Field] = [invalid.Message] }) { Status = 400 };
+            await ProblemResponses.WriteAsync(context, ProblemResponses.Enrich(context, problem));
+            return true;
+        }
         // Keep exception messages and request payloads out of routine logs.
         logger.LogError("Unhandled API failure {ExceptionType}; trace {TraceId}",
             exception.GetType().Name, Activity.Current?.Id ?? context.TraceIdentifier);

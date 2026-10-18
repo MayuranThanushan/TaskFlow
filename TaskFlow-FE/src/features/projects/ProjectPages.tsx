@@ -133,6 +133,7 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
       {location.state?.created && <p role="status" className="notice">Project created.</p>}
       <div className="page-heading"><div><p className="eyebrow">{session.user?.id === result.data.ownerId ? 'Your project' : 'Shared project'}</p><h1>{result.data.name}</h1><p className="muted">Created <time dateTime={result.data.createdAtUtc}>{date(result.data.createdAtUtc)}</time></p></div></div>
       <section className="project-about" aria-labelledby="project-about"><h2 id="project-about">About this project</h2><p className="project-description">{result.data.description || 'No description added.'}</p></section>
+      <section className="project-about"><h2>Tasks</h2><p>Plan the next steps and track your project work.</p><Link className="button primary" to={'/projects/' + encodeURIComponent(projectId) + '/tasks'}>View tasks</Link></section>
       <ProjectMembers key={'members:' + projectId} client={client} projectId={projectId} owner={session.user?.id === result.data.ownerId} />
       <section className="project-progress" aria-labelledby="progress-heading"><h2 id="progress-heading">Project progress</h2><dl><div><dt>Total tasks</dt><dd>{result.data.totalTasks}</dd></div><div><dt>Completed tasks</dt><dd>{result.data.completedTasks}</dd></div><div><dt>Progress</dt><dd>{result.data.progressPercentage}%</dd></div></dl>
         <progress aria-label="Project progress" value={result.data.progressPercentage} max={100}>{result.data.progressPercentage}%</progress>

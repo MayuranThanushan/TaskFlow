@@ -51,7 +51,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
 
         var originalId = project.Id;
         var ownerId = project.OwnerId;
-        var boundary = new Mutation(database, project);
+        var boundary = new Mutation(database, project, operation);
         if (projectId is null) boundary.Record(ActivityAction.ProjectCreated);
         var result = await mutation(boundary, cancellationToken);
         if (project.Id != originalId || project.OwnerId != ownerId)
@@ -71,12 +71,13 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
             await database.SaveChangesAsync(cancellationToken);
             foreach (var activity in boundary.Events)
             {
-                if (activity.TaskId is { } taskId && !await database.Tasks.IgnoreQueryFilters()
+                var eventTaskId = activity.Task?.Id ?? activity.TaskId;
+                if (eventTaskId is { } taskId && !await database.Tasks.IgnoreQueryFilters()
                     .AnyAsync(task => task.Id == taskId && task.ProjectId == project.Id, cancellationToken))
                     throw new InvalidOperationException("Activity task must belong to the locked project.");
                 database.ActivityLogs.Add(new ActivityLog
                 {
-                    ProjectId = project.Id, ActorUserId = actorId.Value, TaskId = activity.TaskId,
+                    ProjectId = project.Id, ActorUserId = actorId.Value, TaskId = eventTaskId,
                     ActionType = activity.Action, Details = activity.Details
                 });
             }
@@ -86,15 +87,31 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
         return result;
     }
 
-    private sealed record PendingActivity(ActivityAction Action, string? Details, long? TaskId);
+    private sealed record PendingActivity(ActivityAction Action, string? Details, long? TaskId, TaskItem? Task = null);
 
-    private sealed class Mutation(TaskFlowDbContext database, Project project) : IProjectMutation
+    private sealed class Mutation(TaskFlowDbContext database, Project project, ProjectOperation operation) : IProjectMutation
     {
         public Project Project => project;
         public List<PendingActivity> Events { get; } = [];
 
+        public async Task<TaskItem> CreateTaskAsync(TaskFlow.Application.Features.Tasks.CreateTask request, CancellationToken cancellationToken = default)
+        {
+            if (operation != ProjectOperation.WriteTasks) throw new InvalidOperationException("Task creation requires the task write operation.");
+            if (request.AssigneeId is { } assignee && !await IsEligibleAssigneeAsync(assignee, cancellationToken))
+                throw new TaskFlow.Application.Features.Tasks.TaskValidationException("assigneeId", "Choose the project owner or a current member.");
+            var task = new TaskItem { ProjectId = project.Id, Title = TextRules.Required(request.Title, 200, "title"),
+                Description = TextRules.Optional(request.Description, 10_000, "description"), Priority = request.Priority,
+                Status = TaskState.ToDo, AssigneeId = request.AssigneeId, DueDateUtc = request.DueDateUtc };
+            database.Tasks.Add(task);
+            Events.Add(new(ActivityAction.TaskCreated, null, null, task));
+            if (task.AssigneeId is { } userId) Events.Add(new(ActivityAction.TaskAssigned,
+                JsonSerializer.Serialize(new Dictionary<string, string?> { ["userId"] = userId.ToString(System.Globalization.CultureInfo.InvariantCulture) }), null, task));
+            return task;
+        }
+
         public async Task<(ProjectMember Member, string DisplayName)> AddMemberAsync(long userId, CancellationToken cancellationToken = default)
         {
+            if (operation != ProjectOperation.ManageMembers) throw new InvalidOperationException("Membership changes require the membership operation.");
             if (userId == project.OwnerId || await database.ProjectMembers.AnyAsync(m => m.ProjectId == project.Id && m.UserId == userId, cancellationToken))
                 throw new MembershipException(MembershipFailure.Conflict);
             var user = await database.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.DisplayName }).SingleOrDefaultAsync(cancellationToken)
@@ -107,6 +124,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
 
         public async Task RemoveMemberAsync(long userId, CancellationToken cancellationToken = default)
         {
+            if (operation != ProjectOperation.ManageMembers) throw new InvalidOperationException("Membership changes require the membership operation.");
             if (userId == project.OwnerId) throw new MembershipException(MembershipFailure.Conflict);
             var member = await database.ProjectMembers.SingleOrDefaultAsync(m => m.ProjectId == project.Id && m.UserId == userId, cancellationToken)
                 ?? throw new MembershipException(MembershipFailure.NotFound);

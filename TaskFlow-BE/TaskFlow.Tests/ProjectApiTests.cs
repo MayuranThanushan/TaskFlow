@@ -20,7 +20,7 @@ using TaskFlow.Tests.Fixtures;
 namespace TaskFlow.Tests;
 
 [Collection(MySqlCollection.Name)]
-public sealed class ProjectApiTests(MySqlFixture fixture)
+public sealed partial class ProjectApiTests(MySqlFixture fixture)
 {
     [MySqlFact, Trait("Category", "MySql")]
     public async Task CreationRequiresAuthenticationAndCsrfAndCommitsOwnerAndActivity()
@@ -299,13 +299,14 @@ public sealed class ProjectApiTests(MySqlFixture fixture)
         Assert.True(response.IsSuccessStatusCode, $"Unexpected HTTP {(int)response.StatusCode}");
         return await response.Content.ReadFromJsonAsync<JsonElement>();
     }
-    private static async Task Problem(HttpResponseMessage response, HttpStatusCode status)
+    private static async Task<JsonElement> Problem(HttpResponseMessage response, HttpStatusCode status)
     {
         Assert.Equal(status, response.StatusCode); Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal((int)status, body.GetProperty("status").GetInt32());
         Assert.Equal(response.Headers.GetValues("X-Trace-Id").Single(), body.GetProperty("traceId").GetString());
         Assert.DoesNotContain("stackTrace", body.ToString()); Assert.DoesNotContain("foreign key", body.ToString(), StringComparison.OrdinalIgnoreCase);
+        return body;
     }
     private sealed class FixedClock : TimeProvider { public override DateTimeOffset GetUtcNow() => new(2026, 10, 18, 8, 0, 0, TimeSpan.Zero); }
     private sealed class FailActivity : SaveChangesInterceptor

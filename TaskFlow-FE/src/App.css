@@ -127,3 +127,9 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
 .member-add { display: grid; gap: 12px; margin-top: 24px; max-width: 520px; }
 
 .member-add input { min-height: 44px; padding: 10px 12px; border: 1px solid #b7c6bf; border-radius: 8px; font: inherit; width: 100%; box-sizing: border-box; }
+
+.form-field select { width: 100%; min-height: 44px; padding: 10px; border: 1px solid #ccd6cb; border-radius: 6px; font: inherit; background: white; }
+.task-title { overflow-wrap: anywhere; }
+.task-details { display: grid; gap: 20px; }
+.task-details dt { color: #637060; font-size: 14px; }
+.task-details dd { margin: 6px 0 0; overflow-wrap: anywhere; }

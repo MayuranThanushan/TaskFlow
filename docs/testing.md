@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 70 backend tests (36 requiring MySQL) and 47 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 76 backend tests (42 requiring MySQL) and 57 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -79,3 +79,5 @@ Step 11 adds six live project API tests and fourteen frontend project tests; all
 Step 12 adds two live API/database tests for owner-only replacement, soft deletion, retained rows, no-op history and rollback, plus four frontend edit/confirmation/role/failure tests. All 67 backend and 42 frontend tests pass.
 
 Step 13 adds three live membership HTTP/database tests and five frontend member-panel checks. All 70 backend and 47 frontend tests pass. See [project membership](project-membership.md) for role, concurrency, assignment cleanup and rollback coverage.
+
+Step 14 adds six live task API tests and ten frontend task checks; all 76 backend and 57 frontend tests passed. Coverage includes activity rollback, assignee eligibility/removal races, UTC conversion, visibility, query ordering/paging, form errors and account-switch safety. See [tasks](tasks.md).

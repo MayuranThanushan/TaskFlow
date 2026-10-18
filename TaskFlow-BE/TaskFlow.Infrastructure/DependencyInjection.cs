@@ -34,6 +34,7 @@ public static class DependencyInjection
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        services.AddScoped<TaskFlow.Application.Features.Tasks.ITaskService, TaskService>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();
