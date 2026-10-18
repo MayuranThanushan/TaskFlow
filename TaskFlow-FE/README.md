@@ -13,7 +13,7 @@ npm run build
 npm run lint
 ```
 
-The application includes responsive registration/sign-in screens, cookie session restoration, protected workspace navigation and logout. Project creation, authorized listing/detail, search/sort/pagination and responsive project pages are implemented; see [projects](../docs/projects.md). Owner-only editing and confirmed soft deletion are implemented. Membership and task workflows follow in the delivery backlog. See [frontend authentication](../docs/frontend-authentication.md) for behavior and verification.
+The application includes responsive registration/sign-in screens, cookie session restoration, protected workspace navigation and logout. Project creation, authorized listing/detail, search/sort/pagination and responsive project pages are implemented; see [projects](../docs/projects.md). Owner-only editing and confirmed soft deletion are implemented. Member listing and owner-managed add-by-ID/confirmed removal are implemented; the overview shows your account ID. Task workflows follow in the delivery backlog. See [frontend authentication](../docs/frontend-authentication.md) for behavior and verification.
 
 Keep startup code in src/main.tsx, the shell/routes in src/App.tsx, the shared client in src/api and authentication in src/features/auth, and project pages/data loading in src/features/projects. The development /api proxy and centralized Axios client are configured. Account flows require the [HTTPS setup](../docs/authentication.md#local-https-setup). See [API foundation](../docs/api-foundation.md) for proxy configuration. Do not add secrets to Vite environment variables: client variables are visible in the browser.
 

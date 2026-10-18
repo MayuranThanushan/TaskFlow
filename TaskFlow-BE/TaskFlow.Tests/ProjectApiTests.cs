@@ -211,6 +211,89 @@ public sealed class ProjectApiTests(MySqlFixture fixture)
         await using var db = fixture.CreateContext(); Assert.Equal(1, await db.ActivityLogs.CountAsync(a => a.ProjectId == long.Parse(id)));
     }
 
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task MembershipListingAdditionAndRemovalEnforceRolesAndRevokeAccess()
+    {
+        await using var host = new ProjectHost(fixture); await host.InitializeAsync(); using var owner = await host.LoginAsync(0);
+        using var member = await host.LoginAsync(1); using var outsider = await host.LoginAsync(2); using var anonymous = host.Client();
+        var project = await Body(await host.CreateAsync(owner, "Team")); var id = project.GetProperty("id").GetString()!;
+        var path = "/api/v1/projects/" + id + "/members"; var user = host.Users[1].Id.ToString();
+        await Problem(await outsider.GetAsync(path), HttpStatusCode.NotFound);
+        await Problem(await anonymous.GetAsync(path), HttpStatusCode.Unauthorized);
+        var initial = (await Body(await owner.GetAsync(path))).GetProperty("items"); Assert.Equal(1, initial.GetArrayLength());
+        Assert.Equal("Owner", initial[0].GetProperty("role").GetString()); Assert.Equal(project.GetProperty("createdAtUtc").GetString(), initial[0].GetProperty("joinedAtUtc").GetString());
+        using var csrfMissing = new HttpRequestMessage(HttpMethod.Post, path) { Content = JsonContent.Create(new { userId = user }) };
+        await Problem(await owner.SendAsync(csrfMissing), HttpStatusCode.BadRequest);
+        await Problem(await host.MemberWriteAsync(anonymous, HttpMethod.Post, path, new { userId = user }), HttpStatusCode.Unauthorized);
+        var addedResponse = await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user }); Assert.Equal(HttpStatusCode.Created, addedResponse.StatusCode);
+        var added = await Body(addedResponse); Assert.Equal(user, added.GetProperty("userId").GetString()); Assert.Equal("Member", added.GetProperty("role").GetString());
+        Assert.EndsWith("Z", added.GetProperty("joinedAtUtc").GetString()); Assert.Equal(4, added.EnumerateObject().Count());
+        Assert.Equal(2, (await Body(await member.GetAsync(path))).GetProperty("items").GetArrayLength());
+        await Problem(await host.MemberWriteAsync(member, HttpMethod.Post, path, new { userId = host.Users[2].Id.ToString() }), HttpStatusCode.Forbidden);
+        await Problem(await host.MemberWriteAsync(member, HttpMethod.Delete, path + "/" + user), HttpStatusCode.Forbidden);
+        await Problem(await host.MemberWriteAsync(outsider, HttpMethod.Post, path, new { userId = user }), HttpStatusCode.NotFound);
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user }), HttpStatusCode.Conflict);
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = host.Users[0].Id.ToString() }), HttpStatusCode.Conflict);
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Delete, path + "/" + host.Users[0].Id), HttpStatusCode.Conflict);
+        foreach (var body in new object[] { new { userId = user, role = "Owner" }, new { userId = user, role = (string?)null }, new { userId = "9223372036854775808" }, new { userId = "0" }, new { userId = user, email = "forbidden@example.test" } })
+            await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, body), HttpStatusCode.BadRequest);
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = long.MaxValue.ToString() }), HttpStatusCode.NotFound);
+        Assert.Equal(HttpStatusCode.NoContent, (await host.MemberWriteAsync(owner, HttpMethod.Delete, path + "/" + user)).StatusCode);
+        await Problem(await member.GetAsync(path), HttpStatusCode.NotFound);
+        await Problem(await member.GetAsync("/api/v1/projects/" + id), HttpStatusCode.NotFound);
+        Assert.Equal(0, (await Body(await member.GetAsync("/api/v1/projects"))).GetProperty("totalCount").GetInt32());
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Delete, path + "/" + user), HttpStatusCode.NotFound);
+        Assert.Equal(HttpStatusCode.Created, (await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user, role = "Member" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await host.WriteAsync(owner, HttpMethod.Delete, id)).StatusCode);
+        await Problem(await owner.GetAsync(path), HttpStatusCode.NotFound);
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user }), HttpStatusCode.NotFound);
+    }
+
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task MemberRemovalUnassignsOnlyActiveTasksAndRollsBackWithActivityFailure()
+    {
+        var failure = new FailActivity(); await using var host = new ProjectHost(fixture, failure); await host.InitializeAsync(); using var owner = await host.LoginAsync(0);
+        var id = (await Body(await host.CreateAsync(owner, "Assignments"))).GetProperty("id").GetString()!; var numericId = long.Parse(id);
+        var path = "/api/v1/projects/" + id + "/members"; var user = host.Users[1].Id;
+        failure.Enabled = true;
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user.ToString() }), HttpStatusCode.InternalServerError);
+        await using (var db = fixture.CreateContext()) Assert.False(await db.ProjectMembers.AnyAsync(m => m.ProjectId == numericId));
+        failure.Enabled = false;
+        await Body(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = user.ToString() }));
+        await using (var db = fixture.CreateContext())
+        {
+            db.Tasks.AddRange(new TaskItem { ProjectId = numericId, Title = "Active", AssigneeId = user },
+                new TaskItem { ProjectId = numericId, Title = "Deleted", AssigneeId = user, DeletedAtUtc = DateTime.UtcNow },
+                new TaskItem { ProjectId = numericId, Title = "Owner assigned", AssigneeId = host.Users[0].Id }); await db.SaveChangesAsync();
+        }
+        failure.Enabled = true;
+        await Problem(await host.MemberWriteAsync(owner, HttpMethod.Delete, path + "/" + user), HttpStatusCode.InternalServerError);
+        await using (var db = fixture.CreateContext()) { Assert.True(await db.ProjectMembers.AnyAsync(m => m.ProjectId == numericId)); Assert.Equal(user, (await db.Tasks.SingleAsync(t => t.ProjectId == numericId && t.Title == "Active")).AssigneeId); }
+        failure.Enabled = false;
+        Assert.Equal(HttpStatusCode.NoContent, (await host.MemberWriteAsync(owner, HttpMethod.Delete, path + "/" + user)).StatusCode);
+        await using var database = fixture.CreateContext();
+        var tasks = await database.Tasks.IgnoreQueryFilters().Where(t => t.ProjectId == numericId).ToListAsync();
+        Assert.Null(tasks.Single(t => t.Title == "Active").AssigneeId); Assert.Equal(user, tasks.Single(t => t.Title == "Deleted").AssigneeId);
+        Assert.Equal(host.Users[0].Id, tasks.Single(t => t.Title == "Owner assigned").AssigneeId);
+        var events = await database.ActivityLogs.Where(a => a.ProjectId == numericId).ToListAsync();
+        Assert.Equal(4, events.Count); Assert.Single(events, a => a.ActionType == ActivityAction.MemberRemoved);
+        var unassigned = Assert.Single(events, a => a.ActionType == ActivityAction.TaskUnassigned); Assert.Equal(tasks.Single(t => t.Title == "Active").Id, unassigned.TaskId);
+        Assert.Equal(user.ToString(), JsonDocument.Parse(unassigned.Details!).RootElement.GetProperty("userId").GetString());
+    }
+
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task ConcurrentDuplicateMembershipAddsSerializeAndListOwnerBeforeNumericMemberOrder()
+    {
+        await using var host = new ProjectHost(fixture); await host.InitializeAsync(); using var owner = await host.LoginAsync(0); using var second = await host.LoginAsync(0);
+        var id = (await Body(await host.CreateAsync(owner, "Concurrent"))).GetProperty("id").GetString()!; var path = "/api/v1/projects/" + id + "/members";
+        var body = new { userId = host.Users[2].Id.ToString() };
+        var responses = await Task.WhenAll(host.MemberWriteAsync(owner, HttpMethod.Post, path, body), host.MemberWriteAsync(second, HttpMethod.Post, path, body));
+        Assert.Single(responses, r => r.StatusCode == HttpStatusCode.Created); Assert.Single(responses, r => r.StatusCode == HttpStatusCode.Conflict);
+        await Body(await host.MemberWriteAsync(owner, HttpMethod.Post, path, new { userId = host.Users[1].Id.ToString() }));
+        var items = (await Body(await owner.GetAsync(path))).GetProperty("items");
+        Assert.Equal(new[] { host.Users[0].Id.ToString(), host.Users[1].Id.ToString(), host.Users[2].Id.ToString() }, items.EnumerateArray().Select(i => i.GetProperty("userId").GetString()).ToArray());
+    }
+
     private static async Task<JsonElement> Body(HttpResponseMessage response)
     {
         Assert.True(response.IsSuccessStatusCode, $"Unexpected HTTP {(int)response.StatusCode}");
@@ -282,6 +365,12 @@ public sealed class ProjectApiTests(MySqlFixture fixture)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(method, "/api/v1/projects/" + id) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+            request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
+        }
+        public async Task<HttpResponseMessage> MemberWriteAsync(HttpClient client, HttpMethod method, string path, object? body = null)
+        {
+            var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
+            using var request = new HttpRequestMessage(method, path) { Content = body is null ? null : JsonContent.Create(body) };
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async ValueTask DisposeAsync()

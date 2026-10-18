@@ -14,11 +14,19 @@ const project = (name = 'Launch', id = '9007199254741111'): ProjectDetails => ({
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = '/projects', projects: ProjectDetails[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { projects, listStatus: 200, createStatus: 201, writeStatus: 200, wait: null as Promise<void> | null,
+  const state = { members: [{ userId: profile.id, displayName: profile.displayName, role: 'Owner', joinedAtUtc: '2026-10-18T08:00:00Z' }], memberStatus: 200, memberWait: null as Promise<void> | null, memberCalls: [] as InternalAxiosRequestConfig[], projects, listStatus: 200, createStatus: 201, writeStatus: 200, wait: null as Promise<void> | null,
     currentProfile: { ...profile }, posts: [] as object[], calls: [] as InternalAxiosRequestConfig[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (!config.url?.startsWith('/projects')) return auth.adapter(config)
+    if (config.url.includes('/members')) {
+      state.memberCalls.push(config)
+      if (config.method === 'get') return reply(config, 200, { items: state.members })
+      await state.memberWait
+      if (state.memberStatus !== 200) return reply(config, state.memberStatus)
+      if (config.method === 'post') { const { userId } = JSON.parse(config.data); const added = { userId, displayName: 'Teammate', role: 'Member', joinedAtUtc: '2026-10-18T08:00:00Z' }; state.members.push(added); return reply(config, 201, added) }
+      state.members = state.members.filter(member => !config.url!.endsWith('/' + member.userId)); return reply(config, 204)
+    }
     state.calls.push(config)
     const url = new URL(config.url, 'https://taskflow.test')
     if (config.method === 'post') {
@@ -51,6 +59,43 @@ function setup(path = '/projects', projects: ProjectDetails[] = [], authenticate
 }
 
 describe('Project pages', () => {
+  it('lists owner membership and adds an existing user with a full BIGINT string', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); const user = userEvent.setup()
+    const input = await screen.findByLabelText('Existing user ID'); await user.type(input, '9007199254741999')
+    await user.click(screen.getByRole('button', { name: 'Add member' }))
+    expect(await screen.findByText('Member added.')).toBeVisible(); expect(await screen.findByText('Teammate')).toBeVisible()
+    expect(JSON.parse(state.memberCalls.find(call => call.method === 'post')!.data)).toEqual({ userId: '9007199254741999' })
+    expect(screen.queryByRole('button', { name: 'Remove ' + profile.displayName })).not.toBeInTheDocument()
+  })
+  it('validates an invalid member ID without writing and preserves duplicate input', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); const user = userEvent.setup(); const input = await screen.findByLabelText('Existing user ID')
+    await user.type(input, '0'); await user.click(screen.getByRole('button', { name: 'Add member' })); expect(input).toHaveFocus()
+    expect(state.memberCalls.filter(call => call.method === 'post')).toHaveLength(0)
+    await user.clear(input); await user.type(input, '123'); state.memberStatus = 409
+    await user.click(screen.getByRole('button', { name: 'Add member' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('already the owner or a member'); expect(input).toHaveValue('123')
+  })
+  it('confirms member removal, supports cancellation and prevents duplicate pending writes', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); state.members.push({ userId: '123', displayName: 'Teammate', role: 'Member', joinedAtUtc: '2026-10-18T08:00:00Z' }); const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Remove Teammate' })); expect(screen.getByRole('button', { name: 'Keep member' })).toHaveFocus()
+    await user.keyboard('{Escape}'); expect(state.memberCalls.filter(call => call.method === 'delete')).toHaveLength(0)
+    await user.click(screen.getByRole('button', { name: 'Remove Teammate' })); let release!: () => void; state.memberWait = new Promise<void>(resolve => { release = resolve })
+    await user.dblClick(screen.getByRole('button', { name: 'Confirm removal' })); expect(screen.getByRole('button', { name: 'Removing member...' })).toBeDisabled()
+    expect(state.memberCalls.filter(call => call.method === 'delete')).toHaveLength(1)
+    await act(async () => { release() }); expect(await screen.findByText('Member removed. Their active tasks are now unassigned.')).toBeVisible()
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Remove Teammate' })).not.toBeInTheDocument())
+  })
+  it('shows the membership list to members without mutation controls', async () => {
+    setup('/projects/9007199254741111', [{ ...project(), ownerId: 'other' }])
+    expect(await screen.findByRole('heading', { name: 'Project members' })).toBeVisible()
+    expect(screen.queryByLabelText('Existing user ID')).not.toBeInTheDocument(); expect(screen.queryByRole('button', { name: /Remove / })).not.toBeInTheDocument()
+  })
+  it('retains membership on removal failure and permits retry', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); state.members.push({ userId: '123', displayName: 'Teammate', role: 'Member', joinedAtUtc: '2026-10-18T08:00:00Z' }); state.memberStatus = 500
+    const user = userEvent.setup(); await user.click(await screen.findByRole('button', { name: 'Remove Teammate' })); await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
+    expect(await screen.findByRole('alert')).toBeVisible(); expect(state.members).toHaveLength(2)
+    state.memberStatus = 200; await user.click(screen.getByRole('button', { name: 'Confirm removal' })); expect(await screen.findByText('Member removed. Their active tasks are now unassigned.')).toBeVisible()
+  })
   it('prefills owner editing and replaces the description with null when cleared', async () => {
     const state = setup('/projects/9007199254741111', [project()]); const user = userEvent.setup()
     await user.click(await screen.findByRole('link', { name: 'Edit project' }))

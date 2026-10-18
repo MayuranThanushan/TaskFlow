@@ -1,6 +1,6 @@
 # API contract amendments: implementation baseline
 
-Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF, health/readiness and project create/list/detail/edit/delete are implemented; membership/task/dashboard/activity/profile-update routes remain planned. Unchanged Word specification routes remain in scope.
+Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF, health/readiness and project create/list/detail/edit/delete and membership routes are implemented; task/dashboard/activity/profile-update routes remain planned. Unchanged Word specification routes remain in scope.
 
 ## Common contracts
 

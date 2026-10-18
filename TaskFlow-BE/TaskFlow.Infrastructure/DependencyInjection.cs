@@ -35,6 +35,7 @@ public static class DependencyInjection
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();
         services.AddScoped<IProjectTransactions, ProjectTransactions>();
         services.AddScoped<IAccountService, AccountService>();

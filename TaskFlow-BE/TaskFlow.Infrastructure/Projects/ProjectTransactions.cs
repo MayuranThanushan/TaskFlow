@@ -93,6 +93,33 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
         public Project Project => project;
         public List<PendingActivity> Events { get; } = [];
 
+        public async Task<(ProjectMember Member, string DisplayName)> AddMemberAsync(long userId, CancellationToken cancellationToken = default)
+        {
+            if (userId == project.OwnerId || await database.ProjectMembers.AnyAsync(m => m.ProjectId == project.Id && m.UserId == userId, cancellationToken))
+                throw new MembershipException(MembershipFailure.Conflict);
+            var user = await database.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => new { u.DisplayName }).SingleOrDefaultAsync(cancellationToken)
+                ?? throw new MembershipException(MembershipFailure.NotFound);
+            var member = new ProjectMember { ProjectId = project.Id, UserId = userId };
+            database.ProjectMembers.Add(member);
+            Record(ActivityAction.MemberAdded, new Dictionary<string, string?> { ["userId"] = userId.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+            return (member, user.DisplayName);
+        }
+
+        public async Task RemoveMemberAsync(long userId, CancellationToken cancellationToken = default)
+        {
+            if (userId == project.OwnerId) throw new MembershipException(MembershipFailure.Conflict);
+            var member = await database.ProjectMembers.SingleOrDefaultAsync(m => m.ProjectId == project.Id && m.UserId == userId, cancellationToken)
+                ?? throw new MembershipException(MembershipFailure.NotFound);
+            var tasks = await database.Tasks.Where(t => t.ProjectId == project.Id && t.AssigneeId == userId).OrderBy(t => t.Id).ToListAsync(cancellationToken);
+            foreach (var task in tasks)
+            {
+                task.AssigneeId = null;
+                Record(ActivityAction.TaskUnassigned, new Dictionary<string, string?> { ["userId"] = userId.ToString(System.Globalization.CultureInfo.InvariantCulture) }, task.Id);
+            }
+            database.ProjectMembers.Remove(member);
+            Record(ActivityAction.MemberRemoved, new Dictionary<string, string?> { ["userId"] = userId.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+        }
+
         public void Record(ActivityAction action, IReadOnlyDictionary<string, string?>? details = null, long? taskId = null)
         {
             if (!Enum.IsDefined(action)) throw new ArgumentOutOfRangeException(nameof(action));

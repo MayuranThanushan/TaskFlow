@@ -14,6 +14,8 @@ public interface IProjectTransactions
 public interface IProjectMutation
 {
     Project Project { get; }
+    Task<(ProjectMember Member, string DisplayName)> AddMemberAsync(long userId, CancellationToken cancellationToken = default);
+    Task RemoveMemberAsync(long userId, CancellationToken cancellationToken = default);
     void Record(ActivityAction action, IReadOnlyDictionary<string, string?>? details = null, long? taskId = null);
     Task<bool> IsEligibleAssigneeAsync(long userId, CancellationToken cancellationToken = default);
 }

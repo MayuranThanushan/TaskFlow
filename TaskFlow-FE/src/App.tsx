@@ -75,7 +75,7 @@ function DashboardPage() {
   return <section className="dashboard">
     <p className="eyebrow">Your workspace</p>
     <h1>Welcome back{session.user ? `, ${session.user.displayName}` : ''}.</h1>
-    <p className="intro">A clear view of what comes next.</p>
+    <p className="intro">A clear view of what comes next.</p><p className="muted">Your account ID: {session.user?.id}</p>
     <section className="empty-workspace" aria-labelledby="workspace-title">
       <span className="empty-icon" aria-hidden="true">+</span>
       <h2 id="workspace-title">Room for your next idea.</h2>

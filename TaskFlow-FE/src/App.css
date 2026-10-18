@@ -118,3 +118,12 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
 .project-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
 .button.danger { background: #a32135; color: white; border-color: #a32135; }
 .delete-confirmation { border: 1px solid #a32135; border-radius: 12px; padding: 24px; width: 100%; overflow-wrap: anywhere; }
+
+.project-members { margin: 32px 0; }
+.member-list { list-style: none; padding: 0; }
+.member-list li { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #ddd; padding: 16px 0; }
+.member-list li div { display: grid; gap: 4px; overflow-wrap: anywhere; min-width: 0; }
+.member-list span { font-size: .9rem; }
+.member-add { display: grid; gap: 12px; margin-top: 24px; max-width: 520px; }
+
+.member-add input { min-height: 44px; padding: 10px 12px; border: 1px solid #b7c6bf; border-radius: 8px; font: inherit; width: 100%; box-sizing: border-box; }
