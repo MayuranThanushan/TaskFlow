@@ -308,7 +308,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         Assert.DoesNotContain("stackTrace", body.ToString()); Assert.DoesNotContain("foreign key", body.ToString(), StringComparison.OrdinalIgnoreCase);
         return body;
     }
-    private sealed class FixedClock : TimeProvider { public override DateTimeOffset GetUtcNow() => new(2026, 10, 18, 8, 0, 0, TimeSpan.Zero); }
+    private sealed class FixedClock : TimeProvider { public DateTimeOffset Now { get; set; } = new(2026, 10, 18, 8, 0, 0, TimeSpan.Zero); public override DateTimeOffset GetUtcNow() => Now; }
     private sealed class FailActivity : SaveChangesInterceptor
     {
         public bool Enabled { get; set; }
@@ -324,6 +324,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         private readonly MySqlFixture fixture;
         private readonly WebApplicationFactory<Program> factory;
         public List<ApplicationUser> Users { get; } = [];
+        public FixedClock Clock { get; } = new();
         public ProjectHost(MySqlFixture fixture, IInterceptor? failure = null)
         {
             this.fixture = fixture;
@@ -333,7 +334,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
                 builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString }));
                 builder.ConfigureTestServices(services =>
                 {
-                    services.Replace(ServiceDescriptor.Singleton<TimeProvider>(new FixedClock()));
+                    services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
                     services.AddDataProtection().UseEphemeralDataProtectionProvider();
                     if (failure is not null) services.AddDbContext<TaskFlowDbContext>(options => options.AddInterceptors(failure));
                 });
@@ -372,6 +373,12 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(method, path) { Content = body is null ? null : JsonContent.Create(body) };
+            request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
+        }
+        public async Task<HttpResponseMessage> TaskRawAsync(HttpClient client, string path, string body)
+        {
+            var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
+            using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async ValueTask DisposeAsync()

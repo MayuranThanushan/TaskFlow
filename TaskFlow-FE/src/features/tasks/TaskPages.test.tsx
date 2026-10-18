@@ -13,12 +13,12 @@ const item = (title = 'First task', id = taskId): TaskItem => ({ id, projectId, 
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, createStatus: 201, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
+  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (config.url?.startsWith('/auth/')) return auth.adapter(config)
     const path = new URL(config.url!, 'https://taskflow.test'); state.calls.push(path.pathname)
-    if (path.pathname === base) return reply(config, state.projectStatus, { id: projectId, name: 'Task project', description: null, ownerId: profile.id, createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z', totalTasks: state.tasks.length, completedTasks: 0, progressPercentage: 0 })
+    if (path.pathname === base) return reply(config, state.projectStatus, { id: projectId, name: 'Task project', description: null, ownerId: state.projectOwnerId, createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z', totalTasks: state.tasks.length, completedTasks: 0, progressPercentage: 0 })
     if (path.pathname === base + '/members') return reply(config, 200, { items: [{ userId: profile.id, displayName: 'Alex', role: 'Owner' }, { userId: memberId, displayName: 'Teammate', role: 'Member' }] })
     if (path.pathname === base + '/tasks' && config.method === 'post') {
       const values = JSON.parse(config.data); state.posts.push(values); await state.wait
@@ -31,6 +31,14 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
       const page = Number(path.searchParams.get('page') ?? 1); const pageSize = Number(path.searchParams.get('pageSize') ?? 20)
       return reply(config, 200, { items: items.slice((page - 1) * pageSize, page * pageSize), page, pageSize, totalCount: items.length, totalPages: Math.ceil(items.length / pageSize) })
     }
+    if (config.method === 'patch' || config.method === 'delete') {
+      const data = config.data ? JSON.parse(config.data) : undefined; state.writes.push({ path: path.pathname, method: config.method, data }); await state.writeWait
+      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { errors: { title: ['Please choose a valid title.'] } })
+      const found = state.tasks.find(task => '/tasks/' + task.id === path.pathname.replace(/\/status$/, ''))
+      if (!found) return reply(config, 404)
+      if (config.method === 'delete') { state.tasks = state.tasks.filter(task => task !== found); return reply(config, 204) }
+      Object.assign(found, data); return reply(config, 200, found)
+    }
     const task = state.tasks.find(task => path.pathname === '/tasks/' + task.id)
     return reply(config, state.detailStatus !== 200 ? state.detailStatus : task ? 200 : 404, task)
   })
@@ -38,6 +46,42 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
   return state
 }
 describe('Task pages', () => {
+  it('prefills editing and submits only changed fields while preserving untouched microsecond deadlines', async () => {
+    const state = setup('/tasks/' + taskId, [{ ...item(), description: 'Context', priority: 'High', assigneeId: memberId, dueDateUtc: '2026-11-01T12:00:00.123456Z' }]); const user = userEvent.setup()
+    await user.click(await screen.findByRole('link', { name: 'Edit task' })); expect(await screen.findByLabelText('Task title')).toHaveValue('First task'); expect(screen.getByLabelText('Description (optional)')).toHaveValue('Context')
+    await user.clear(screen.getByLabelText('Task title')); await user.type(screen.getByLabelText('Task title'), 'Renamed'); await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('heading', { name: 'Renamed' })).toBeVisible(); expect(state.writes[0].data).toEqual({ title: 'Renamed' }); expect(screen.getByText('Task updated.')).toBeVisible()
+  })
+  it('clears nullable fields explicitly and skips unchanged edit requests', async () => {
+    const state = setup('/tasks/' + taskId + '/edit', [{ ...item(), description: 'Context', assigneeId: memberId, dueDateUtc: '2026-11-01T12:00:00Z' }]); const user = userEvent.setup()
+    await screen.findByLabelText('Task title'); await user.click(screen.getByRole('button', { name: 'Save changes' })); expect(await screen.findByRole('heading', { name: 'First task' })).toBeVisible(); expect(state.writes).toHaveLength(0)
+    await user.click(screen.getByRole('link', { name: 'Edit task' })); await user.clear(await screen.findByLabelText('Description (optional)')); await waitFor(() => expect(screen.getByLabelText('Assignee')).toBeEnabled()); await user.selectOptions(screen.getByLabelText('Assignee'), ''); fireEvent.change(screen.getByLabelText('Due date and time (optional)'), { target: { value: '' } })
+    await user.click(screen.getByRole('button', { name: 'Save changes' })); expect(await screen.findByRole('heading', { name: 'First task' })).toBeVisible(); expect(state.writes[0].data).toEqual({ description: null, assigneeId: null, dueDateUtc: null })
+  })
+  it('updates status once while pending and reloads detail after success', async () => {
+    const state = setup('/tasks/' + taskId, [item()]); const user = userEvent.setup(); await screen.findByLabelText('Task status')
+    expect(screen.getByRole('button', { name: 'Update status' })).toBeDisabled(); await user.selectOptions(screen.getByLabelText('Task status'), 'Done')
+    let release!: () => void; state.writeWait = new Promise<void>(resolve => { release = resolve }); await user.dblClick(screen.getByRole('button', { name: 'Update status' })); expect(state.writes).toHaveLength(1); expect(screen.getByLabelText('Task status')).toBeDisabled()
+    await act(async () => { release() }); expect(await screen.findByText('Task status updated.')).toBeVisible(); expect(screen.getByLabelText('Task status')).toHaveValue('Done'); expect(state.writes[0].data).toEqual({ status: 'Done' })
+  })
+  it('offers edit and status controls to members but hides owner deletion', async () => {
+    const state = setup('/tasks/' + taskId, [item()]); state.projectOwnerId = 'other'
+    expect(await screen.findByRole('link', { name: 'Edit task' })).toBeVisible(); expect(screen.getByLabelText('Task status')).toBeVisible(); await waitFor(() => expect(state.calls).toContain(base)); expect(screen.queryByRole('button', { name: 'Delete task' })).not.toBeInTheDocument()
+  })
+  it('confirms deletion, permits Escape and removes the task only after success', async () => {
+    const state = setup('/tasks/' + taskId, [item()]); const user = userEvent.setup(); await user.click(await screen.findByRole('button', { name: 'Delete task' })); expect(screen.getByRole('button', { name: 'Keep task' })).toHaveFocus(); await user.keyboard('{Escape}'); expect(state.writes).toHaveLength(0)
+    await user.click(screen.getByRole('button', { name: 'Delete task' })); let release!: () => void; state.writeWait = new Promise<void>(resolve => { release = resolve }); await user.dblClick(screen.getByRole('button', { name: 'Confirm task deletion' })); expect(state.writes).toHaveLength(1); expect(state.tasks).toHaveLength(1)
+    await act(async () => { release() }); expect(await screen.findByText('Task deleted.')).toBeVisible(); expect(await screen.findByRole('heading', { name: 'No tasks yet.' })).toBeVisible()
+  })
+  it('keeps edit input and delete confirmation after failures for explicit retry', async () => {
+    const state = setup('/tasks/' + taskId + '/edit', [item()]); state.writeStatus = 400; const user = userEvent.setup(); await user.clear(await screen.findByLabelText('Task title')); await user.type(screen.getByLabelText('Task title'), 'Retain draft'); await user.click(screen.getByRole('button', { name: 'Save changes' })); const alert = await screen.findByRole('alert'); await waitFor(() => expect(alert).toHaveFocus()); expect(screen.getByLabelText('Task title')).toHaveValue('Retain draft')
+    state.writeStatus = 200; await user.click(screen.getByRole('button', { name: 'Save changes' })); await screen.findByRole('heading', { name: 'Retain draft' }); await user.click(await screen.findByRole('button', { name: 'Delete task' })); state.writeStatus = 500; await user.click(screen.getByRole('button', { name: 'Confirm task deletion' })); expect(await screen.findByRole('alert')).toBeVisible(); expect(state.tasks).toHaveLength(1)
+    state.writeStatus = 200; await user.click(screen.getByRole('button', { name: 'Confirm task deletion' })); expect(await screen.findByText('Task deleted.')).toBeVisible()
+  })
+  it('ignores a pending edit response after an account switch', async () => {
+    const state = setup('/tasks/' + taskId + '/edit', [item()]); const user = userEvent.setup(); await user.clear(await screen.findByLabelText('Task title')); await user.type(screen.getByLabelText('Task title'), 'Private edit'); let release!: () => void; state.writeWait = new Promise<void>(resolve => { release = resolve }); await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    state.currentProfile = { ...profile, id: 'other', displayName: 'Other' }; state.detailStatus = 404; fireEvent(window, new Event('focus')); expect(await screen.findByRole('heading', { name: 'Task or project not available.' })).toBeVisible(); await act(async () => { release() }); expect(screen.getByTestId('location')).toHaveTextContent('/tasks/' + taskId + '/edit'); expect(screen.queryByDisplayValue('Private edit')).not.toBeInTheDocument()
+  })
   it('protects task creation before issuing any project request', async () => {
     const state = setup(base + '/tasks/new', [], false)
     expect(await screen.findByRole('heading', { name: 'Sign in to TaskFlow' })).toBeVisible(); expect(state.calls).toHaveLength(0)

@@ -14,6 +14,9 @@ public interface IProjectTransactions
 public interface IProjectMutation
 {
     Project Project { get; }
+    Task<TaskItem> UpdateTaskAsync(long taskId, TaskFlow.Application.Features.Tasks.TaskPatch patch, CancellationToken cancellationToken = default);
+    Task<TaskItem> SetTaskStatusAsync(long taskId, TaskState status, CancellationToken cancellationToken = default);
+    Task DeleteTaskAsync(long taskId, CancellationToken cancellationToken = default);
     Task<TaskItem> CreateTaskAsync(TaskFlow.Application.Features.Tasks.CreateTask request, CancellationToken cancellationToken = default);
     Task<(ProjectMember Member, string DisplayName)> AddMemberAsync(long userId, CancellationToken cancellationToken = default);
     Task RemoveMemberAsync(long userId, CancellationToken cancellationToken = default);

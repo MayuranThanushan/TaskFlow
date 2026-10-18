@@ -51,7 +51,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
 
         var originalId = project.Id;
         var ownerId = project.OwnerId;
-        var boundary = new Mutation(database, project, operation);
+        var boundary = new Mutation(database, project, operation, scope.ServiceProvider.GetRequiredService<TimeProvider>());
         if (projectId is null) boundary.Record(ActivityAction.ProjectCreated);
         var result = await mutation(boundary, cancellationToken);
         if (project.Id != originalId || project.OwnerId != ownerId)
@@ -89,10 +89,60 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
 
     private sealed record PendingActivity(ActivityAction Action, string? Details, long? TaskId, TaskItem? Task = null);
 
-    private sealed class Mutation(TaskFlowDbContext database, Project project, ProjectOperation operation) : IProjectMutation
+    private sealed class Mutation(TaskFlowDbContext database, Project project, ProjectOperation operation, TimeProvider clock) : IProjectMutation
     {
         public Project Project => project;
         public List<PendingActivity> Events { get; } = [];
+
+        private async Task<TaskItem> TaskForWriteAsync(long taskId, ProjectOperation expected, CancellationToken cancellationToken)
+        {
+            if (operation != expected) throw new InvalidOperationException("Incorrect task mutation operation.");
+            return await database.Tasks.SingleOrDefaultAsync(t => t.Id == taskId && t.ProjectId == project.Id, cancellationToken)
+                ?? throw new ProjectAccessException(ProjectAccessDecision.NotFound);
+        }
+
+        public async Task<TaskItem> UpdateTaskAsync(long taskId, TaskFlow.Application.Features.Tasks.TaskPatch patch, CancellationToken cancellationToken = default)
+        {
+            var task = await TaskForWriteAsync(taskId, ProjectOperation.WriteTasks, cancellationToken);
+            var title = patch.Title.IsSpecified ? TextRules.Required(patch.Title.Value!, 200, "title") : task.Title;
+            var description = patch.Description.IsSpecified ? TextRules.Optional(patch.Description.Value, 10_000, "description") : task.Description;
+            var priority = patch.Priority.IsSpecified ? patch.Priority.Value : task.Priority;
+            var assignee = patch.AssigneeId.IsSpecified ? patch.AssigneeId.Value : task.AssigneeId;
+            var due = patch.DueDateUtc.IsSpecified ? patch.DueDateUtc.Value : task.DueDateUtc;
+            if (!Enum.IsDefined(priority)) throw new ArgumentException("Unsupported priority.");
+            if (assignee is { } user && !await IsEligibleAssigneeAsync(user, cancellationToken))
+                throw new TaskFlow.Application.Features.Tasks.TaskValidationException("assigneeId", "Choose the project owner or a current member.");
+            var edited = title != task.Title || description != task.Description || priority != task.Priority || due != task.DueDateUtc;
+            if (edited) Record(ActivityAction.TaskUpdated, taskId: task.Id);
+            if (assignee != task.AssigneeId)
+            {
+                if (task.AssigneeId is { } previous) Record(ActivityAction.TaskUnassigned,
+                    new Dictionary<string, string?> { ["userId"] = previous.ToString(System.Globalization.CultureInfo.InvariantCulture) }, task.Id);
+                if (assignee is { } next) Record(ActivityAction.TaskAssigned,
+                    new Dictionary<string, string?> { ["userId"] = next.ToString(System.Globalization.CultureInfo.InvariantCulture) }, task.Id);
+            }
+            task.Title = title; task.Description = description; task.Priority = priority; task.AssigneeId = assignee; task.DueDateUtc = due;
+            return task;
+        }
+
+        public async Task<TaskItem> SetTaskStatusAsync(long taskId, TaskState status, CancellationToken cancellationToken = default)
+        {
+            var task = await TaskForWriteAsync(taskId, ProjectOperation.WriteTasks, cancellationToken);
+            if (!Enum.IsDefined(status)) throw new ArgumentException("Unsupported status.");
+            if (task.Status != status)
+            {
+                Record(ActivityAction.TaskStatusChanged, new Dictionary<string, string?> { ["from"] = task.Status.ToString(), ["to"] = status.ToString() }, task.Id);
+                task.Status = status;
+            }
+            return task;
+        }
+
+        public async Task DeleteTaskAsync(long taskId, CancellationToken cancellationToken = default)
+        {
+            var task = await TaskForWriteAsync(taskId, ProjectOperation.DeleteTasks, cancellationToken);
+            task.DeletedAtUtc = clock.GetUtcNow().UtcDateTime;
+            Record(ActivityAction.TaskDeleted, taskId: task.Id);
+        }
 
         public async Task<TaskItem> CreateTaskAsync(TaskFlow.Application.Features.Tasks.CreateTask request, CancellationToken cancellationToken = default)
         {

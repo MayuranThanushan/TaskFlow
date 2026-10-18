@@ -9,6 +9,30 @@ namespace TaskFlow.Infrastructure.Projects;
 
 public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions transactions) : ITaskService
 {
+    private async Task<long> ParentAsync(long? actorId, long taskId, CancellationToken cancellationToken)
+    {
+        var actor = Actor(actorId);
+        return await Visible(actor).Where(t => t.Id == taskId).Select(t => (long?)t.ProjectId).SingleOrDefaultAsync(cancellationToken)
+            ?? throw new ProjectAccessException(ProjectAccessDecision.NotFound);
+    }
+    public async Task<TaskDto> UpdateAsync(long? actorId, long taskId, TaskPatch patch, CancellationToken cancellationToken = default)
+    {
+        if (!patch.Title.IsSpecified && !patch.Description.IsSpecified && !patch.Priority.IsSpecified && !patch.AssigneeId.IsSpecified && !patch.DueDateUtc.IsSpecified)
+            throw new TaskValidationException("body", "Supply at least one editable field.");
+        var parent = await ParentAsync(actorId, taskId, cancellationToken);
+        return Map(await transactions.ExecuteAsync(actorId, parent, ProjectOperation.WriteTasks, (scope, ct) => scope.UpdateTaskAsync(taskId, patch, ct), cancellationToken));
+    }
+    public async Task<TaskStatusDto> SetStatusAsync(long? actorId, long taskId, TaskState status, CancellationToken cancellationToken = default)
+    {
+        var parent = await ParentAsync(actorId, taskId, cancellationToken);
+        var task = await transactions.ExecuteAsync(actorId, parent, ProjectOperation.WriteTasks, (scope, ct) => scope.SetTaskStatusAsync(taskId, status, ct), cancellationToken);
+        return new(task.Id.ToString(CultureInfo.InvariantCulture), task.Status.ToString(), task.UpdatedAtUtc);
+    }
+    public async Task DeleteAsync(long? actorId, long taskId, CancellationToken cancellationToken = default)
+    {
+        var parent = await ParentAsync(actorId, taskId, cancellationToken);
+        await transactions.ExecuteAsync(actorId, parent, ProjectOperation.DeleteTasks, async (scope, ct) => { await scope.DeleteTaskAsync(taskId, ct); return true; }, cancellationToken);
+    }
     public async Task<TaskDto> CreateAsync(long? actorId, long projectId, CreateTask request, CancellationToken cancellationToken = default)
     {
         var task = await transactions.ExecuteAsync(actorId, projectId, ProjectOperation.WriteTasks,

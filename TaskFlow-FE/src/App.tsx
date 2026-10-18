@@ -7,7 +7,7 @@ import { AuthProvider } from './features/auth/AuthProvider'
 import { useAuth } from './features/auth/auth-context'
 import { GuestRoute, ProtectedRoute } from './features/auth/RouteGates'
 import { AuthPage } from './features/auth/AuthPage'
-import { TasksPage, NewTaskPage, TaskDetailPage } from './features/tasks/TaskPages'
+import { TasksPage, NewTaskPage, TaskDetailPage, EditTaskPage } from './features/tasks/TaskPages'
 import './App.css'
 
 function AppLayout() {
@@ -103,6 +103,7 @@ export default function App({ client = api }: { client?: ApiClient }) {
       <Route path="projects/new" element={<NewProjectPage client={client} />} />
       <Route path="projects/:projectId/tasks" element={<TasksPage client={client} />} />
       <Route path="projects/:projectId/tasks/new" element={<NewTaskPage client={client} />} />
+      <Route path="tasks/:taskId/edit" element={<EditTaskPage client={client} />} />
       <Route path="tasks/:taskId" element={<TaskDetailPage client={client} />} />
       <Route path="projects/:projectId/edit" element={<EditProjectPage client={client} />} />
       <Route path="projects/:projectId" element={<ProjectDetailPage client={client} />} />

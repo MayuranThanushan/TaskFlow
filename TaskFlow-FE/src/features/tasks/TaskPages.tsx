@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../auth/auth-context'
 import { asApiError } from '../../api/client'
 import type { ApiClient } from '../../api/client'
 import type { FieldErrors } from '../../api/types'
@@ -23,12 +24,14 @@ function TaskQuery({ params, apply }: { params: URLSearchParams; apply: (next: U
   </form>
 }
 export function TasksPage({ client }: { client: ApiClient }) {
+  const location = useLocation()
   const { projectId = '' } = useParams(); const [params, setParams] = useSearchParams(); const query = params.toString()
   const path = '/projects/' + encodeURIComponent(projectId)
   const { result, retry } = useProjectResource<TaskPage>(client, path + '/tasks' + (query ? '?' + query : ''))
   const page = (value: number) => { const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next) }
   return <section className="projects-page"><Link className="text-link" to={path}>Back to project</Link>
     <div className="page-heading"><div><p className="eyebrow">Project work</p><h1>Tasks</h1></div><Link className="button primary" to={path + '/tasks/new'}>New task</Link></div>
+    {location.state?.deleted && <p role="status" className="notice">Task deleted.</p>}
     <TaskQuery key={query} params={params} apply={setParams} />
     {result.status === 'loading' && <p role="status">Loading tasks...</p>}
     {result.status === 'error' && <Failure status={result.error.status} message={result.error.message} retry={retry} />}
@@ -45,11 +48,27 @@ export function NewTaskPage({ client }: { client: ApiClient }) {
   return result.status === 'loading' ? <p role="status">Loading project...</p> : result.status === 'error' ? <><Link to="/projects">Back to projects</Link><Failure status={result.error.status} message={result.error.message} retry={retry} /></>
     : <TaskForm key={projectId} client={client} project={result.data} />
 }
-function TaskForm({ client, project }: { client: ApiClient; project: ProjectDetails }) {
+export function EditTaskPage({ client }: { client: ApiClient }) {
+  const { taskId = '' } = useParams()
+  const { result, retry } = useProjectResource<TaskItem>(client, '/tasks/' + encodeURIComponent(taskId))
+  return result.status === 'loading' ? <p role="status">Loading task...</p> : result.status === 'error' ? <><Link to="/projects">Back to projects</Link><Failure status={result.error.status} message={result.error.message} retry={retry} /></>
+    : <EditTaskForm key={taskId} client={client} task={result.data} />
+}
+function EditTaskForm({ client, task }: { client: ApiClient; task: TaskItem }) {
+  const { result, retry } = useProjectResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(task.projectId))
+  return result.status === 'loading' ? <p role="status">Loading project...</p> : result.status === 'error' ? <Failure status={result.error.status} message={result.error.message} retry={retry} />
+    : <TaskForm client={client} project={result.data} initial={task} />
+}
+function localDeadline(value: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 23)
+}
+function TaskForm({ client, project, initial }: { client: ApiClient; project: ProjectDetails; initial?: TaskItem }) {
   const navigate = useNavigate(); const path = '/projects/' + encodeURIComponent(project.id)
   const members = useProjectResource<{ items: { userId: string; displayName: string; role: string }[] }>(client, path + '/members')
-  const [title, setTitle] = useState(''); const [description, setDescription] = useState(''); const [priority, setPriority] = useState('Medium')
-  const [assignee, setAssignee] = useState(''); const [due, setDue] = useState(''); const [fields, setFields] = useState<FieldErrors>({})
+  const [title, setTitle] = useState(initial?.title ?? ''); const [description, setDescription] = useState(initial?.description ?? ''); const [priority, setPriority] = useState(initial?.priority ?? 'Medium')
+  const [assignee, setAssignee] = useState(initial?.assigneeId ?? ''); const [due, setDue] = useState(localDeadline(initial?.dueDateUtc ?? null)); const [fields, setFields] = useState<FieldErrors>({})
   const [error, setError] = useState(''); const [pending, setPending] = useState(false)
   const alive = useRef(true); const lock = useRef(false); const summary = useRef<HTMLDivElement>(null)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
@@ -63,23 +82,34 @@ function TaskForm({ client, project }: { client: ApiClient; project: ProjectDeta
     if (Object.keys(errors).length) { (event.currentTarget.elements.namedItem(Object.keys(errors)[0]) as HTMLElement)?.focus(); return }
     lock.current = true; setPending(true)
     try {
-      const task = await client.request<TaskItem>({ url: path + '/tasks', method: 'post', data: { title: title.trim(), description: description.trim() || null, priority, assigneeId: assignee || null, dueDateUtc: parsed?.toISOString() ?? null } })
-      if (alive.current) navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: { created: true } })
+      const values = { title: title.trim(), description: description.trim() || null, priority, assigneeId: assignee || null, dueDateUtc: parsed?.toISOString() ?? null }
+      const data: Record<string, unknown> = initial ? {} : values
+      if (initial) {
+        if (values.title !== initial.title) data.title = values.title
+        if (values.description !== initial.description) data.description = values.description
+        if (values.priority !== initial.priority) data.priority = values.priority
+        if (values.assigneeId !== initial.assigneeId) data.assigneeId = values.assigneeId
+        // Omit an untouched deadline to preserve microseconds and ambiguous local instants.
+        if (due !== localDeadline(initial.dueDateUtc)) data.dueDateUtc = values.dueDateUtc
+        if (Object.keys(data).length === 0) { navigate('/tasks/' + encodeURIComponent(initial.id), { replace: true }); return }
+      }
+      const task = await client.request<TaskItem>({ url: initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks', method: initial ? 'patch' : 'post', data })
+      if (alive.current) navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: initial ? { updated: true } : { created: true } })
     } catch (failure) { if (alive.current) { const problem = asApiError(failure); setError(problem.message); setFields(problem.fields); window.setTimeout(() => summary.current?.focus(), 0) } }
     finally { lock.current = false; if (alive.current) setPending(false) }
   }
   const clearField = (field: string) => setFields(previous => ({ ...previous, [field]: [] }))
   const fieldError = (field: string) => fields[field]?.length ? <p className="field-error" id={field + '-error'}>{fields[field].join(' ')}</p> : null
-  return <section className="projects-page project-form-page"><Link className="text-link" to={path + '/tasks'}>Back to tasks</Link><div className="page-heading"><div><p className="eyebrow">{project.name}</p><h1>Create a task</h1></div></div>
+  return <section className="projects-page project-form-page"><Link className="text-link" to={path + '/tasks'}>Back to tasks</Link><div className="page-heading"><div><p className="eyebrow">{project.name}</p><h1>{initial ? 'Edit task' : 'Create a task'}</h1></div></div>
     <div className="project-form-card">{error && <div ref={summary} tabIndex={-1} className="error-summary" role="alert">{error}</div>}
       <form noValidate onSubmit={submit} aria-busy={pending}><fieldset disabled={pending}>
         <div className="form-field"><label htmlFor="task-title">Task title</label><input id="task-title" name="title" maxLength={200} value={title} onChange={event => { setTitle(event.target.value); clearField('title') }} aria-invalid={!!fields.title?.length} aria-describedby={fields.title?.length ? 'title-error' : undefined} />{fieldError('title')}</div>
         <div className="form-field"><label htmlFor="task-description">Description (optional)</label><textarea id="task-description" name="description" maxLength={10_000} rows={6} value={description} onChange={event => { setDescription(event.target.value); clearField('description') }} aria-invalid={!!fields.description?.length} aria-describedby={fields.description?.length ? 'description-error' : undefined} />{fieldError('description')}</div>
-        <div className="form-field"><label htmlFor="task-priority">Priority</label><select id="task-priority" name="priority" value={priority} onChange={event => { setPriority(event.target.value); clearField('priority') }} aria-invalid={!!fields.priority?.length} aria-describedby={fields.priority?.length ? 'priority-error' : undefined}>{['Low', 'Medium', 'High'].map(value => <option key={value}>{value}</option>)}</select>{fieldError('priority')}</div>
-        <div className="form-field"><label htmlFor="task-assignee">Assignee</label><select id="task-assignee" name="assigneeId" value={assignee} disabled={members.result.status !== 'ready'} onChange={event => { setAssignee(event.target.value); clearField('assigneeId') }} aria-invalid={!!fields.assigneeId?.length} aria-describedby={fields.assigneeId?.length ? 'assigneeId-error' : undefined}><option value="">Unassigned</option>{members.result.status === 'ready' && members.result.data.items.map(member => <option key={member.userId} value={member.userId}>{member.displayName} ({member.role})</option>)}</select>{fieldError('assigneeId')}
-          {members.result.status === 'loading' && <p role="status">Loading assignees...</p>}{members.result.status === 'error' && <div><p role="alert">Could not load assignees. You can create an unassigned task.</p><button className="button subtle" type="button" onClick={members.retry}>Retry assignees</button></div>}</div>
-        <div className="form-field"><label htmlFor="task-due">Due date and time (optional)</label><input id="task-due" name="dueDateUtc" type="datetime-local" step="1" value={due} onChange={event => { setDue(event.target.value); clearField('dueDateUtc') }} aria-invalid={!!fields.dueDateUtc?.length} aria-describedby={fields.dueDateUtc?.length ? 'dueDateUtc-error' : 'task-timezone'} /><p id="task-timezone" className="field-hint">Your local time ({Intl.DateTimeFormat().resolvedOptions().timeZone}). Saved in UTC.</p>{fieldError('dueDateUtc')}</div>
-        <div className="form-actions"><button className="button primary" type="submit">{pending ? 'Creating task...' : 'Create task'}</button><button className="button subtle" type="button" onClick={() => navigate(path + '/tasks')}>Cancel</button></div>
+        <div className="form-field"><label htmlFor="task-priority">Priority</label><select id="task-priority" name="priority" value={priority} onChange={event => { setPriority(event.target.value as TaskItem['priority']); clearField('priority') }} aria-invalid={!!fields.priority?.length} aria-describedby={fields.priority?.length ? 'priority-error' : undefined}>{['Low', 'Medium', 'High'].map(value => <option key={value}>{value}</option>)}</select>{fieldError('priority')}</div>
+        <div className="form-field"><label htmlFor="task-assignee">Assignee</label><select id="task-assignee" name="assigneeId" value={assignee} disabled={members.result.status !== 'ready'} onChange={event => { setAssignee(event.target.value); clearField('assigneeId') }} aria-invalid={!!fields.assigneeId?.length} aria-describedby={fields.assigneeId?.length ? 'assigneeId-error' : undefined}><option value="">Unassigned</option>{assignee && (members.result.status !== 'ready' || !members.result.data.items.some(member => member.userId === assignee)) && <option value={assignee}>Current assignee ({assignee})</option>}{members.result.status === 'ready' && members.result.data.items.map(member => <option key={member.userId} value={member.userId}>{member.displayName} ({member.role})</option>)}</select>{fieldError('assigneeId')}
+          {members.result.status === 'loading' && <p role="status">Loading assignees...</p>}{members.result.status === 'error' && <div><p role="alert">Could not load assignees. Retry to choose an assignee.</p><button className="button subtle" type="button" onClick={members.retry}>Retry assignees</button></div>}</div>
+        <div className="form-field"><label htmlFor="task-due">Due date and time (optional)</label><input id="task-due" name="dueDateUtc" type="datetime-local" step="0.001" value={due} onChange={event => { setDue(event.target.value); clearField('dueDateUtc') }} aria-invalid={!!fields.dueDateUtc?.length} aria-describedby={fields.dueDateUtc?.length ? 'dueDateUtc-error' : 'task-timezone'} /><p id="task-timezone" className="field-hint">Your local time ({Intl.DateTimeFormat().resolvedOptions().timeZone}). Saved in UTC.</p>{fieldError('dueDateUtc')}</div>
+        <div className="form-actions"><button className="button primary" type="submit">{pending ? initial ? 'Saving changes...' : 'Creating task...' : initial ? 'Save changes' : 'Create task'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks')}>Cancel</button></div>
       </fieldset></form>
     </div>
   </section>
@@ -91,9 +121,40 @@ export function TaskDetailPage({ client }: { client: ApiClient }) {
   useEffect(() => { document.title = title ? title + ' | TaskFlow' : 'Task | TaskFlow' }, [title])
   return <section className="projects-page"><Link className="text-link" to={result.status === 'ready' ? '/projects/' + encodeURIComponent(result.data.projectId) + '/tasks' : '/projects'}>{result.status === 'ready' ? 'Back to tasks' : 'Back to projects'}</Link>
     {result.status === 'loading' && <p role="status">Loading task...</p>}{result.status === 'error' && <Failure status={result.error.status} message={result.error.message} retry={retry} />}
-    {result.status === 'ready' && <>{location.state?.created && <p role="status" className="notice">Task created.</p>}<div className="page-heading"><h1 className="task-title">{result.data.title}</h1></div>
+    {result.status === 'ready' && <>{location.state?.created && <p role="status" className="notice">Task created.</p>}{location.state?.updated && <p role="status" className="notice">Task updated.</p>}{location.state?.statusUpdated && <p role="status" className="notice">Task status updated.</p>}<div className="page-heading"><h1 className="task-title">{result.data.title}</h1></div>
+      <TaskActions key={taskId} client={client} task={result.data} refresh={retry} />
       <section className="project-about"><h2>Task details</h2><p className="project-description">{result.data.description || 'No description added.'}</p><dl className="task-details"><div><dt>Status</dt><dd>{statusText[result.data.status]}</dd></div><div><dt>Priority</dt><dd>{result.data.priority}</dd></div><div><dt>Assignee ID</dt><dd>{result.data.assigneeId ?? 'Unassigned'}</dd></div><div><dt>Deadline</dt><dd>{deadline(result.data.dueDateUtc)}</dd></div><div><dt>Created</dt><dd>{new Date(result.data.createdAtUtc).toLocaleString()}</dd></div></dl><p className="field-hint">Times are shown in your local time zone.</p></section>
       <Link className="text-link" to={'/projects/' + encodeURIComponent(result.data.projectId)}>View project progress</Link>
     </>}
+  </section>
+}
+
+function TaskActions({ client, task, refresh }: { client: ApiClient; task: TaskItem; refresh: () => void }) {
+  const { session } = useAuth(); const navigate = useNavigate()
+  const project = useProjectResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(task.projectId))
+  const [status, setStatus] = useState(task.status); const [confirm, setConfirm] = useState(false)
+  const [pending, setPending] = useState(false); const [error, setError] = useState('')
+  const alive = useRef(true); const lock = useRef(false); const cancel = useRef<HTMLButtonElement>(null); const trigger = useRef<HTMLButtonElement>(null)
+  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
+  useEffect(() => { if (confirm) cancel.current?.focus() }, [confirm])
+  async function mutate(remove: boolean) {
+    if (lock.current) return
+    lock.current = true; setPending(true); setError('')
+    try {
+      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + (remove ? '' : '/status'), method: remove ? 'delete' : 'patch', ...(remove ? {} : { data: { status } }) })
+      if (!alive.current) return
+      if (remove) navigate('/projects/' + encodeURIComponent(task.projectId) + '/tasks', { replace: true, state: { deleted: true } })
+      else { navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: { statusUpdated: true } }); refresh() }
+    } catch (failure) { if (alive.current) setError(asApiError(failure).message) }
+    finally { lock.current = false; if (alive.current) setPending(false) }
+  }
+  function dismiss() { if (!lock.current) { setConfirm(false); setError(''); window.setTimeout(() => trigger.current?.focus(), 0) } }
+  return <section className="task-actions" aria-label="Task actions">
+    {error && <p role="alert" className="error-summary">{error}</p>}
+    <div className="form-actions"><Link className="button subtle" to={'/tasks/' + encodeURIComponent(task.id) + '/edit'}>Edit task</Link>
+      {project.result.status === 'ready' && project.result.data.ownerId === session.user?.id && <button ref={trigger} className="button danger" disabled={pending || confirm} onClick={() => setConfirm(true)}>Delete task</button>}</div>
+    {project.result.status === 'error' && <button className="button subtle" onClick={project.retry}>Retry owner controls</button>}
+    {!confirm && <form className="task-status" onSubmit={event => { event.preventDefault(); void mutate(false) }}><label htmlFor="task-status">Task status</label><select id="task-status" value={status} disabled={pending} onChange={event => setStatus(event.target.value as TaskItem['status'])}>{Object.entries(statusText).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select><button className="button primary" disabled={pending || status === task.status}>{pending ? 'Updating status...' : 'Update status'}</button></form>}
+    {confirm && <section className="delete-confirmation" aria-labelledby="delete-task-heading" onKeyDown={event => { if (event.key === 'Escape') dismiss() }}><h2 id="delete-task-heading">Delete this task?</h2><p>Deleting <strong>{task.title}</strong> removes it from task lists and project progress. This cannot be undone here.</p><div className="form-actions"><button ref={cancel} className="button subtle" disabled={pending} onClick={dismiss}>Keep task</button><button className="button danger" disabled={pending} onClick={() => void mutate(true)}>{pending ? 'Deleting task...' : 'Confirm task deletion'}</button></div></section>}
   </section>
 }

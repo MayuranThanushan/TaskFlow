@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow.Application.Features.Tasks;
 using TaskFlow.Domain.Entities;
@@ -17,13 +18,7 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         TryId(projectId, "projectId", out var project);
         long? assignee = null; DateTime? due = null;
         if (request.AssigneeId is not null && TryId(request.AssigneeId, "assigneeId", out var user)) assignee = user;
-        if (request.DueDateUtc is not null)
-        {
-            if (!Regex.IsMatch(request.DueDateUtc, @"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})$")
-                || !DateTimeOffset.TryParse(request.DueDateUtc, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) || parsed.UtcDateTime.Year < 1000)
-                ModelState.AddModelError("dueDateUtc", "Enter an ISO timestamp with Z or an explicit offset, within UTC years 1000-9999.");
-            else due = new DateTime(parsed.UtcTicks - parsed.UtcTicks % 10, DateTimeKind.Utc);
-        }
+        due = Deadline(request.DueDateUtc);
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         var task = await tasks.CreateAsync(Actor(), project, new(request.Title, request.Description, request.Priority, assignee, due), cancellationToken);
         return CreatedAtAction(nameof(Get), new { taskId = task.Id }, task);
@@ -51,6 +46,84 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         if (query.Priority is not null) { if (Enum.TryParse<TaskPriority>(query.Priority, false, out var value) && Enum.IsDefined(value) && value.ToString() == query.Priority) priority = value; else ModelState.AddModelError("priority", "Choose Low, Medium or High."); }
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         return Ok(await tasks.ListAsync(Actor(), project, new(query.Page, query.PageSize, query.Search, status, priority, assignee, query.SortBy, query.SortDirection), cancellationToken));
+    }
+    [HttpPatch("api/v1/tasks/{taskId}")]
+    public async Task<IActionResult> Update(string taskId, [FromBody] JsonElement body, CancellationToken cancellationToken)
+    {
+        TryId(taskId, "taskId", out var id);
+        var fields = Fields(body, ["title", "description", "priority", "assigneeId", "dueDateUtc"]);
+        FieldChange<string?> title = default, description = default;
+        FieldChange<TaskPriority> priority = default;
+        FieldChange<long?> assignee = default; FieldChange<DateTime?> due = default;
+        if (fields.TryGetValue("title", out var t)) title = new(true, Text(t, "title", false, 200));
+        if (fields.TryGetValue("description", out var d)) description = new(true, Text(d, "description", true, 10_000));
+        if (fields.TryGetValue("priority", out var p))
+        {
+            if (p.ValueKind != JsonValueKind.String || !Enum.TryParse<TaskPriority>(p.GetString(), false, out var value) || !Enum.IsDefined(value) || value.ToString() != p.GetString())
+                ModelState.AddModelError("priority", "Choose Low, Medium or High.");
+            else priority = new(true, value);
+        }
+        if (fields.TryGetValue("assigneeId", out var a))
+        {
+            long? user = null;
+            if (a.ValueKind != JsonValueKind.Null)
+            {
+                if (a.ValueKind != JsonValueKind.String) ModelState.AddModelError("assigneeId", "Supply a decimal string ID or null.");
+                else if (TryId(a.GetString()!, "assigneeId", out var parsed)) user = parsed;
+            }
+            assignee = new(true, user);
+        }
+        if (fields.TryGetValue("dueDateUtc", out var date))
+        {
+            if (date.ValueKind is not (JsonValueKind.String or JsonValueKind.Null)) ModelState.AddModelError("dueDateUtc", "Supply an ISO timestamp or null.");
+            else due = new(true, Deadline(date.ValueKind == JsonValueKind.Null ? null : date.GetString()));
+        }
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return Ok(await tasks.UpdateAsync(Actor(), id, new(title, description, priority, assignee, due), cancellationToken));
+    }
+    [HttpPatch("api/v1/tasks/{taskId}/status")]
+    public async Task<IActionResult> SetStatus(string taskId, [FromBody] JsonElement body, CancellationToken cancellationToken)
+    {
+        TryId(taskId, "taskId", out var id); var fields = Fields(body, ["status"]); var status = TaskState.ToDo;
+        if (!fields.TryGetValue("status", out var value) || value.ValueKind != JsonValueKind.String
+            || !Enum.TryParse(value.GetString(), false, out status) || !Enum.IsDefined(status) || status.ToString() != value.GetString())
+            ModelState.AddModelError("status", "Choose ToDo, InProgress or Done.");
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return Ok(await tasks.SetStatusAsync(Actor(), id, status, cancellationToken));
+    }
+    [HttpDelete("api/v1/tasks/{taskId}")]
+    public async Task<IActionResult> Delete(string taskId, CancellationToken cancellationToken)
+    {
+        if (!TryId(taskId, "taskId", out var id)) return ValidationProblem(ModelState);
+        await tasks.DeleteAsync(Actor(), id, cancellationToken); return NoContent();
+    }
+    private Dictionary<string, JsonElement> Fields(JsonElement body, string[] allowed)
+    {
+        var fields = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        if (body.ValueKind != JsonValueKind.Object) { ModelState.AddModelError("body", "Supply a JSON object."); return fields; }
+        foreach (var property in body.EnumerateObject())
+        {
+            if (!allowed.Contains(property.Name, StringComparer.Ordinal)) ModelState.AddModelError(property.Name, "Unsupported field.");
+            if (!fields.TryAdd(property.Name, property.Value)) ModelState.AddModelError(property.Name, "Duplicate field.");
+        }
+        if (fields.Count == 0) ModelState.AddModelError("body", "Supply at least one editable field.");
+        return fields;
+    }
+    private string? Text(JsonElement value, string field, bool nullable, int limit)
+    {
+        if (nullable && value.ValueKind == JsonValueKind.Null) return null;
+        if (value.ValueKind != JsonValueKind.String) { ModelState.AddModelError(field, "Supply a text value."); return null; }
+        var text = value.GetString()!.Trim();
+        if (text.Length > limit || !nullable && text.Length == 0) ModelState.AddModelError(field, $"Enter {(nullable ? "up to" : "between 1 and")} {limit} characters.");
+        return nullable && text.Length == 0 ? null : text;
+    }
+    private DateTime? Deadline(string? text)
+    {
+        if (text is null) return null;
+        if (!Regex.IsMatch(text, @"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})$")
+            || !DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) || parsed.UtcDateTime.Year < 1000)
+        { ModelState.AddModelError("dueDateUtc", "Enter an ISO timestamp with Z or an explicit offset, within UTC years 1000-9999."); return null; }
+        return new DateTime(parsed.UtcTicks - parsed.UtcTicks % 10, DateTimeKind.Utc);
     }
     private bool TryId(string value, string field, out long id)
     {

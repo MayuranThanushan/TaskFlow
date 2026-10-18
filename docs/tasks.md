@@ -1,6 +1,6 @@
-# Task creation, listing and detail - step 14
+# Task workflows - steps 14 and 15
 
-Owners and current members can create tasks, browse active project tasks and open direct task details. Editing, status changes and owner-only soft deletion follow in step 15. No schema or dependency change is required.
+Owners and current members can create tasks, browse active project tasks and open direct task details. [Editing, status changes and owner-only soft deletion](task-mutations.md) are implemented in step 15. No schema or dependency change is required.
 
 ## API and validation
 
@@ -20,7 +20,7 @@ Authentication is required for all routes, with CSRF on creation. Missing/inacce
 
 Creation locks the parent project, rechecks current access/assignee eligibility and saves the task with TaskCreated activity. Initial assignment also records TaskAssigned. Generated task IDs resolve before activity insertion; raw descriptions are excluded from history. Activity failure rolls back task and assignment. Membership boundary methods require the membership operation; task creation requires the task write operation.
 
-Creation and member removal share the parent lock: removal clears a just-created assignment or creation rejects an already-removed assignee. Step 16 will extend concurrency verification to task editing after those endpoints exist.
+Creation and member removal share the parent lock: removal clears a just-created assignment or creation rejects an already-removed assignee. Task editing is implemented in step 15; step 16 will extend member-removal concurrency verification across its assignment writes.
 
 Listing supports page/pageSize (defaults 1/20, maximum size 100), trimmed literal case-insensitive title search (maximum 200), status, priority and assigneeId combined with AND. Sorts are title, priority, dueDateUtc and createdAtUtc, with asc/desc direction. Default is createdAtUtc descending. Every sort adds numeric id descending; priority explicitly ranks Low < Medium < High despite text persistence. Null deadlines sort last in both directions. Access, count and page share a consistent read snapshot. Unsupported/repeated parameters, empty/invalid enum/ID filters and overflowing offsets fail 400. Out-of-range pages return empty items and real totals.
 
