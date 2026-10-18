@@ -29,7 +29,7 @@ Date: 18 October 2026. Updated through delivery step 07. This records observed l
 
 Package selection is now resolved by [decision 0004](decisions/0004-runtime-and-database-provider.md): keep .NET 10, use EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 (MySql.Data 26.7.0). The selected MySQL server target is 8.4.11. This explicitly supersedes the earlier proposed Pomelo provider. Exact dependencies and reproducible commands are in [toolchain.md](toolchain.md).
 
-NuGet restore and backend build pass with zero warnings/errors. 95 tests pass with a dedicated MySQL test connection: 34 API/policy/provider/deployment/safety checks and 61 live persistence/auth/readiness/project-foundation/project-API checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
+NuGet restore and backend build pass with zero warnings/errors. 100 tests pass with a dedicated MySQL test connection: 34 API/policy/provider/deployment/safety checks and 66 live persistence/auth/readiness/project-foundation/project-API checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
 
 No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable MySQL under ignored .local/mysql, with separate local development/test credentials. The initial migration was applied to both isolated databases and live constraints verified. The server is stopped; no Windows service was installed. Compose remains an unexecuted alternative.
 
@@ -97,3 +97,7 @@ Assignment cleanup and member-removal protection are verified with deterministic
 ## Step 17 update
 
 Complete task filter/sort controls and expanded query/pagination verification are implemented. Current totals are 95 backend and 72 frontend tests. No schema/dependency/backend query change was required. Next is step 18. See [task queries](task-queries.md).
+
+## Step 18 update
+
+Live dashboard aggregates and overview UI are implemented; project progress is verified across mutations and rounding boundaries. Current totals are 100 backend and 78 frontend tests. No schema/dependency change is required. Next is step 19. See [dashboard](dashboard.md).

@@ -137,3 +137,9 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
 .task-actions { margin-bottom: 28px; }
 .task-status { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 24px; }
 .task-status select { min-height: 44px; padding: 8px 12px; border-radius: 6px; font: inherit; }
+
+.dashboard-actions { margin-bottom: 32px; }
+.dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 18px; margin: 22px 0 30px; }
+.dashboard-stats > div { padding: 24px; border: 1px solid #e0e6de; background: white; border-radius: 12px; min-width: 0; }
+.dashboard-stats dt { font-size: 14px; color: #637060; }
+.dashboard-stats dd { margin: 10px 0 0; font-size: 36px; font-weight: 600; overflow-wrap: anywhere; }

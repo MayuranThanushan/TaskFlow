@@ -8,6 +8,7 @@ import { useAuth } from './features/auth/auth-context'
 import { GuestRoute, ProtectedRoute } from './features/auth/RouteGates'
 import { AuthPage } from './features/auth/AuthPage'
 import { TasksPage, NewTaskPage, TaskDetailPage, EditTaskPage } from './features/tasks/TaskPages'
+import { DashboardPage } from './features/dashboard/DashboardPage'
 import './App.css'
 
 function AppLayout() {
@@ -71,20 +72,6 @@ function HomePage() {
   </section>
 }
 
-function DashboardPage() {
-  const { session } = useAuth()
-  return <section className="dashboard">
-    <p className="eyebrow">Your workspace</p>
-    <h1>Welcome back{session.user ? `, ${session.user.displayName}` : ''}.</h1>
-    <p className="intro">A clear view of what comes next.</p><p className="muted">Your account ID: {session.user?.id}</p>
-    <section className="empty-workspace" aria-labelledby="workspace-title">
-      <span className="empty-icon" aria-hidden="true">+</span>
-      <h2 id="workspace-title">Room for your next idea.</h2>
-      <p>Give your next idea a place to grow.</p><Link className="button primary" to="/projects">Browse projects</Link>
-    </section>
-  </section>
-}
-
 function NotFoundPage() {
   return <section className="session-panel"><p className="eyebrow">404</p><h1>That page is not here.</h1>
     <p>The link may have changed. Let us get you back on track.</p><Link className="button primary" to="/">Back to TaskFlow</Link></section>
@@ -98,7 +85,7 @@ export default function App({ client = api }: { client?: ApiClient }) {
       <Route path="register" element={<AuthPage key="register" mode="register" />} />
     </Route>
     <Route element={<ProtectedRoute />}>
-      <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="dashboard" element={<DashboardPage client={client} />} />
       <Route path="projects" element={<ProjectsPage client={client} />} />
       <Route path="projects/new" element={<NewProjectPage client={client} />} />
       <Route path="projects/:projectId/tasks" element={<TasksPage client={client} />} />

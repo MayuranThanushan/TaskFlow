@@ -13,6 +13,7 @@ export function server(initial = false) {
     state.calls.push(config)
     if (config.url === '/auth/csrf') return reply(config, 200, { requestToken: `token-${++state.tokens}` })
     if (config.url === '/auth/me') { await state.meWait; return reply(config, state.meStatus || (state.authenticated ? 200 : 401), profile) }
+    if (config.url === '/dashboard') return reply(config, state.authenticated ? 200 : 401, { totalProjects: 0, totalTasks: 0, tasksByStatus: { toDo: 0, inProgress: 0, done: 0 }, assignedToMe: 0, overdueTasks: 0 })
     if (state.csrfFailures-- > 0) return reply(config, 400, { errors: { csrf: ['Invalid token'] } })
     if (config.url === '/auth/login') {
       await state.loginWait

@@ -24,6 +24,6 @@ All 95 backend tests passed with real MySQL and zero skips (34 non-database and 
 
 All 72 frontend tests passed, including six new cases covering URL initialization/paging/back/reset, combined controls and returned order, invalid-URL recovery, failed assignee-name loading, late-response isolation and out-of-range filtered page recovery. Type checking, ESLint, Release/production builds pass. No migration is pending. Existing CI discovers the tests; hosted CI, Docker execution and selected-host verification remain pending.
 
-Next is step 18: dashboard totals and project progress across API and UI.
+Step 18 [dashboard totals/project progress](dashboard.md) is implemented. Next is step 19 activity reading.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge combined filtering/assignee selection, priority and nullable-deadline ordering, URL reload/back/forward, out-of-range recovery, no-match/invalid reset and mobile controls. Rendered task IDs matched API order. The mobile filter screenshot was inspected with no horizontal overflow. Existing account/project/task/removal checks also passed. The disposable database was removed and verification services stopped.

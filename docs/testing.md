@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 95 backend tests (61 requiring MySQL) and 72 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 100 backend tests (66 requiring MySQL) and 78 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -87,3 +87,5 @@ Step 15 adds six live task mutation API tests and seven frontend cases; all 82 b
 Step 16 adds eight live HTTP/database cases with bounded parent-lock gates, both removal/assignment orderings, removed-member writes, cleanup scope/readdition and failed-removal rollback with a queued assignment. Two frontend tests cover stale assignee drafts. All 90 backend and 66 frontend tests passed. See [assignment concurrency](assignment-concurrency.md).
 
 Step 17 adds five live task query tests and six frontend cases. All 95 backend and 72 frontend checks pass. Explicit ordering/page expectations, combined filter scope, repeated/invalid queries, maximum/empty/far pages and a forced count/create overlap verify the database contract; frontend checks cover URL controls/history/recovery and superseded responses. See [task queries](task-queries.md).
+
+Step 18 adds five live dashboard/progress tests and six frontend overview checks; all 100 backend and 78 frontend tests passed. The aggregate tests force concurrent creation and a clock advance to verify a consistent snapshot and captured UTC time. Scope, overdue equality/completion/deletion, progress rounding and mutation refresh are covered. See [dashboard](dashboard.md).
