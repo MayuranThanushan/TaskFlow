@@ -1,0 +1,66 @@
+{
+  "startedAtUtc": "2026-10-18T13:13:11Z",
+  "checks": {
+    "unmigratedReadiness503": true,
+    "separateMigrationAndIdempotence": true,
+    "runtimeDdlDenied": true,
+    "backupWritesDenied": true,
+    "allTableBusinessDataFingerprintsMatch": true,
+    "existingRestoreTargetRejected": true,
+    "protectionKeyHashesMatch": true,
+    "preRecoveryCookieRejected": true,
+    "reloginLargeIdsAssignmentProgressSoftDeleteHistory": true,
+    "restrictedRuntimeMembershipRemovalReadditionAndTaskEditing": true,
+    "compatibleBinaryRollbackAndSessionRestart": true,
+    "currentBinaryRollForwardReady": true,
+    "receiptChecksumsValid": true
+  },
+  "backupSeconds": 1.377,
+  "restoreSeconds": 1.849,
+  "tableCounts": {
+    "__efmigrationshistory": 1,
+    "activitylogs": 9,
+    "aspnetroleclaims": 0,
+    "aspnetroles": 0,
+    "aspnetuserclaims": 0,
+    "aspnetuserlogins": 0,
+    "aspnetuserroles": 0,
+    "aspnetusers": 2,
+    "aspnetusertokens": 0,
+    "projectmembers": 1,
+    "projects": 2,
+    "tasks": 2
+  },
+  "migrations": [
+    "20261018085115_InitialCreate"
+  ],
+  "environment": "Local Windows Production HTTPS + MySQL 8.4.11, restricted runtime/migration/backup/recovery roles",
+  "releaseCandidate": {
+    "packageFiles": 44,
+    "appFiles": 41,
+    "sourceRevision": "5e5add6c01116fe4fa119607bd1a9743dd88241c",
+    "sourceDirty": true,
+    "reason": "Step 22 candidate built and rehearsed before its implementation commit; final host rollout requires a clean committed build."
+  },
+  "automatedTests": {
+    "backendPassed": 110,
+    "backendSkipped": 0,
+    "frontendPassed": 92,
+    "operationsPassed": 16
+  },
+  "casePolicy": "Source/target lower_case_table_names must match; case-folded Windows backups are not assumed compatible with default Linux servers.",
+  "fingerprintExclusions": {
+    "AspNetUsers": [
+      "SecurityStamp",
+      "ConcurrencyStamp",
+      "UpdatedAtUtc"
+    ]
+  },
+  "cleanup": "Owned verification databases/users/session files removed; web/database processes stopped. Sensitive backups remain in ignored, ACL-restricted local storage.",
+  "externalReleaseGates": [
+    "Docker/container execution",
+    "Hosted required CI checks",
+    "Selected-host DNS/TLS/HSTS/proxy and volume/secret permissions",
+    "Encrypted scheduled off-host backups/retention/alerts and host restore rehearsal"
+  ]
+}

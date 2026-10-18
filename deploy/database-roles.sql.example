@@ -1,0 +1,19 @@
+-- Operator template for the private MySQL host. Run through an administrative session.
+-- Substitute generated passwords in a PRIVATE copy; never commit filled credentials.
+-- Adjust account host restrictions to the app/tool host; % is only a single-host Compose example.
+-- Run account provisioning first, apply migrations, then run runtime REVOKE/GRANT statements.
+-- Provision the migration account and its secret BEFORE restricting the initialized runtime user.
+CREATE USER 'taskflow_migrate'@'%' IDENTIFIED BY '<generated-migration-password>';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, INDEX, REFERENCES ON taskflow.* TO 'taskflow_migrate'@'%';
+
+CREATE USER 'taskflow_backup'@'%' IDENTIFIED BY '<generated-backup-password>';
+GRANT SELECT, SHOW VIEW ON taskflow.* TO 'taskflow_backup'@'%';
+
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow'@'%';
+GRANT SELECT, INSERT, UPDATE ON taskflow.* TO 'taskflow'@'%';
+-- Membership removal physically deletes the join row; other business entities remain retained.
+-- Apply this grant only after migrations created the table.
+GRANT DELETE ON taskflow.ProjectMembers TO 'taskflow'@'%';
+-- Verify SHOW GRANTS before rollout. Never give the app the migration or backup credentials.
+-- A recovery operator needs schema CREATE/DDL/DML rights on one explicitly named, new
+-- taskflow_restore_* destination. Grant runtime access there only after recovery verification.

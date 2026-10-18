@@ -29,7 +29,7 @@ Date: 18 October 2026. Updated through delivery step 07. This records observed l
 
 Package selection is now resolved by [decision 0004](decisions/0004-runtime-and-database-provider.md): keep .NET 10, use EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 (MySql.Data 26.7.0). The selected MySQL server target is 8.4.11. This explicitly supersedes the earlier proposed Pomelo provider. Exact dependencies and reproducible commands are in [toolchain.md](toolchain.md).
 
-NuGet restore and backend build pass with zero warnings/errors. 109 tests pass with a dedicated MySQL test connection: 35 API/policy/provider/deployment/safety checks and 74 live persistence/auth/readiness/project-foundation/project-API checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
+NuGet restore and backend build pass with zero warnings/errors. 110 tests pass with a dedicated MySQL test connection: 35 API/policy/provider/deployment/safety checks and 75 live persistence/auth/readiness/project-foundation/project-API checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
 
 No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable MySQL under ignored .local/mysql, with separate local development/test credentials. The initial migration was applied to both isolated databases and live constraints verified. The server is stopped; no Windows service was installed. Compose remains an unexecuted alternative.
 
@@ -113,3 +113,7 @@ Current-user display-name editing and the protected profile form are implemented
 ## Step 21 update
 
 The complete local browser, accessibility/responsive and focused security/performance review is implemented and recorded. All 109 backend and 92 frontend checks pass; no migration is needed. See [verification review](verification-review.md). Next is step 22, with hosted/container and selected-host verification still pending.
+
+## Step 22 update
+
+Portable release/migration artifacts and checksum receipts, separate migration secrets, schema-match readiness, backup/recovery tooling and a restricted-role Production rehearsal are complete. All 110 backend/92 frontend tests and 16 operations checks pass. No schema/dependency change is required. See [release runbook](release-runbook.md). Docker/hosted CI and actual-host verification remain release gates; next is step 23 documentation/demo handoff.

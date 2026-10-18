@@ -16,4 +16,4 @@ All 91 frontend tests passed, including seven profile cases for protected naviga
 
 The published Production HTTPS app passed Edge checks for the protected profile deep link, validation focus, trimmed save and navigation update, reload/re-login persistence, unchanged account email/ID, rejection of extra fields and the updated owner name in project membership. Desktop and 390px mobile screenshots were reviewed with no horizontal overflow. The existing project/task/dashboard/activity journeys also passed against this build. Production smoke verified migrations, readiness, cookies/CSRF and a persisted-key restart. The disposable database was removed and verification services stopped.
 
-Step 21 [verification review](verification-review.md) is complete. Next is step 22 release readiness.
+Step 21 [verification review](verification-review.md) is complete. Step 22 [portable release/recovery work](release-runbook.md) is complete locally; next is step 23, with external release gates pending.

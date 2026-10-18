@@ -53,6 +53,8 @@ jobs:
         env:
           ConnectionStrings__TaskFlow: Server=127.0.0.1;Database=taskflow_design;User ID=unused;Password=unused
         run: dotnet ef migrations has-pending-model-changes --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build
+      - name: Release and recovery safety tests
+        run: python3 -m unittest discover -s tests/operations -v
       - name: Test against MySQL
         env:
           TASKFLOW_REQUIRE_MYSQL: 'true'
@@ -132,7 +134,9 @@ jobs:
           files = {
               'mysql_password': password,
               'mysql_root_password': secrets.token_urlsafe(32),
-              'ConnectionStrings__TaskFlow': f'Server=mysql;Database=taskflow;User ID=taskflow;Password={password};SslMode=Disabled',
+              'ConnectionStrings__TaskFlow': f'Server=mysql;Database=taskflow;User ID=taskflow;Password={password};SslMode=Required',
+              # This account owns only this disposable CI schema; deployed hosts use a separate migration account.
+              'Migration__ConnectionString': f'Server=mysql;Database=taskflow;User ID=taskflow;Password={password};SslMode=Required',
               'Kestrel__Certificates__Default__Password': secrets.token_urlsafe(32),
           }
           for name, value in files.items():

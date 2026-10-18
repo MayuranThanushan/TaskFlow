@@ -1,6 +1,6 @@
-# Portable deployment and smoke verification - step 09
+# Portable deployment and smoke verification - steps 09 and 22
 
-No hosting provider or public environment has been selected. The portable configuration and local Production rehearsal are complete. Docker execution and public-host verification remain pending; nothing has been published. These checks remain release requirements even though work can continue with step 10.
+No hosting provider or public environment has been selected. The portable configuration and local Production rehearsal are complete. Docker execution and public-host verification remain pending; nothing has been published. The local step 22 release/recovery rehearsal is also complete; see the [release runbook](release-runbook.md) and [backup/recovery procedure](backup-recovery.md). External checks remain release requirements.
 
 ## Deployment shape
 
@@ -8,7 +8,7 @@ One ASP.NET Core process serves the compiled React application and `/api/v1` on 
 
 `deploy/Dockerfile` has versioned Node/npm and .NET build stages, a non-root runtime image, and a separate non-root migration-bundle image. `compose.deploy.yaml` is independent of the development/test Compose files. It provisions private MySQL 8.4.11, persistent database and protection-key volumes, read-only application filesystems and writable temporary directories. Only HTTPS is published, bound to loopback by default. The API uses direct TLS; an external proxy must pass TLS through or re-encrypt to the app. TLS termination with forwarded headers is not configured or trusted implicitly.
 
-MySQL must pass an authenticated `SELECT 1` health check before migration/application startup. Migrations are an explicit one-shot job, not part of web startup. Apply them successfully before starting the app. `/api/v1/health/ready` returns 200 `{ "status": "Healthy" }` only when MySQL connects, no compiled migrations are pending, and the Identity table can be read. Failure returns 503 `{ "status": "Unhealthy" }`, without database diagnostics. It never creates a schema or changes data. `/api/v1/health/live` remains database-independent. Both are public and use no-store caching; readiness has a five-second health-check timeout.
+MySQL must pass an authenticated `SELECT 1` health check before migration/application startup. Migrations are an explicit one-shot job, not part of web startup. Apply them successfully before starting the app. `/api/v1/health/ready` returns 200 `{ "status": "Healthy" }` only when MySQL connects, applied migration IDs exactly match the compiled set, and the Identity table can be read. Failure returns 503 `{ "status": "Unhealthy" }`, without database diagnostics. It never creates a schema or changes data. `/api/v1/health/live` remains database-independent. Both are public and use no-store caching; readiness has a five-second health-check timeout.
 
 ## Required deployment inputs
 
@@ -21,6 +21,7 @@ Provision these files outside version control under `TASKFLOW_DEPLOY_SECRETS_DIR
 | `mysql_password` | Generated password for the non-root `taskflow` database user |
 | `mysql_root_password` | Different generated administrative password; never mounted into the app |
 | `ConnectionStrings__TaskFlow` | `Server=mysql;Database=taskflow;User ID=taskflow;Password=<mysql_password>` plus the chosen database TLS policy |
+| `Migration__ConnectionString` | Separate schema-migration account connection; mounted only into the migration job |
 | `tls.pfx` | Certificate/private-key bundle for the public hostname |
 | `Kestrel__Certificates__Default__Password` | PFX password |
 
@@ -28,7 +29,7 @@ Local Compose secrets are file mounts, not a managed encrypted secret store. On 
 
 The app loads named files from `TASKFLOW_SECRETS_DIRECTORY` after normal configuration; mounted values win over environment values. Double underscores represent configuration sections. Binary PFX files and dotfiles are ignored by this provider. Secrets/certificates are never build arguments, frontend variables or image contents. Restart the app to pick up replaced secret files.
 
-Keep MySQL private. For a remote database, select the host's verified TLS policy/CA (Connector/NET `SslMode=VerifyFull` with its CA), restrict access and separate schema-migration privileges from runtime access. The single-host Compose baseline uses the initialized database account for both; least-privilege production grants, managed secrets, encrypted storage and backup automation remain release/environment work. The CI database is disposable and isolated, with no production credentials.
+Keep MySQL private. For a remote database, select the host's verified TLS policy/CA (Connector/NET `SslMode=VerifyFull` with its CA), restrict access and separate schema-migration privileges from runtime access. The initialized MySQL account initially owns its schema. Before opening traffic, provision separate migration/backup accounts and restrict runtime grants using the [operator template](../deploy/database-roles.sql.example), including table-specific DELETE for ProjectMembers. Compose mounts distinct runtime/migration connection files. Managed secret storage, encrypted off-host backup scheduling and host-specific grants remain deployment operations. The CI database is disposable and isolated, with no production credentials.
 
 ## Build, migrate and start on a Docker host
 
@@ -43,7 +44,7 @@ docker compose --env-file .env.deploy -f compose.deploy.yaml --profile tools run
 docker compose --env-file .env.deploy -f compose.deploy.yaml up -d app
 ```
 
-Use the readiness URL to wait for the app itself; Compose's app service has no internal HTTP probe. The MySQL health gate is not an application-readiness guarantee. Review migration SQL and back up existing data before upgrades; a failed migration must not be followed by app rollout. Running the migration job again is idempotent. Stop with `docker compose --env-file .env.deploy -f compose.deploy.yaml down`; keep both named volumes and the same Compose project name. Removing the database volume loses data; removing the key volume invalidates existing sessions. Full backup/recovery rehearsal and release rollout/rollback procedures belong to step 22.
+Use the readiness URL to wait for the app itself; Compose's app service has no internal HTTP probe. The MySQL health gate is not an application-readiness guarantee. Review migration SQL and back up existing data before upgrades; a failed migration must not be followed by app rollout. Running the migration job again is idempotent. Stop with `docker compose --env-file .env.deploy -f compose.deploy.yaml down`; keep both named volumes and the same Compose project name. Removing the database volume loses data; removing the key volume invalidates existing sessions. The complete [step 22 rollout/recovery runbook](release-runbook.md) covers reviewed migration SQL, verified backups, traffic gates and compatible rollback.
 
 The default key directory is `/var/lib/taskflow/keys`, owned by the image's non-root app user and mounted as a named volume. Protect that host volume and its backups with restricted access and encryption at rest; this configuration does not encrypt the XML key ring itself. Retain its contents across app replacement. The current in-process authentication limiter is for one API instance; multi-replica deployment needs a deliberate limiter/proxy policy.
 
@@ -55,7 +56,7 @@ The same runtime layout can be produced on Windows or a PowerShell-enabled build
 ./scripts/Publish-App.ps1
 ```
 
-This performs locked backend restore/publish, copies frontend build inputs into a unique ignored `.local/build` directory, runs `npm ci` and the production frontend build there, then copies only `dist` into the new release's `wwwroot`. Workspace dev/test processes and loaded native modules do not interfere with the isolated frontend install. Local environment files are not copied. The temporary build is cleaned using a validated absolute path; a locked temporary directory can remain for later cleanup. It defaults to a new ignored `.local/releases/<UTC timestamp>` directory and refuses an existing output directory. Set `-OutputDirectory` to another new location if needed. Run `dotnet TaskFlow.Api.dll` with that release as the working/content directory and a compatible .NET 10 ASP.NET Core runtime. Configure `ASPNETCORE_ENVIRONMENT=Production`, an HTTPS listener/certificate, `AllowedHosts`, database connection and an explicit persistent `DataProtection__KeysPath`. Optionally set an absolute `TASKFLOW_SECRETS_DIRECTORY` for file configuration. Apply migrations deliberately before routing traffic. See [local HTTPS setup](authentication.md#local-https-setup) for development certificate export; publishing never embeds those settings.
+This requires Python 3.12+ for its source/migration/file checksum receipt and performs locked backend restore/publish, copies frontend build inputs into a unique ignored `.local/build` directory, runs `npm ci` and the production frontend build there, then copies only `dist` into the new release's `wwwroot`. Workspace dev/test processes and loaded native modules do not interfere with the isolated frontend install. Local environment files are not copied. The temporary build is cleaned using a validated absolute path; a locked temporary directory can remain for later cleanup. It defaults to a new ignored `.local/releases/<UTC timestamp>` directory and refuses an existing output directory. Set `-OutputDirectory` to another new location if needed. Run `dotnet TaskFlow.Api.dll` with that release as the working/content directory and a compatible .NET 10 ASP.NET Core runtime. Configure `ASPNETCORE_ENVIRONMENT=Production`, an HTTPS listener/certificate, `AllowedHosts`, database connection and an explicit persistent `DataProtection__KeysPath`. Optionally set an absolute `TASKFLOW_SECRETS_DIRECTORY` for file configuration. Apply migrations deliberately before routing traffic. See [local HTTPS setup](authentication.md#local-https-setup) for development certificate export; publishing never embeds those settings.
 
 ## Smoke check
 
@@ -86,3 +87,5 @@ Once a target is selected, run the container job and verify public DNS/TLS/renew
 Implementation references: [ASP.NET Core static files](https://learn.microsoft.com/aspnet/core/fundamentals/static-files?view=aspnetcore-10.0), [file configuration](https://learn.microsoft.com/aspnet/core/fundamentals/configuration/?view=aspnetcore-10.0#key-per-file-configuration-provider), [EF migration bundles](https://learn.microsoft.com/ef/core/managing-schemas/migrations/applying#bundles), and [Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets/).
 
 Step 11 reran the published Production smoke and real Edge project journeys, including large string IDs, pagination, outsider isolation and a cross-tab account switch. See [projects](projects.md). Container/selected-host gates above remain pending.
+
+Step 22 prepared application/migration packages with source and checksum receipts, separated migration secret configuration, hardened readiness against unknown future migrations, and rehearsed restricted-role backup/restore, session invalidation and compatible binary rollback. All 110 backend, 92 frontend and 16 operations tests pass. See the [release runbook](release-runbook.md), [backup/recovery](backup-recovery.md) and [sanitized evidence](evidence/step22.json). Docker/hosted CI and selected-host checks above remain unexecuted.

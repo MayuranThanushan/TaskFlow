@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 109 backend tests (74 requiring MySQL) and 92 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 110 backend tests (75 requiring MySQL) and 92 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -8,7 +8,7 @@ PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime
 
 Only `taskflow_test` or a name beginning `taskflow_test_` is accepted. A non-root test account is required. Safety tests exercise rejection of development/production database names and privileged/missing accounts before a connection is attempted. These guards reduce accidental misuse; always supply an isolated test database and restricted credentials.
 
-Local mode (no TASKFLOW_TEST_CONNECTION): 35 checks run and 74 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
+Local mode (no TASKFLOW_TEST_CONNECTION): 35 checks run and 75 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
 
 With a dedicated connection already configured:
 
@@ -95,3 +95,5 @@ Step 19 adds five live activity reader tests and six frontend feed cases; all 10
 Step 20 adds three live profile API cases and seven frontend cases. All 108 backend and 91 frontend tests pass. Validation/mass-assignment/CSRF rejection, current-user persistence, no-op timestamps, unchanged credentials/session expiry, conflict persistence, form retry/expiry and delayed cross-account responses are covered. See [profile](profile.md).
 
 Step 21 adds a logging-safety backend test, a client account-change/CSRF dispatch test, and the locked [real-browser review suite](../tests/browser/README.md). Current totals are 109 backend and 92 frontend tests. E2E-001 through E2E-004, 30 accessibility/responsive scans, keyboard/security checks and demo performance measurements pass locally. See [review evidence](verification-review.md). Hosted/container CI remains pending.
+
+Step 22 adds an unknown-applied-migration readiness case (safe 503, liveness 200) and 16 separate standard-library operations tests: `python -m unittest discover -s tests/operations -v`. They cover backup checksums/layout, traversal, invalid/occupied targets, incompatible table-case mode, failed import/count validation, session-stamp rotation and release-payload drift. All 110 backend and 92 frontend tests pass, alongside those 16 operations checks. The operations suite is in backend CI. Real restricted-role recovery, key/data verification and compatible rollback passed locally; see [release evidence](release-runbook.md). Hosted/container verification remains pending.

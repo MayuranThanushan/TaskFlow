@@ -28,4 +28,4 @@ All 84 frontend tests passed, including six new feed cases for protection, safe 
 
 The published Production build passed local HTTPS smoke verification and Edge browser journeys for owner/member access, paging with reload/back, precise inclusive bounds, reset/no-match/invalid-filter recovery, refresh, retained deleted-task history, and outsider/removed-member/deleted-project denial. The 390px mobile feed was reviewed with no horizontal overflow. The disposable smoke database was removed and verification services stopped.
 
-Step 20 [profile editing](profile.md) is implemented. Step 21 [verification review](verification-review.md) is complete; next is step 22 release readiness.
+Step 20 [profile editing](profile.md) is implemented. Step 21 [verification review](verification-review.md) is complete; step 22 [release/recovery preparation](release-runbook.md) is complete locally; next is step 23.

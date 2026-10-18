@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -101,6 +102,26 @@ public sealed class DeploymentTests : IDisposable
 [Collection(MySqlCollection.Name)]
 public sealed class DatabaseReadinessTests(MySqlFixture fixture)
 {
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task UnknownAppliedMigrationBlocksReadinessWithoutExposingSchemaDetails()
+    {
+        await using var database = fixture.CreateContext();
+        const string future = "20990101000000_UnrecognizedRelease";
+        await database.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({future}, {"10.0.11"})");
+        try
+        {
+            await using var host = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
+                { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString })));
+            using var client = host.CreateClient(new() { BaseAddress = new("https://localhost") });
+            var response = await client.GetAsync("/api/v1/health/ready");
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.DoesNotContain(future, await response.Content.ReadAsStringAsync());
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/health/live")).StatusCode);
+        }
+        finally { await database.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM __EFMigrationsHistory WHERE MigrationId={future}"); }
+    }
+
     [MySqlFact, Trait("Category", "MySql")]
     public async Task MigratedDatabaseReportsReadyWithoutSigningIn()
     {

@@ -22,6 +22,7 @@ services:
       start_period: 30s
 
   migrate:
+    image: taskflow-migrate:${TASKFLOW_RELEASE_TAG:-local}
     build:
       context: .
       dockerfile: deploy/Dockerfile
@@ -30,7 +31,7 @@ services:
     depends_on:
       mysql: {condition: service_healthy}
     secrets:
-      - source: database_connection
+      - source: migration_connection
         target: ConnectionStrings__TaskFlow
     networks: [database]
     read_only: true
@@ -39,6 +40,7 @@ services:
     security_opt: [no-new-privileges:true]
 
   app:
+    image: taskflow-app:${TASKFLOW_RELEASE_TAG:-local}
     build:
       context: .
       dockerfile: deploy/Dockerfile
@@ -79,6 +81,8 @@ secrets:
     file: ${TASKFLOW_DEPLOY_SECRETS_DIR:?Set an absolute secrets directory}/mysql_password
   mysql_root_password:
     file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/mysql_root_password
+  migration_connection:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/Migration__ConnectionString
   database_connection:
     file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/ConnectionStrings__TaskFlow
   tls_password:
