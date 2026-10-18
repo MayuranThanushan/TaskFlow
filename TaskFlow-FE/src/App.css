@@ -71,3 +71,46 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
   .dashboard { padding-block: 40px; }
 }
 @media (prefers-reduced-motion: no-preference) { .button { transition: background .15s ease; } }
+
+.projects-page { padding-block: 48px 64px; }
+.page-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; margin-block: 25px 30px; }
+.page-heading h1, .project-state h1 { font-size: clamp(32px, 4vw, 50px); margin-bottom: 14px; }
+.page-heading .muted { margin-bottom: 0; }
+.page-heading > div { min-width: 0; max-width: 900px; }
+.project-filters { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; padding: 22px; background: #eef2e9; border-radius: 9px; }
+.project-filters > div:first-child { flex: 1 1 220px; }
+.project-filters label { display: block; font-size: 12px; font-weight: 650; margin-bottom: 8px; }
+.project-filters input, .project-filters select { width: 100%; border: 1px solid #ccd6cb; border-radius: 6px; padding: 11px 12px; min-height: 46px; background: #fff; font: inherit; font-size: 14px; color: inherit; }
+.project-filters .text-link { padding-block: 13px; }
+.project-state { padding-block: 48px; }
+.result-count { font-size: 13px; color: #637060; margin-block: 26px 18px; }
+.project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; list-style: none; padding: 0; margin-bottom: 30px; }
+.project-card { padding: 26px; background: #fff; border: 1px solid #e0e6de; border-radius: 10px; min-width: 0; }
+.project-card h2 { font-size: 22px; line-height: 1.3; overflow-wrap: anywhere; }
+.project-card h2 a { text-decoration: none; }
+.project-card h2 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.project-excerpt { color: #657168; font-size: 14px; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; white-space: pre-wrap; }
+.project-date { font-size: 12px; color: #6d786f; margin-bottom: 0; }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 14px; }
+.project-form-page { max-width: 800px; margin-inline: auto; }
+.project-form-card, .project-about, .project-progress { padding: clamp(24px, 4vw, 38px); background: #fff; border: 1px solid #e0e6de; border-radius: 12px; }
+.form-field textarea { width: 100%; resize: vertical; min-height: 150px; border: 1px solid #ccd6cb; border-radius: 6px; padding: 12px; color: inherit; font: inherit; }
+.form-field textarea[aria-invalid="true"] { border-color: #ac4e40; }
+.form-field textarea:focus-visible, select:focus-visible { outline: 3px solid #35806a; outline-offset: 4px; }
+.optional { font-weight: 400; color: #637060; }
+.project-form-card .field-hint { margin-top: 10px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.project-about, .project-progress { margin-bottom: 25px; }
+.project-about h2, .project-progress h2 { font-size: 22px; font-weight: 600; }
+.project-description { white-space: pre-wrap; overflow-wrap: anywhere; color: #53655a; }
+.project-progress dl { display: flex; flex-wrap: wrap; gap: 36px; margin-block: 26px; }
+.project-progress dt { font-size: 13px; color: #637060; }
+.project-progress dd { font-size: 32px; margin: 10px 0 0; }
+.project-progress progress { width: 100%; height: 12px; accent-color: #235544; }
+@media (max-width: 500px) {
+  .app-header { flex-wrap: wrap; padding-block: 16px; gap: 14px; }
+  .app-header nav { flex-wrap: wrap; }
+  .project-filters > div { flex: 1 1 110px; min-width: 0; }
+  .pagination { gap: 12px; }
+  .pagination .button { padding-inline: 14px; }
+}

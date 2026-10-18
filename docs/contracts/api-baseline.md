@@ -1,6 +1,6 @@
 # API contract amendments: implementation baseline
 
-Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF and liveness are implemented; project/task/dashboard/activity/profile-update contracts remain planned. Unchanged Word specification routes remain in scope.
+Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF, health/readiness and project create/list/detail are implemented; project editing/deletion, membership/task/dashboard/activity/profile-update routes remain planned. Unchanged Word specification routes remain in scope.
 
 ## Common contracts
 
@@ -95,3 +95,5 @@ Registration/login passwords have a 128-code-unit upper bound; the password is n
 Step 09 adds public GET /api/v1/health/ready with no-store caching: 200 `{ "status": "Healthy" }` when MySQL connects, migrations are current and an Identity table is readable; otherwise 503 `{ "status": "Unhealthy" }`. This health response intentionally uses the health DTO rather than Problem Details and exposes no database diagnostics. Liveness stays independent. See [deployment](../deployment.md).
 
 Step 10 implements the internal project/task access service, owner/member operation policy, safe 401/403/404 denial mapping and transactional activity boundary. This does not expose project/task/activity HTTP routes yet. See [project foundation](../project-foundation.md) for integration rules and verification.
+
+Step 11 implements POST /projects, GET /projects and GET /projects/{projectId}, including the documented list queries, stable ordering, current access/deletion scope, string IDs, real detail counts/progress and transactional ProjectCreated activity. Protected writes authenticate before CSRF validation; anonymous POST /projects returns 401. See [projects](../projects.md) for validation and verification.

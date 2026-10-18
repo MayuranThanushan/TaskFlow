@@ -1,0 +1,70 @@
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using TaskFlow.Application.Features.Projects;
+
+namespace TaskFlow.Api.Controllers;
+
+[ApiController, Route("api/v1/projects")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+public sealed class ProjectsController(IProjectService projects) : ControllerBase
+{
+    [HttpPost]
+    [ProducesResponseType<ProjectDto>(StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create(CreateProjectRequest request, CancellationToken cancellationToken)
+    {
+        var project = await projects.CreateAsync(Actor(), request.Name, request.Description, cancellationToken);
+        return CreatedAtAction(nameof(Get), new { projectId = project.Id }, project);
+    }
+
+    [HttpGet]
+    [ProducesResponseType<ProjectPage>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> List([FromQuery] ProjectListQuery query, CancellationToken cancellationToken)
+    {
+        string[] allowed = ["page", "pageSize", "search", "sortBy", "sortDirection"];
+        foreach (var parameter in Request.Query)
+            if (!allowed.Contains(parameter.Key, StringComparer.OrdinalIgnoreCase) || parameter.Value.Count != 1)
+                ModelState.AddModelError(parameter.Key, "Unsupported or repeated query parameter.");
+        if ((long)(query.Page - 1) * query.PageSize > int.MaxValue)
+            ModelState.AddModelError("page", "The requested page exceeds the supported range.");
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return Ok(await projects.ListAsync(Actor(), new(query.Page, query.PageSize, query.Search, query.SortBy, query.SortDirection), cancellationToken));
+    }
+
+    [HttpGet("{projectId}")]
+    [ProducesResponseType<ProjectDetailsDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get(string projectId, CancellationToken cancellationToken)
+    {
+        if (projectId.Length == 0 || !projectId.All(char.IsAsciiDigit)
+            || !long.TryParse(projectId, NumberStyles.None, CultureInfo.InvariantCulture, out var id) || id <= 0)
+        {
+            ModelState.AddModelError("projectId", "Enter a positive decimal ID within the signed BIGINT range.");
+            return ValidationProblem(ModelState);
+        }
+        return Ok(await projects.GetAsync(Actor(), id, cancellationToken));
+    }
+
+    private long? Actor() => long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), NumberStyles.None,
+        CultureInfo.InvariantCulture, out var id) && id > 0 ? id : null;
+}
+
+public sealed class CreateProjectRequest
+{
+    private string name = "";
+    private string? description;
+    [Required, StringLength(150)]
+    public string Name { get => name; set => name = value?.Trim() ?? ""; }
+    [StringLength(10_000)]
+    public string? Description { get => description; set => description = string.IsNullOrWhiteSpace(value) ? null : value.Trim(); }
+}
+
+public sealed class ProjectListQuery
+{
+    private string? search;
+    [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
+    [Range(1, 100)] public int PageSize { get; set; } = 20;
+    [StringLength(200)] public string? Search { get => search; set => search = value?.Trim(); }
+    [Required, RegularExpression("^(name|createdAtUtc|updatedAtUtc)$")] public string SortBy { get; set; } = "createdAtUtc";
+    [Required, RegularExpression("^(asc|desc)$")] public string SortDirection { get; set; } = "desc";
+}

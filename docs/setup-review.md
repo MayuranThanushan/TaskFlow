@@ -29,7 +29,7 @@ Date: 18 October 2026. Updated through delivery step 07. This records observed l
 
 Package selection is now resolved by [decision 0004](decisions/0004-runtime-and-database-provider.md): keep .NET 10, use EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 (MySql.Data 26.7.0). The selected MySQL server target is 8.4.11. This explicitly supersedes the earlier proposed Pomelo provider. Exact dependencies and reproducible commands are in [toolchain.md](toolchain.md).
 
-NuGet restore and backend build pass with zero warnings/errors. 59 tests pass with a dedicated MySQL test connection: 34 API/policy/provider/deployment/safety checks and 25 live persistence/auth/readiness/project-foundation checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
+NuGet restore and backend build pass with zero warnings/errors. 65 tests pass with a dedicated MySQL test connection: 34 API/policy/provider/deployment/safety checks and 31 live persistence/auth/readiness/project-foundation/project-API checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
 
 No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable MySQL under ignored .local/mysql, with separate local development/test credentials. The initial migration was applied to both isolated databases and live constraints verified. The server is stopped; no Windows service was installed. Compose remains an unexecuted alternative.
 
@@ -47,7 +47,8 @@ No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable M
 | Account API and frontend authentication | 07, 08 | Complete; see authentication.md and frontend-authentication.md |
 | Portable deployment and smoke rehearsal | 09 | Prepared and verified locally; container/selected-host checks pending |
 | Project-access and atomic activity foundation | 10 | Complete; see project-foundation.md |
-| Project/task business features | 11 onward | Not implemented |
+| Project creation, listing/detail and frontend pages | 11 | Complete; see projects.md |
+| Project editing/deletion and later business features | 12 onward | Pending |
 
 Only rows marked pending remain unimplemented. Initial migration and live persistence verification are complete; shared integration infrastructure was completed in step 06.
 
@@ -72,3 +73,7 @@ Frontend account screens, protected navigation, session lifecycle and API/CSRF h
 ## Step 10 update
 
 Current-state project/task access, the owner/member permission matrix, safe denial responses, parent-row-locked READ COMMITTED mutations and atomic activity persistence are implemented. All 59 backend tests pass with live MySQL and no skips, including real activity insert rollback and a waiting writer rechecking membership after lock release. No schema change is pending. No project/task HTTP routes or UI are added yet; those begin in step 11. See [project foundation](project-foundation.md).
+
+## Step 11 update
+
+Project create/list/detail APIs and protected frontend pages are implemented. All 65 backend tests passed with real MySQL and zero skips; all 38 frontend checks, type-check, lint and production build passed. The published HTTPS app passed real Edge project creation/reload, literal search, pagination, large IDs, account isolation/switching and mobile checks. No schema/dependency changes are required. See [projects](projects.md). Next is step 12.

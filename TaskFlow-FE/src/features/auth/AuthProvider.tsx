@@ -29,7 +29,10 @@ export function AuthProvider({ children, client = api }: { children: ReactNode; 
     if (current.current.status === 'error') commit({ status: 'checking', user: null })
     try {
       const user = await client.currentUser()
-      if (alive.current && version === operation.current) commit({ status: 'authenticated', user })
+      if (alive.current && version === operation.current) {
+        if (current.current.status === 'authenticated' && current.current.user.id !== user.id) client.forgetSession()
+        commit({ status: 'authenticated', user })
+      }
     } catch (error) {
       if (!alive.current || version !== operation.current) return
       if (asApiError(error).status === 401) {

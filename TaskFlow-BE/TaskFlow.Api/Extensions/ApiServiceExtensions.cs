@@ -16,7 +16,8 @@ public static class ApiServiceExtensions
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddControllers(options =>
             {
-                options.Filters.Add<AntiforgeryProblemFilter>();
+                // The filter-factory order must be explicit so protected writes authenticate before CSRF validation.
+                options.Filters.Add<AntiforgeryProblemFilter>(1000);
                 options.Filters.Add(new AuthorizeFilter());
                 options.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider());
             })

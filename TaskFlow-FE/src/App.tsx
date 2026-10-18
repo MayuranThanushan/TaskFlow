@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { api } from './api/client'
 import type { ApiClient } from './api/client'
+import { ProjectsPage, NewProjectPage, ProjectDetailPage } from './features/projects/ProjectPages'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { useAuth } from './features/auth/auth-context'
 import { GuestRoute, ProtectedRoute } from './features/auth/RouteGates'
@@ -15,8 +17,8 @@ function AppLayout() {
   const location = useLocation()
   const previousPath = useRef(location.pathname)
   useEffect(() => {
-    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/': 'A clearer way to work' }
-    document.title = `${titles[location.pathname] ?? 'Page not found'} | TaskFlow`
+    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work' }
+    document.title = `${titles[location.pathname] ?? (location.pathname.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
   }, [location.pathname])
@@ -38,6 +40,7 @@ function AppLayout() {
       <nav aria-label="Main navigation">
         {session.status === 'authenticated' ? <>
           <NavLink to="/dashboard">Overview</NavLink>
+          <NavLink to="/projects">Projects</NavLink>
           <span className="user-name">{session.user.displayName}</span>
           <button className="button subtle" disabled={pending} onClick={() => void logout()}>{pending ? 'Signing out...' : 'Sign out'}</button>
         </> : session.status === 'anonymous' ? <>
@@ -76,7 +79,7 @@ function DashboardPage() {
     <section className="empty-workspace" aria-labelledby="workspace-title">
       <span className="empty-icon" aria-hidden="true">+</span>
       <h2 id="workspace-title">Room for your next idea.</h2>
-      <p>Your projects and tasks will appear here.</p>
+      <p>Give your next idea a place to grow.</p><Link className="button primary" to="/projects">Browse projects</Link>
     </section>
   </section>
 }
@@ -86,14 +89,19 @@ function NotFoundPage() {
     <p>The link may have changed. Let us get you back on track.</p><Link className="button primary" to="/">Back to TaskFlow</Link></section>
 }
 
-export default function App({ client }: { client?: ApiClient }) {
+export default function App({ client = api }: { client?: ApiClient }) {
   return <AuthProvider client={client}><Routes><Route element={<AppLayout />}>
     <Route index element={<HomePage />} />
     <Route element={<GuestRoute />}>
       <Route path="login" element={<AuthPage key="login" mode="login" />} />
       <Route path="register" element={<AuthPage key="register" mode="register" />} />
     </Route>
-    <Route element={<ProtectedRoute />}><Route path="dashboard" element={<DashboardPage />} /></Route>
+    <Route element={<ProtectedRoute />}>
+      <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="projects" element={<ProjectsPage client={client} />} />
+      <Route path="projects/new" element={<NewProjectPage client={client} />} />
+      <Route path="projects/:projectId" element={<ProjectDetailPage client={client} />} />
+    </Route>
     <Route path="*" element={<NotFoundPage />} />
   </Route></Routes></AuthProvider>
 }

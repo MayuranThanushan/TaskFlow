@@ -20,7 +20,7 @@ export function ProtectedRoute() {
   if (session.status !== 'authenticated') return <Navigate to="/login" replace state={{
     returnTo: location.pathname + location.search + location.hash, notice: session.message,
   }} />
-  return <Outlet />
+  return <Outlet key={session.user.id} />
 }
 
 export function GuestRoute() {

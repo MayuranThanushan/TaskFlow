@@ -28,13 +28,13 @@ public sealed class ProjectAccess(TaskFlowDbContext database) : IProjectAccess
     internal static async Task<ProjectRole?> RoleAsync(TaskFlowDbContext database, long actorId, long projectId,
         CancellationToken cancellationToken)
     {
-        var project = await database.Projects.AsNoTracking().Where(project => project.Id == projectId)
-            .Select(project => new
-            {
-                Owner = project.OwnerId == actorId,
-                Member = database.ProjectMembers.Any(member => member.ProjectId == project.Id
-                    && member.UserId == actorId && member.Role == MembershipRole.Member)
-            }).SingleOrDefaultAsync(cancellationToken);
-        return project?.Owner == true ? ProjectRole.Owner : project?.Member == true ? ProjectRole.Member : null;
+        var project = await VisibleProjects(database, actorId).AsNoTracking().Where(project => project.Id == projectId)
+            .Select(project => new { Owner = project.OwnerId == actorId }).SingleOrDefaultAsync(cancellationToken);
+        return project is null ? null : project.Owner ? ProjectRole.Owner : ProjectRole.Member;
     }
+
+    internal static IQueryable<Project> VisibleProjects(TaskFlowDbContext database, long actorId) =>
+        database.Projects.Where(project => actorId > 0 && (project.OwnerId == actorId
+            || database.ProjectMembers.Any(member => member.ProjectId == project.Id
+                && member.UserId == actorId && member.Role == MembershipRole.Member)));
 }
