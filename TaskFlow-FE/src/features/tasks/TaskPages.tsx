@@ -14,11 +14,30 @@ function deadline(value: string | null) { return value ? new Date(value).toLocal
 function Failure({ status, message, retry }: { status: number | undefined; message: string; retry: () => void }) {
   return <div className="project-state"><h1>{status === 404 ? 'Task or project not available.' : status === 400 ? 'That task link is invalid.' : 'We could not load this task view.'}</h1><p role="alert">{status === 404 ? 'It may have been removed, or you may not have access.' : message}</p>{status !== 404 && status !== 400 && <button className="button subtle" onClick={retry}>Try again</button>}</div>
 }
-function TaskQuery({ params, apply }: { params: URLSearchParams; apply: (next: URLSearchParams) => void }) {
+type TaskAssignee = { userId: string; displayName: string; role: string }
+function TaskQuery({ params, apply, assignees, assigneesFailed, retryAssignees }: { params: URLSearchParams; apply: (next: URLSearchParams) => void; assignees: TaskAssignee[]; assigneesFailed: boolean; retryAssignees: () => void }) {
   const [search, setSearch] = useState(params.get('search') ?? '')
   const [pageSize, setPageSize] = useState(params.get('pageSize') ?? '20')
-  return <form className="project-filters" aria-label="Find tasks" onSubmit={event => { event.preventDefault(); const next = new URLSearchParams(params); next.delete('page'); next.set('pageSize', pageSize); if (search.trim()) next.set('search', search.trim()); else next.delete('search'); apply(next) }}>
+  const [status, setStatus] = useState(params.get('status') ?? '')
+  const [priority, setPriority] = useState(params.get('priority') ?? '')
+  const [assignee, setAssignee] = useState(params.get('assigneeId') ?? '')
+  const [sortBy, setSortBy] = useState(params.get('sortBy') ?? 'createdAtUtc')
+  const [direction, setDirection] = useState(params.get('sortDirection') ?? 'desc')
+  return <form className="project-filters" aria-label="Find tasks" onSubmit={event => {
+    event.preventDefault()
+    const next = new URLSearchParams({ pageSize, sortBy, sortDirection: direction })
+    if (search.trim()) next.set('search', search.trim())
+    if (status) next.set('status', status)
+    if (priority) next.set('priority', priority)
+    if (assignee) next.set('assigneeId', assignee)
+    apply(next)
+  }}>
     <div><label htmlFor="task-search">Search tasks</label><input id="task-search" type="search" maxLength={200} value={search} onChange={event => setSearch(event.target.value)} /></div>
+    <div><label htmlFor="task-filter-status">Filter by status</label><select id="task-filter-status" value={status} onChange={event => setStatus(event.target.value)}><option value="">All statuses</option>{Object.entries(statusText).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+    <div><label htmlFor="task-filter-priority">Filter by priority</label><select id="task-filter-priority" value={priority} onChange={event => setPriority(event.target.value)}><option value="">All priorities</option>{['Low', 'Medium', 'High'].map(value => <option key={value}>{value}</option>)}</select></div>
+    <div><label htmlFor="task-filter-assignee">Filter by assignee</label><select id="task-filter-assignee" value={assignee} onChange={event => setAssignee(event.target.value)}><option value="">All assignees</option>{assignee && !assignees.some(member => member.userId === assignee) && <option value={assignee}>User ID: {assignee}</option>}{assignees.map(member => <option key={member.userId} value={member.userId}>{member.displayName} ({member.role})</option>)}</select>{assigneesFailed && <><p className="field-hint">Assignee names could not be loaded. Other filters still work.</p><button className="text-button" type="button" onClick={retryAssignees}>Retry assignee names</button></>}</div>
+    <div><label htmlFor="task-sort">Sort tasks by</label><select id="task-sort" value={sortBy} onChange={event => setSortBy(event.target.value)}><option value="createdAtUtc">Created date</option><option value="title">Title</option><option value="priority">Priority</option><option value="dueDateUtc">Deadline</option></select></div>
+    <div><label htmlFor="task-direction">Task order</label><select id="task-direction" value={direction} onChange={event => setDirection(event.target.value)}><option value="desc">Descending</option><option value="asc">Ascending</option></select></div>
     <div><label htmlFor="task-page-size">Per page</label><select id="task-page-size" value={pageSize} onChange={event => setPageSize(event.target.value)}>{[10, 20, 50, 100].map(size => <option key={size}>{size}</option>)}</select></div>
     <button className="button subtle">Apply</button><button className="button subtle" type="button" onClick={() => apply(new URLSearchParams())}>Reset</button>
   </form>
@@ -27,16 +46,18 @@ export function TasksPage({ client }: { client: ApiClient }) {
   const location = useLocation()
   const { projectId = '' } = useParams(); const [params, setParams] = useSearchParams(); const query = params.toString()
   const path = '/projects/' + encodeURIComponent(projectId)
+  const members = useProjectResource<{ items: TaskAssignee[] }>(client, path + '/members')
+  const filtered = ['search', 'status', 'priority', 'assigneeId'].some(key => params.get(key)?.trim())
   const { result, retry } = useProjectResource<TaskPage>(client, path + '/tasks' + (query ? '?' + query : ''))
   const page = (value: number) => { const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next) }
   return <section className="projects-page"><Link className="text-link" to={path}>Back to project</Link>
     <div className="page-heading"><div><p className="eyebrow">Project work</p><h1>Tasks</h1></div><Link className="button primary" to={path + '/tasks/new'}>New task</Link></div>
     {location.state?.deleted && <p role="status" className="notice">Task deleted.</p>}
-    <TaskQuery key={query} params={params} apply={setParams} />
+    <TaskQuery key={query} params={params} apply={setParams} assignees={members.result.status === 'ready' ? members.result.data.items : []} assigneesFailed={members.result.status === 'error'} retryAssignees={members.retry} />
     {result.status === 'loading' && <p role="status">Loading tasks...</p>}
-    {result.status === 'error' && <Failure status={result.error.status} message={result.error.message} retry={retry} />}
+    {result.status === 'error' && (result.error.status === 400 ? <div className="error-summary" role="alert"><p>These task filters are invalid. Reset the filters or choose supported values and apply again.</p><button className="button subtle" onClick={() => setParams(new URLSearchParams())}>Reset invalid filters</button></div> : <Failure status={result.error.status} message={result.error.message} retry={retry} />)}
     {result.status === 'ready' && <><p role="status">{result.data.totalCount} {result.data.totalCount === 1 ? 'task' : 'tasks'}</p>
-      {result.data.items.length === 0 ? <div className="empty-workspace"><h2>{result.data.totalCount > 0 ? 'No tasks on this page.' : params.get('search') ? 'No tasks match your search.' : 'No tasks yet.'}</h2><p>Create a task or adjust your search to find work here.</p>{result.data.totalCount > 0 && <button className="button subtle" onClick={() => page(1)}>Go to first page</button>}</div>
+      {result.data.items.length === 0 ? <div className="empty-workspace"><h2>{result.data.totalCount > 0 ? 'No tasks on this page.' : filtered ? 'No tasks match your filters.' : 'No tasks yet.'}</h2><p>Create a task or adjust your filters to find work here.</p>{result.data.totalCount > 0 && <button className="button subtle" onClick={() => page(1)}>Go to first page</button>}</div>
         : <ul className="project-grid">{result.data.items.map(task => <li key={task.id} className="project-card"><h2><Link to={'/tasks/' + encodeURIComponent(task.id)}>{task.title}</Link></h2><p>{statusText[task.status]} | {task.priority} priority</p><p>{deadline(task.dueDateUtc)}</p><p>Assignee: {task.assigneeId ?? 'Unassigned'}</p></li>)}</ul>}
       {result.data.totalPages > 1 && <nav className="pagination" aria-label="Task pages"><button className="button subtle" disabled={result.data.page <= 1} onClick={() => page(result.data.page - 1)}>Previous</button><span>Page {result.data.page} of {result.data.totalPages}</span><button className="button subtle" disabled={result.data.page >= result.data.totalPages} onClick={() => page(result.data.page + 1)}>Next</button></nav>}
     </>}

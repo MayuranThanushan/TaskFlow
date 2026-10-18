@@ -28,7 +28,7 @@ Listing supports page/pageSize (defaults 1/20, maximum size 100), trimmed litera
 
 Project detail links to `/projects/:projectId/tasks`, with creation at `/projects/:projectId/tasks/new` and direct detail at `/tasks/:taskId`. The form validates/focuses fields, lists eligible assignees, defaults to unassigned/Medium and converts a local optional deadline to UTC. It preserves failed input/server field errors, prevents duplicate submissions and opens saved detail. Assignee-list failures offer retry and permit unassigned creation.
 
-The list supports search, page size, pagination and URL history, plus empty/no-match/out-of-range/loading/retry states. Advanced filter/sort controls remain step 17; their API contract is supported. Detail shows plain text, status, priority, assignee ID, local deadline and creation time, with links to tasks and current project progress. Returning fetches fresh totals. Account changes remount protected content, clear drafts/titles and ignore stale pending write completions.
+The list supports search, page size, pagination and URL history, plus empty/no-match/out-of-range/loading/retry states. The [complete filter/sort controls](task-queries.md) are implemented in step 17. Detail shows plain text, status, priority, assignee ID, local deadline and creation time, with links to tasks and current project progress. Returning fetches fresh totals. Account changes remount protected content, clear drafts/titles and ignore stale pending write completions.
 
 ## Verification
 

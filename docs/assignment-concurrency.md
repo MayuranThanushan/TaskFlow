@@ -30,6 +30,6 @@ Two new frontend cases verify that an owner title edit opened before removal omi
 
 Release build passed without warnings/errors. All 90 backend tests passed with real MySQL and zero skips (34 non-database and 56 live checks). All 66 frontend tests, type checking, ESLint and production build passed. Production frontend asset hashes are unchanged from step 15. No migration is pending. Existing CI discovers the new cases; hosted CI, Docker execution and selected-host verification remain pending.
 
-Next is step 17: complete task filtering, sorting and pagination controls and expanded query verification.
+Step 17 [task filtering/sorting/pagination](task-queries.md) is now complete. Next is step 18 dashboard totals and project progress.
 
 The unchanged step 15 Production artifact passed a fresh HTTPS migration/readiness/restart rehearsal and real Edge multi-tab verification: a stale owner edit kept a removal-cleared assignment null, a stale selected assignee returned a field error while retaining the draft, explicit unassigned retry succeeded, and removed-member create/edit/status each returned 404. Existing account/project/task/mobile checks also passed. The disposable database was removed and verification services stopped.

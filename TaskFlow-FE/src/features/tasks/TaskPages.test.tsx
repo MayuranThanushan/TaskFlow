@@ -13,21 +13,23 @@ const item = (title = 'First task', id = taskId): TaskItem => ({ id, projectId, 
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeErrors: { title: ['Please choose a valid title.'] } as Record<string, string[]>, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
+  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeErrors: { title: ['Please choose a valid title.'] } as Record<string, string[]>, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listWait: null as Promise<void> | null, listQueries: [] as string[], membersStatus: 200, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (config.url?.startsWith('/auth/')) return auth.adapter(config)
     const path = new URL(config.url!, 'https://taskflow.test'); state.calls.push(path.pathname)
     if (path.pathname === base) return reply(config, state.projectStatus, { id: projectId, name: 'Task project', description: null, ownerId: state.projectOwnerId, createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z', totalTasks: state.tasks.length, completedTasks: 0, progressPercentage: 0 })
-    if (path.pathname === base + '/members') return reply(config, 200, { items: [{ userId: profile.id, displayName: 'Alex', role: 'Owner' }, { userId: memberId, displayName: 'Teammate', role: 'Member' }] })
+    if (path.pathname === base + '/members') return reply(config, state.membersStatus, { items: [{ userId: profile.id, displayName: 'Alex', role: 'Owner' }, { userId: memberId, displayName: 'Teammate', role: 'Member' }] })
     if (path.pathname === base + '/tasks' && config.method === 'post') {
       const values = JSON.parse(config.data); state.posts.push(values); await state.wait
       if (state.createStatus !== 201) return reply(config, state.createStatus, { errors: { assigneeId: ['Choose a current member.'] } })
       const created = { ...item(), ...values }; state.tasks.push(created); return reply(config, 201, created)
     }
     if (path.pathname === base + '/tasks') {
+      state.listQueries.push(path.search); await state.listWait
       if (state.listStatus !== 200) return reply(config, state.listStatus)
-      const items = state.tasks.filter(task => task.title.toLowerCase().includes((path.searchParams.get('search') ?? '').toLowerCase()))
+      let items = state.tasks.filter(task => task.title.toLowerCase().includes((path.searchParams.get('search') ?? '').toLowerCase()) && (!path.searchParams.get('status') || task.status === path.searchParams.get('status')) && (!path.searchParams.get('priority') || task.priority === path.searchParams.get('priority')) && (!path.searchParams.get('assigneeId') || task.assigneeId === path.searchParams.get('assigneeId')))
+      if (path.searchParams.get('sortBy') === 'title') items = [...items].sort((a, b) => a.title.localeCompare(b.title) * (path.searchParams.get('sortDirection') === 'asc' ? 1 : -1))
       const page = Number(path.searchParams.get('page') ?? 1); const pageSize = Number(path.searchParams.get('pageSize') ?? 20)
       return reply(config, 200, { items: items.slice((page - 1) * pageSize, page * pageSize), page, pageSize, totalCount: items.length, totalPages: Math.ceil(items.length / pageSize) })
     }
@@ -46,6 +48,41 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
   return state
 }
 describe('Task pages', () => {
+  it('restores all filters from the URL and preserves them through paging and browser back', async () => {
+    const query = 'status=Done&priority=High&assigneeId=' + memberId + '&sortBy=dueDateUtc&sortDirection=asc&pageSize=10&page=2'
+    const state = setup(base + '/tasks?' + query, Array.from({ length: 25 }, (_, i) => ({ ...item('Match ' + i, String(i + 1)), status: 'Done', priority: 'High', assigneeId: memberId }))); const user = userEvent.setup()
+    expect(await screen.findByText('Page 2 of 3')).toBeVisible(); expect(screen.getByLabelText('Filter by status')).toHaveValue('Done'); expect(screen.getByLabelText('Filter by priority')).toHaveValue('High'); expect(screen.getByLabelText('Filter by assignee')).toHaveValue(memberId); expect(screen.getByLabelText('Sort tasks by')).toHaveValue('dueDateUtc'); expect(screen.getByLabelText('Task order')).toHaveValue('asc')
+    await user.click(screen.getByRole('button', { name: 'Next' })); expect(await screen.findByText('Page 3 of 3')).toBeVisible()
+    const next = new URLSearchParams(state.listQueries.at(-1)); for (const [key, value] of new URLSearchParams(query)) expect(next.get(key)).toBe(key === 'page' ? '3' : value)
+    await user.click(screen.getByRole('button', { name: 'Browser back' })); expect(await screen.findByText('Page 2 of 3')).toBeVisible(); expect(screen.getByLabelText('Filter by assignee')).toHaveValue(memberId)
+    await user.selectOptions(screen.getByLabelText('Filter by priority'), 'Medium'); await user.click(screen.getByRole('button', { name: 'Apply' })); expect(await screen.findByRole('heading', { name: 'No tasks match your filters.' })).toBeVisible(); expect(new URLSearchParams(state.listQueries.at(-1)).has('page')).toBe(false)
+    await user.click(screen.getByRole('button', { name: 'Reset' })); expect(await screen.findByText('25 tasks')).toBeVisible(); expect(screen.getByLabelText('Filter by status')).toHaveValue(''); expect(screen.getByLabelText('Filter by assignee')).toHaveValue(''); expect(screen.getByLabelText('Task order')).toHaveValue('desc')
+  })
+  it('applies search, status, priority and opaque assignee together and renders returned sort order', async () => {
+    const state = setup(base + '/tasks', [{ ...item('Zulu match', '1'), status: 'Done', priority: 'High', assigneeId: memberId }, { ...item('Alpha match', '2'), status: 'Done', priority: 'High', assigneeId: memberId }, item('Wrong status', '3')]); const user = userEvent.setup()
+    await screen.findByText('3 tasks'); await user.type(screen.getByLabelText('Search tasks'), ' match '); await user.selectOptions(screen.getByLabelText('Filter by status'), 'Done'); await user.selectOptions(screen.getByLabelText('Filter by priority'), 'High'); await waitFor(() => expect(screen.getByLabelText('Filter by assignee').querySelector('option[value="' + memberId + '"]')).not.toBeNull()); await user.selectOptions(screen.getByLabelText('Filter by assignee'), memberId); await user.selectOptions(screen.getByLabelText('Sort tasks by'), 'title'); await user.selectOptions(screen.getByLabelText('Task order'), 'asc'); await user.click(screen.getByRole('button', { name: 'Apply' }))
+    expect(await screen.findByText('2 tasks')).toBeVisible(); expect([...document.querySelectorAll('.project-card h2')].map(node => node.textContent)).toEqual(['Alpha match', 'Zulu match'])
+    const query = new URLSearchParams(state.listQueries.at(-1)); expect(Object.fromEntries(query)).toMatchObject({ search: 'match', status: 'Done', priority: 'High', assigneeId: memberId, sortBy: 'title', sortDirection: 'asc' }); expect(screen.queryByRole('link', { name: 'Wrong status' })).not.toBeInTheDocument()
+  })
+  it('recovers invalid query URLs with a reset instead of reporting an invalid task link', async () => {
+    const state = setup(base + '/tasks?sortBy=unsupported'); state.listStatus = 400; const user = userEvent.setup()
+    expect(await screen.findByRole('alert')).toHaveTextContent('These task filters are invalid'); state.listStatus = 200; await user.click(screen.getByRole('button', { name: 'Reset invalid filters' })); expect(await screen.findByRole('heading', { name: 'No tasks yet.' })).toBeVisible(); expect(screen.getByTestId('location')).toHaveTextContent(base + '/tasks'); expect(state.listQueries.at(-1)).toBe('')
+  })
+  it('preserves an opaque assignee filter while names fail to load and retries names independently', async () => {
+    const state = setup(base + '/tasks?assigneeId=' + memberId, [{ ...item(), assigneeId: memberId }]); state.membersStatus = 503; const user = userEvent.setup()
+    expect(await screen.findByText('1 task')).toBeVisible(); expect(await screen.findByRole('button', { name: 'Retry assignee names' })).toBeVisible(); expect(screen.getByLabelText('Filter by assignee')).toHaveValue(memberId); expect(screen.getByRole('option', { name: 'User ID: ' + memberId })).toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('Sort tasks by'), 'priority'); await user.click(screen.getByRole('button', { name: 'Apply' })); await screen.findByText('1 task'); expect(new URLSearchParams(state.listQueries.at(-1)).get('assigneeId')).toBe(memberId)
+    state.membersStatus = 200; await user.click(screen.getByRole('button', { name: 'Retry assignee names' })); expect(await screen.findByRole('option', { name: 'Teammate (Member)' })).toBeInTheDocument(); expect(screen.getByLabelText('Filter by assignee')).toHaveValue(memberId)
+  })
+  it('keeps the newest filtered result when an earlier list request finishes late', async () => {
+    const state = setup(base + '/tasks?search=Old', [item('Old task', '1'), item('Fresh task', '2')]); let release!: () => void; state.listWait = new Promise<void>(resolve => { release = resolve }); const user = userEvent.setup()
+    await waitFor(() => expect(state.listQueries).toContain('?search=Old')); state.listWait = null; await user.clear(screen.getByLabelText('Search tasks')); await user.type(screen.getByLabelText('Search tasks'), 'Fresh'); await user.click(screen.getByRole('button', { name: 'Apply' })); expect(await screen.findByRole('link', { name: 'Fresh task' })).toBeVisible()
+    await act(async () => { release() }); expect(screen.queryByRole('link', { name: 'Old task' })).not.toBeInTheDocument(); expect(screen.getByLabelText('Search tasks')).toHaveValue('Fresh')
+  })
+  it('returns an out-of-range filtered page to page one without dropping filters', async () => {
+    const state = setup(base + '/tasks?page=9&status=Done&sortBy=priority&sortDirection=asc', [{ ...item(), status: 'Done' }]); const user = userEvent.setup()
+    expect(await screen.findByRole('heading', { name: 'No tasks on this page.' })).toBeVisible(); await user.click(screen.getByRole('button', { name: 'Go to first page' })); expect(await screen.findByRole('link', { name: 'First task' })).toBeVisible(); const query = new URLSearchParams(state.listQueries.at(-1)); expect(query.get('page')).toBe('1'); expect(query.get('status')).toBe('Done'); expect(query.get('sortBy')).toBe('priority'); expect(query.get('sortDirection')).toBe('asc')
+  })
   it('does not restore an assignment cleared by removal while an owner edit form was open', async () => {
     const state = setup('/tasks/' + taskId + '/edit', [{ ...item(), assigneeId: memberId }]); const user = userEvent.setup()
     await screen.findByLabelText('Task title'); await waitFor(() => expect(screen.getByLabelText('Assignee')).toHaveValue(memberId))
