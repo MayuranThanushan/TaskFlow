@@ -1,3 +1,4 @@
+using TaskFlow.Tests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -10,27 +11,10 @@ using TaskFlow.Infrastructure;
 
 namespace TaskFlow.Tests;
 
-public sealed class MySqlFactAttribute : FactAttribute
+[Collection(MySqlCollection.Name)]
+public class PersistenceTests(MySqlFixture fixture)
 {
-    public MySqlFactAttribute()
-    {
-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("TASKFLOW_TEST_CONNECTION")))
-            Skip = "Set TASKFLOW_TEST_CONNECTION to a dedicated taskflow_test database to run live MySQL checks.";
-    }
-}
-
-public class PersistenceTests
-{
-    private static TaskFlowDbContext Context(TimeProvider? clock = null)
-    {
-        var connection = Environment.GetEnvironmentVariable("TASKFLOW_TEST_CONNECTION")
-            ?? throw new InvalidOperationException("A dedicated test connection is required.");
-        var parsed = new MySqlConnectionStringBuilder(connection);
-        if (parsed.Database != "taskflow_test" && !parsed.Database.StartsWith("taskflow_test_", StringComparison.Ordinal))
-            throw new InvalidOperationException("Live tests require a taskflow_test database, never a development/production database.");
-        return new TaskFlowDbContext(new DbContextOptionsBuilder<TaskFlowDbContext>()
-            .UseMySQL(connection).Options, clock ?? TimeProvider.System);
-    }
+    private TaskFlowDbContext Context(TimeProvider? clock = null) => fixture.CreateContext(clock);
 
     private static async Task<(ApplicationUser User, Project Project, TaskItem Task)> Seed(TaskFlowDbContext context)
     {
@@ -63,14 +47,11 @@ public class PersistenceTests
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["ConnectionStrings:TaskFlow"] = Environment.GetEnvironmentVariable("TASKFLOW_TEST_CONNECTION")
+            ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString
         }).Build();
-        // Apply the same safety gate before resolving the DI-managed context.
-        await using var safetyCheck = Context();
         await using var services = new ServiceCollection().AddLogging().AddInfrastructure(configuration).BuildServiceProvider();
         await using var scope = services.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<TaskFlowDbContext>();
-        await context.Database.MigrateAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var email = $"{Guid.NewGuid():N}@example.test";
@@ -90,7 +71,6 @@ public class PersistenceTests
     public async Task MigrationAppliesToRealMySqlAndIsUpToDate()
     {
         await using var context = Context();
-        await context.Database.MigrateAsync();
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
         Assert.Single(await context.Database.GetAppliedMigrationsAsync());
         var script = context.Database.GenerateCreateScript();
@@ -105,7 +85,6 @@ public class PersistenceTests
     public async Task DeletedTasksAndProjectsAreHiddenWhileHistoryIsRetained()
     {
         await using var context = Context();
-        await context.Database.MigrateAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var (user, project, task) = await Seed(context);
         context.ActivityLogs.Add(new ActivityLog { ProjectId = project.Id, ActorUserId = user.Id, TaskId = task.Id, ActionType = ActivityAction.TaskCreated });
@@ -129,7 +108,6 @@ public class PersistenceTests
     public async Task DatabaseRejectsInvalidEnumsForeignKeysAndDuplicateMemberships()
     {
         await using var context = Context();
-        await context.Database.MigrateAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var (user, project, task) = await Seed(context);
         var statusError = await Assert.ThrowsAsync<MySqlException>(() => context.Database.ExecuteSqlInterpolatedAsync(
@@ -153,7 +131,6 @@ public class PersistenceTests
     public async Task NormalizedEmailsAreUniqueInTheActualDatabase()
     {
         await using var context = Context();
-        await context.Database.MigrateAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var (user, _, _) = await Seed(context);
         context.Users.Add(new ApplicationUser { DisplayName = "Duplicate", Email = user.Email!.ToUpperInvariant(), NormalizedEmail = user.NormalizedEmail! });
@@ -167,7 +144,6 @@ public class PersistenceTests
     {
         var clock = new TestClock();
         await using var context = Context(clock);
-        await context.Database.MigrateAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
         var (_, _, task) = await Seed(context);
         var created = task.CreatedAtUtc;
@@ -192,7 +168,6 @@ public class PersistenceTests
     public async Task DataAndActivityRollBackTogetherAndHistoryCannotBeEdited()
     {
         await using var context = Context();
-        await context.Database.MigrateAsync();
         long projectId;
         await using (var transaction = await context.Database.BeginTransactionAsync())
         {

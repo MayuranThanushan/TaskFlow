@@ -57,11 +57,12 @@ Open the local URL printed by Vite (normally `http://localhost:5173`). Vite forw
 dotnet test TaskFlow.slnx --no-restore
 cd TaskFlow-FE
 npm run typecheck
+npm test
 npm run build
 npm run lint
 ```
 
-The backend has 16 passing tests when a dedicated TASKFLOW_TEST_CONNECTION is configured: nine API/provider checks and seven live MySQL checks. Without that connection the seven live tests are explicitly skipped. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Vitest and Testing Library are installed but have no configured test script or meaningful suite yet. Add behavior tests with the features and integration infrastructure in step 06.
+The backend has 22 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 15 API/provider/safety checks and seven live MySQL checks. Without that connection the seven live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library is configured with two component checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -74,4 +75,4 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 05 are complete. Next is step 06: shared MySQL test fixtures, frontend test infrastructure and CI. The local verification databases are migrated; their portable server is stopped.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 06 are complete. Next is step 07: registration/login/me/logout, CSRF protection and secure authenticated sessions. The local verification databases are migrated; their portable server is stopped.

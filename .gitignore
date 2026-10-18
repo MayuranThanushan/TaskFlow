@@ -5,6 +5,8 @@
 **/dist/
 **/dist-ssr/
 **/*.tsbuildinfo
+**/__pycache__/
+**/*.pyc
 **/coverage/
 **/TestResults/
 **/playwright-report/

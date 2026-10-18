@@ -1,0 +1,25 @@
+name: taskflow-tests
+
+services:
+  mysql-test:
+    image: mysql:8.4.11
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${TASKFLOW_TEST_ROOT_PASSWORD:?Set a local test root password in .env.test}
+      MYSQL_DATABASE: taskflow_test
+      MYSQL_USER: taskflow_test
+      MYSQL_PASSWORD: ${TASKFLOW_TEST_PASSWORD:?Set a local test account password in .env.test}
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s

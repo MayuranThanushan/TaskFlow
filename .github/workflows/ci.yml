@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4.11
+        env:
+          # Disposable CI service credentials, never production secrets.
+          MYSQL_ROOT_PASSWORD: TaskFlow-CI-root-only-84!
+          MYSQL_DATABASE: taskflow_test
+          MYSQL_USER: taskflow_test
+          MYSQL_PASSWORD: TaskFlow-CI-test-only-84!
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: TaskFlow-BE/**/packages.lock.json
+      - name: Restore locked dependencies and EF tooling
+        run: |
+          dotnet restore TaskFlow.slnx --locked-mode
+          dotnet tool restore
+      - name: Build
+        run: dotnet build TaskFlow.slnx --configuration Release --no-restore
+      - name: Check migration snapshot
+        env:
+          ConnectionStrings__TaskFlow: Server=127.0.0.1;Database=taskflow_design;User ID=unused;Password=unused
+        run: dotnet ef migrations has-pending-model-changes --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build
+      - name: Test against MySQL
+        env:
+          TASKFLOW_REQUIRE_MYSQL: 'true'
+          TASKFLOW_TEST_CONNECTION: Server=127.0.0.1;Port=${{ job.services.mysql.ports['3306'] }};Database=taskflow_test;User ID=taskflow_test;Password=TaskFlow-CI-test-only-84!
+        run: dotnet test TaskFlow.slnx --configuration Release --no-build --no-restore --logger "trx;LogFileName=backend.trx" --results-directory TestResults/backend --collect:"XPlat Code Coverage"
+      - name: Require executed tests with no skips
+        run: python3 scripts/verify_test_results.py TestResults/backend/backend.trx
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: TestResults/backend/
+          retention-days: 7
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: TaskFlow-FE
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: TaskFlow-FE/.nvmrc
+          cache: npm
+          cache-dependency-path: TaskFlow-FE/package-lock.json
+      - name: Use pinned npm
+        run: npm install --global npm@11.3.0
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Component tests
+        run: npm run test:ci
+      - name: Production build
+        run: npm run build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: frontend-test-results
+          path: TaskFlow-FE/test-results/
+          retention-days: 7
+          if-no-files-found: warn
