@@ -1,6 +1,6 @@
 # Frontend authentication - step 08
 
-The React application provides `/`, `/register`, `/login`, protected `/dashboard`, and an unknown-route recovery page. Use [HTTPS setup](authentication.md#local-https-setup) with MySQL running; account endpoints reject HTTP. Vite proxies `/api` to the API. Production must serve the SPA and API under one HTTPS origin and provide history fallback for frontend deep links; step 09 configures the selected host.
+The React application provides `/`, `/register`, `/login`, protected `/dashboard`, and an unknown-route recovery page. Use [HTTPS setup](authentication.md#local-https-setup) with MySQL running; account endpoints reject HTTP. Vite proxies `/api` to the API. Production must serve the SPA and API under one HTTPS origin and provide history fallback for frontend deep links; [portable deployment](deployment.md) provides this host layout and records the remaining environment verification gates.
 
 ## Screens and session behavior
 

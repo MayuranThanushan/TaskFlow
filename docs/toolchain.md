@@ -55,6 +55,6 @@ docker compose ps
 
 The database binds only to 127.0.0.1:3306, uses a named volume, and creates taskflow_dev with a non-root taskflow user. Health status checks server responsiveness; later integration checks must verify actual authenticated queries. Do not put the root password in application configuration.
 
-The future application connection string uses Oracle Connector/NET syntax: `Server=127.0.0.1;Port=3306;Database=taskflow_dev;User ID=taskflow;Password=<local value>`. Supply it through `ConnectionStrings__TaskFlow` in local process configuration/user secrets during step 05; the current API does not read it yet. Remote hosting requires TLS and separately provisioned credentials.
+The application connection string uses Oracle Connector/NET syntax: `Server=127.0.0.1;Port=3306;Database=taskflow_dev;User ID=taskflow;Password=<local value>`. Supply it through `ConnectionStrings__TaskFlow` in local process configuration/user secrets, or a mounted configuration file as described in [deployment](deployment.md). Remote hosting requires TLS and separately provisioned credentials.
 
 Use a separate taskflow_test database/credentials for integration tests. Do not point test reset or migration commands at shared/production databases. The Compose recipe has not been executed here because no Docker CLI/daemon is available. Step 05 instead verified Oracle portable MySQL 8.4.11, applied the migration and ran live tests. Validate the Docker image pull separately when provisioning with Compose.

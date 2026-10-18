@@ -91,3 +91,5 @@ GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with
 ## Authentication implementation amendment (step 07)
 
 Registration/login passwords have a 128-code-unit upper bound; the password is never trimmed. Auth routes require HTTPS, use no-store caching and emit profile DTOs with string IDs. State-changing controller requests require antiforgery validation; all controller actions require authentication by default except explicit anonymous actions. Validation field names follow JSON names, and duplicate JSON keys are rejected globally. See [authentication](../authentication.md) for session, rate-limit, certificate and verification details.
+
+Step 09 adds public GET /api/v1/health/ready with no-store caching: 200 `{ "status": "Healthy" }` when MySQL connects, migrations are current and an Identity table is readable; otherwise 503 `{ "status": "Unhealthy" }`. This health response intentionally uses the health DTO rather than Problem Details and exposes no database diagnostics. Liveness stays independent. See [deployment](../deployment.md).

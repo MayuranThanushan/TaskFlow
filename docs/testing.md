@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-Delivery step 06 is implemented. After step 07, the suite contains 30 backend tests (15 requiring MySQL) and two frontend component checks. Local Release verification passed all 30 backend tests with no skips, plus frontend type-check, lint, tests and production build. GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 35 backend tests (16 requiring MySQL) and 24 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -8,7 +8,7 @@ PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime
 
 Only `taskflow_test` or a name beginning `taskflow_test_` is accepted. A non-root test account is required. Safety tests exercise rejection of development/production database names and privileged/missing accounts before a connection is attempted. These guards reduce accidental misuse; always supply an isolated test database and restricted credentials.
 
-Local mode (no TASKFLOW_TEST_CONNECTION): 15 checks run and 15 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
+Local mode (no TASKFLOW_TEST_CONNECTION): 19 checks run and 16 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
 
 With a dedicated connection already configured:
 
@@ -61,11 +61,12 @@ Use `npm run test:watch` interactively. The CI command generates test-results/ju
 `.github/workflows/ci.yml` runs for pushes to main, pull requests and manual dispatch. It has read-only repository permissions, immutable official Action commit pins, disabled persisted checkout credentials, concurrency cancellation and job timeouts.
 
 - **Backend checks:** Ubuntu runner, pinned SDK via global.json, cached locked NuGet restore, local EF tool restore, Release build, migration snapshot check, mandatory live MySQL tests with a fresh 8.4.11 service, TRX no-skip gate, and artifact upload for results/Cobertura even on failures.
+- **Deployment smoke:** waits for backend/frontend checks, builds both Docker targets, starts private MySQL, applies migrations explicitly, verifies production HTTPS routing/authentication, recreates the app with persisted keys and checks session recovery/logout revocation. Disposable CI volumes are removed afterward. This job has not run on a Docker host yet.
 - **Frontend checks:** pinned Node/npm, npm ci, type-check, lint, Vitest/JUnit and production build, with JUnit artifact upload even on failures.
 
-The disposable MySQL service uses hardcoded CI-only credentials and a dynamically mapped port; no production secrets are required or used. Results are retained for seven days. The workflow deploys nothing. Python 3 is supplied by the Ubuntu hosted runner for the TRX check.
+The disposable MySQL service uses hardcoded CI-only credentials and a dynamically mapped port; no production secrets are required or used. Results are retained for seven days. The workflow publishes nothing; the deployment smoke job starts only temporary local services on its runner. Python 3 is supplied by the Ubuntu hosted runner for the TRX check.
 
-The workflow passed actionlint v1.7.12 validation locally. All invoked application check commands were exercised locally; the hosted Ubuntu/container path still requires its first GitHub run. When a remote is connected, configure **Backend checks** and **Frontend checks** as required branch checks through repository settings if desired; no remote/branch settings were changed here.
+The workflow passed actionlint v1.7.12 validation locally. Backend/frontend check commands were exercised locally; the new container build/recreation commands require their first Docker-host run. When a remote is connected, configure **Backend checks** and **Frontend checks** as required branch checks through repository settings if desired; no remote/branch settings were changed here.
 
 References: [xUnit shared context](https://xunit.net/docs/shared-context), [Testing Library setup](https://testing-library.com/docs/react-testing-library/setup/), and [GitHub .NET build/test guidance](https://docs.github.com/en/actions/tutorials/build-and-test-code/net).
 

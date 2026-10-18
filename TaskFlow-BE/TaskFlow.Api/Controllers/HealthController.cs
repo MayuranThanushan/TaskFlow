@@ -17,6 +17,19 @@ public sealed class HealthController(HealthCheckService healthChecks) : Controll
         var report = await healthChecks.CheckHealthAsync(_ => false, cancellationToken);
         return Ok(new HealthResponse(report.Status.ToString()));
     }
+
+    /// <summary>Checks MySQL connectivity, applied migrations and Identity table access without changing data.</summary>
+    [HttpGet("ready")]
+    [ProducesResponseType<HealthResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<HealthResponse>(StatusCodes.Status503ServiceUnavailable)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<HealthResponse>> Ready(CancellationToken cancellationToken)
+    {
+        var report = await healthChecks.CheckHealthAsync(check => check.Tags.Contains("ready"), cancellationToken);
+        return StatusCode(report.Status == HealthStatus.Healthy ? StatusCodes.Status200OK
+            : StatusCodes.Status503ServiceUnavailable, new HealthResponse(report.Status.ToString()));
+    }
+
 }
 
 public sealed record HealthResponse(string Status);

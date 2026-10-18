@@ -44,7 +44,8 @@ public static class ApiServiceExtensions
                 result.ContentTypes.Add("application/problem+json");
                 return result;
             });
-        services.AddHealthChecks();
+        services.AddHealthChecks().AddCheck<TaskFlow.Api.Health.DatabaseReadinessCheck>(
+            "database", tags: ["ready"], timeout: TimeSpan.FromSeconds(5));
         services.AddOpenApi();
         return services;
     }

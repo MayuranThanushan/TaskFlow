@@ -103,3 +103,67 @@ jobs:
           path: TaskFlow-FE/test-results/
           retention-days: 7
           if-no-files-found: warn
+
+  deployment:
+    name: Deployment smoke
+    needs: [backend, frontend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      TASKFLOW_HOST: localhost
+      TASKFLOW_BIND_ADDRESS: 127.0.0.1
+      TASKFLOW_HTTPS_PORT: '8443'
+      TASKFLOW_DEPLOY_SECRETS_DIR: ${{ github.workspace }}/.local/deployment-ci
+      # Disposable CI account; never a deployed or production credential.
+      TASKFLOW_SMOKE_EMAIL: ci-smoke@example.test
+      TASKFLOW_SMOKE_PASSWORD: TaskFlow-CI-smoke-only-123!
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Prepare isolated secrets and localhost TLS certificate
+        run: |
+          python3 - <<'PY'
+          import os, secrets, subprocess
+          from pathlib import Path
+          directory = Path(os.environ['TASKFLOW_DEPLOY_SECRETS_DIR'])
+          directory.mkdir(parents=True, mode=0o700)
+          password = secrets.token_urlsafe(32)
+          files = {
+              'mysql_password': password,
+              'mysql_root_password': secrets.token_urlsafe(32),
+              'ConnectionStrings__TaskFlow': f'Server=mysql;Database=taskflow;User ID=taskflow;Password={password};SslMode=Disabled',
+              'Kestrel__Certificates__Default__Password': secrets.token_urlsafe(32),
+          }
+          for name, value in files.items():
+              (directory / name).write_text(value)
+          subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '2',
+              '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost',
+              '-keyout', str(directory / 'tls.key'), '-out', str(directory / 'tls.pem')], check=True,
+              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+          subprocess.run(['openssl', 'pkcs12', '-export', '-inkey', str(directory / 'tls.key'),
+              '-in', str(directory / 'tls.pem'), '-out', str(directory / 'tls.pfx'),
+              '-passout', 'file:' + str(directory / 'Kestrel__Certificates__Default__Password')], check=True)
+          for name in [*files, 'tls.pfx']:
+              (directory / name).chmod(0o444)
+          PY
+      - name: Validate and build deployment images
+        run: |
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml --profile tools config --quiet
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml --profile tools build app migrate
+      - name: Start private MySQL and deliberately apply migrations
+        run: |
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml up -d --wait --wait-timeout 180 mysql
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml --profile tools run --rm migrate
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml up -d app
+          curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 2 --cacert "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" https://localhost:8443/api/v1/health/ready
+      - name: Verify published shell and authentication
+        run: python3 scripts/smoke_deployment.py https://localhost:8443 --ca-file "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" --register --keep-session .local/restart-session.lwp
+      - name: Recreate app and verify persisted session and logout revocation
+        run: |
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml up -d --force-recreate app
+          curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 2 --cacert "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" https://localhost:8443/api/v1/health/ready
+          python3 scripts/smoke_deployment.py https://localhost:8443 --ca-file "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" --resume-session .local/restart-session.lwp
+      - name: Remove disposable CI services and volumes
+        if: always()
+        run: docker compose -p taskflow-deploy-ci -f compose.deploy.yaml down --volumes --remove-orphans

@@ -3,6 +3,14 @@ using TaskFlow.Api.Middleware;
 using TaskFlow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secretsDirectory)
+    builder.Configuration.AddKeyPerFile(source =>
+    {
+        source.FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Path.GetFullPath(secretsDirectory));
+        source.Optional = false;
+        source.ReloadOnChange = false;
+        source.IgnoreCondition = name => name.StartsWith('.') || name.EndsWith(".pfx", StringComparison.OrdinalIgnoreCase);
+    });
 
 // Keep local and hosted logging independent of Windows Event Log permissions.
 builder.Logging.ClearProviders();
@@ -57,12 +65,43 @@ if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"
     app.UseHttpsRedirection();
 }
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    context.Response.Headers.ContentSecurityPolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
+    await next(context);
+});
+
+// Public compiled assets contain no credentials; all data remains behind the API's authorization.
+app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api")
+    && !context.Request.Path.StartsWithSegments("/openapi"), branch => branch.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl =
+        context.Context.Request.Path.StartsWithSegments("/assets")
+            ? "public,max-age=31536000,immutable" : "no-cache"
+}));
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+app.MapFallback(async context =>
+{
+    // API/OpenAPI misses must remain JSON 404s, never the SPA entry document.
+    var path = context.Request.Path;
+    var index = Path.Combine(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"), "index.html");
+    if (path.StartsWithSegments("/api") || path.StartsWithSegments("/openapi") || !File.Exists(index))
+    {
+        await ProblemResponses.WriteAsync(context, ProblemResponses.Create(context, StatusCodes.Status404NotFound));
+        return;
+    }
+    context.Response.ContentType = "text/html; charset=utf-8";
+    context.Response.Headers.CacheControl = "no-cache";
+    await context.Response.SendFileAsync(index, context.RequestAborted);
+}).WithMetadata(new HttpMethodMetadata(["GET", "HEAD"])).AllowAnonymous();
 
 app.Run();
 

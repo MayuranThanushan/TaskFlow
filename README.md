@@ -1,6 +1,6 @@
 # TaskFlow
 
-Project and task management application using React/TypeScript, ASP.NET Core, and MySQL. The API foundation, Identity persistence, application entities and initial MySQL migration are implemented. Secure account endpoints are implemented; frontend account screens and project/task workflows are still pending.
+Project and task management application using React/TypeScript, ASP.NET Core, and MySQL. The API foundation, Identity persistence, application entities and initial MySQL migration are implemented. Account endpoints, frontend authentication and protected navigation are implemented. Portable deployment configuration is prepared; project/task workflows follow.
 
 ## Workspace
 
@@ -62,7 +62,7 @@ npm run build
 npm run lint
 ```
 
-The backend has 30 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 15 API/provider/safety checks and 15 live persistence/auth checks. Without that connection the 15 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 24 API client and authentication/navigation checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
+The backend has 35 passing tests with a dedicated TASKFLOW_TEST_CONNECTION: 19 API/provider/deployment/safety checks and 16 live persistence/auth/readiness checks. Without that connection the 16 live tests are explicitly skipped. CI requires the connection and rejects skips. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Frontend Vitest/Testing Library runs 24 API client and authentication/navigation checks. See [testing and CI](docs/testing.md) for the shared database fixture, test commands, reports and GitHub Actions workflow.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -75,6 +75,10 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 are complete. Next is step 09: early deployment configuration and smoke verification in a selected environment. The local verification databases are migrated; their portable server is stopped.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 08 and the portable preparation/local rehearsal for step 09 are complete. Container execution and selected-host verification remain pending. Next feature task is step 10: project-access policy and transactional activity foundation. The local verification databases are migrated; their portable server is stopped.
 
 For account requests use [the HTTPS authentication setup](docs/authentication.md). HTTP remains suitable for liveness checks only; auth requests over HTTP are rejected. The API has registration/login/me/logout and CSRF bootstrap endpoints; the [frontend account screens and protected navigation](docs/frontend-authentication.md) are implemented and verified in Edge.
+
+## Portable deployment
+
+See [deployment configuration and verification](docs/deployment.md) for the single-origin HTTPS host, private MySQL, mounted secrets, explicit migrations, persistent keys and smoke commands. `scripts/Publish-App.ps1` produces a combined API/React release. `compose.deploy.yaml` and `deploy/Dockerfile` provide portable Linux images. The published Production app passed local HTTPS/browser/restart checks; Docker/hosted CI execution and a public hosting target are still pending. Nothing has been published.

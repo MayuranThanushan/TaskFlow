@@ -52,3 +52,5 @@ A separate local smoke check started API and Vite on temporary ports and verifie
 Implementation follows [ASP.NET Core error-handling guidance](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-10.0) and [Vite proxy configuration](https://vite.dev/config/server-options#server-proxy).
 
 Step 07 account routes now require HTTPS and use default controller authorization plus global CSRF protection. Liveness remains explicitly public. The initial HTTP proxy configuration is for foundation checks; see [authentication](authentication.md) for the implemented HTTPS proxy configuration.
+
+Step 09 adds database/schema readiness at `/api/v1/health/ready` and production static SPA hosting with preserved JSON API errors. See [deployment](deployment.md) for the published-app smoke check and remaining host/container gates.

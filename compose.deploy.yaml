@@ -1,0 +1,87 @@
+name: taskflow-deploy
+
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: taskflow
+      MYSQL_USER: taskflow
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      TZ: UTC
+    secrets: [mysql_password, mysql_root_password]
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
+    volumes: ["mysql-data:/var/lib/mysql"]
+    networks: [database]
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$(cat /run/secrets/mysql_password) mysql --protocol=tcp --host=127.0.0.1 --user=taskflow --database=taskflow --execute='SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  migrate:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      target: migrate
+    profiles: [tools]
+    depends_on:
+      mysql: {condition: service_healthy}
+    secrets:
+      - source: database_connection
+        target: ConnectionStrings__TaskFlow
+    networks: [database]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+  app:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      target: app
+    restart: unless-stopped
+    depends_on:
+      mysql: {condition: service_healthy}
+    environment:
+      AllowedHosts: ${TASKFLOW_HOST:?Set the public hostname without scheme or port}
+      Kestrel__Certificates__Default__Path: /run/secrets/tls.pfx
+    ports:
+      - "${TASKFLOW_BIND_ADDRESS:-127.0.0.1}:${TASKFLOW_HTTPS_PORT:-8443}:8443"
+    secrets:
+      - source: database_connection
+        target: ConnectionStrings__TaskFlow
+      - source: tls_password
+        target: Kestrel__Certificates__Default__Password
+      - source: tls_certificate
+        target: tls.pfx
+    volumes: ["protection-keys:/var/lib/taskflow/keys"]
+    networks: [edge, database]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
+networks:
+  edge:
+  database:
+    internal: true
+
+volumes:
+  mysql-data:
+  protection-keys:
+
+secrets:
+  mysql_password:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR:?Set an absolute secrets directory}/mysql_password
+  mysql_root_password:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/mysql_root_password
+  database_connection:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/ConnectionStrings__TaskFlow
+  tls_password:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/Kestrel__Certificates__Default__Password
+  tls_certificate:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR}/tls.pfx
