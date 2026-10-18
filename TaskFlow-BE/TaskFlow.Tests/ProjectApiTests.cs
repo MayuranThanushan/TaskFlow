@@ -156,6 +156,61 @@ public sealed class ProjectApiTests(MySqlFixture fixture)
         Assert.Equal(HttpStatusCode.Created, (await host.CreateAsync(owner, "Recovered")).StatusCode);
     }
 
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task OwnerCanReplaceAndSoftDeleteWhileMembersCannotAndHistoryIsRetained()
+    {
+        await using var host = new ProjectHost(fixture); await host.InitializeAsync();
+        using var owner = await host.LoginAsync(0); using var member = await host.LoginAsync(1); using var outsider = await host.LoginAsync(2); using var anonymous = host.Client();
+        var created = await Body(await host.CreateAsync(owner, "Original", "Description"));
+        var id = created.GetProperty("id").GetString()!; var numericId = long.Parse(id);
+        await using (var db = fixture.CreateContext())
+        {
+            db.ProjectMembers.Add(new ProjectMember { ProjectId = numericId, UserId = host.Users[1].Id });
+            db.Tasks.Add(new TaskItem { ProjectId = numericId, Title = "Retained task" }); await db.SaveChangesAsync();
+        }
+        foreach (var method in new[] { HttpMethod.Put, HttpMethod.Delete })
+        {
+            await Problem(await host.WriteAsync(anonymous, method, id), HttpStatusCode.Unauthorized);
+            await Problem(await host.WriteAsync(member, method, id), HttpStatusCode.Forbidden);
+            await Problem(await host.WriteAsync(outsider, method, id), HttpStatusCode.NotFound);
+            using var unsafeRequest = new HttpRequestMessage(method, "/api/v1/projects/" + id) { Content = JsonContent.Create(new { name = "Changed" }) };
+            await Problem(await owner.SendAsync(unsafeRequest), HttpStatusCode.BadRequest);
+        }
+        var unchanged = await Body(await host.WriteAsync(owner, HttpMethod.Put, id, "{\"name\":\" Original \",\"description\":\" Description \"}"));
+        Assert.Equal(created.GetProperty("updatedAtUtc").GetString(), unchanged.GetProperty("updatedAtUtc").GetString());
+        var updated = await Body(await host.WriteAsync(owner, HttpMethod.Put, id));
+        Assert.Equal("Changed", updated.GetProperty("name").GetString()); Assert.Equal(JsonValueKind.Null, updated.GetProperty("description").ValueKind);
+        await Problem(await host.WriteAsync(owner, HttpMethod.Put, id, "{\"name\":\" \"}"), HttpStatusCode.BadRequest);
+        await Problem(await host.WriteAsync(owner, HttpMethod.Put, id, "{\"name\":\"Bad\",\"ownerId\":\"1\"}"), HttpStatusCode.BadRequest);
+        Assert.Equal(HttpStatusCode.NoContent, (await host.WriteAsync(owner, HttpMethod.Delete, id)).StatusCode);
+        await Problem(await owner.GetAsync("/api/v1/projects/" + id), HttpStatusCode.NotFound);
+        await Problem(await member.GetAsync("/api/v1/projects/" + id), HttpStatusCode.NotFound);
+        await Problem(await host.WriteAsync(owner, HttpMethod.Delete, id), HttpStatusCode.NotFound);
+        await Problem(await host.WriteAsync(owner, HttpMethod.Put, id), HttpStatusCode.NotFound);
+        Assert.Equal(0, (await Body(await owner.GetAsync("/api/v1/projects"))).GetProperty("totalCount").GetInt32());
+        await using var database = fixture.CreateContext();
+        Assert.NotNull((await database.Projects.IgnoreQueryFilters().SingleAsync(p => p.Id == numericId)).DeletedAtUtc);
+        Assert.False(await database.Tasks.AnyAsync(t => t.ProjectId == numericId));
+        Assert.Null((await database.Tasks.IgnoreQueryFilters().SingleAsync(t => t.ProjectId == numericId)).DeletedAtUtc);
+        Assert.False(await database.ProjectMembers.AnyAsync(m => m.ProjectId == numericId));
+        Assert.Single(await database.ProjectMembers.IgnoreQueryFilters().Where(m => m.ProjectId == numericId).ToListAsync());
+        Assert.False(await database.ActivityLogs.AnyAsync(a => a.ProjectId == numericId));
+        Assert.Equal(new[] { ActivityAction.ProjectCreated, ActivityAction.ProjectUpdated, ActivityAction.ProjectDeleted },
+            await database.ActivityLogs.IgnoreQueryFilters().Where(a => a.ProjectId == numericId).OrderBy(a => a.Id).Select(a => a.ActionType).ToArrayAsync());
+    }
+
+    [MySqlFact, Trait("Category", "MySql")]
+    public async Task UpdateAndDeletionRollBackWhenActivityCannotBeSaved()
+    {
+        var failure = new FailActivity(); await using var host = new ProjectHost(fixture, failure); await host.InitializeAsync(); using var owner = await host.LoginAsync(0);
+        var id = (await Body(await host.CreateAsync(owner, "Retained"))).GetProperty("id").GetString()!;
+        failure.Enabled = true;
+        await Problem(await host.WriteAsync(owner, HttpMethod.Put, id), HttpStatusCode.InternalServerError);
+        await Problem(await host.WriteAsync(owner, HttpMethod.Delete, id), HttpStatusCode.InternalServerError);
+        Assert.Equal("Retained", (await Body(await owner.GetAsync("/api/v1/projects/" + id))).GetProperty("name").GetString());
+        await using var db = fixture.CreateContext(); Assert.Equal(1, await db.ActivityLogs.CountAsync(a => a.ProjectId == long.Parse(id)));
+    }
+
     private static async Task<JsonElement> Body(HttpResponseMessage response)
     {
         Assert.True(response.IsSuccessStatusCode, $"Unexpected HTTP {(int)response.StatusCode}");
@@ -221,6 +276,12 @@ public sealed class ProjectApiTests(MySqlFixture fixture)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/projects") { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+            request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
+        }
+        public async Task<HttpResponseMessage> WriteAsync(HttpClient client, HttpMethod method, string id, string body = "{\"name\":\"Changed\"}")
+        {
+            var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
+            using var request = new HttpRequestMessage(method, "/api/v1/projects/" + id) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async ValueTask DisposeAsync()

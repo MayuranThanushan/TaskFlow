@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 65 backend tests (31 requiring MySQL) and 38 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 67 backend tests (33 requiring MySQL) and 42 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -75,3 +75,5 @@ Step 07 authentication coverage and real HTTPS verification are detailed in [aut
 Step 10 adds permission-matrix, safe denial mapping and live transaction/locking checks. See [project foundation](project-foundation.md) for real rollback, no-op, task-scope and waiting-writer verification. Backend Release tests passed all 59 cases without skips. Existing frontend files/dependencies are unchanged by step 10.
 
 Step 11 adds six live project API tests and fourteen frontend project tests; all 65 backend and 38 frontend checks passed. The final published app also passed real Edge HTTPS project, privacy, reload, pagination and mobile checks. See [projects](projects.md). Project API HTTP tests clean only their own synthetic data in FK order.
+
+Step 12 adds two live API/database tests for owner-only replacement, soft deletion, retained rows, no-op history and rollback, plus four frontend edit/confirmation/role/failure tests. All 67 backend and 42 frontend tests pass.

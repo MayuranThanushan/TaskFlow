@@ -12,7 +12,7 @@ public sealed class ProjectsController(IProjectService projects) : ControllerBas
 {
     [HttpPost]
     [ProducesResponseType<ProjectDto>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> Create(CreateProjectRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(ProjectWriteRequest request, CancellationToken cancellationToken)
     {
         var project = await projects.CreateAsync(Actor(), request.Name, request.Description, cancellationToken);
         return CreatedAtAction(nameof(Get), new { projectId = project.Id }, project);
@@ -36,20 +36,39 @@ public sealed class ProjectsController(IProjectService projects) : ControllerBas
     [ProducesResponseType<ProjectDetailsDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(string projectId, CancellationToken cancellationToken)
     {
-        if (projectId.Length == 0 || !projectId.All(char.IsAsciiDigit)
-            || !long.TryParse(projectId, NumberStyles.None, CultureInfo.InvariantCulture, out var id) || id <= 0)
-        {
-            ModelState.AddModelError("projectId", "Enter a positive decimal ID within the signed BIGINT range.");
-            return ValidationProblem(ModelState);
-        }
+        if (!TryId(projectId, out var id)) return ValidationProblem(ModelState);
         return Ok(await projects.GetAsync(Actor(), id, cancellationToken));
+    }
+
+    [HttpPut("{projectId}")]
+    public async Task<IActionResult> Update(string projectId, ProjectWriteRequest request, CancellationToken cancellationToken)
+    {
+        if (!TryId(projectId, out var id)) return ValidationProblem(ModelState);
+        return Ok(await projects.UpdateAsync(Actor(), id, request.Name, request.Description, cancellationToken));
+    }
+
+    [HttpDelete("{projectId}")]
+    public async Task<IActionResult> Delete(string projectId, CancellationToken cancellationToken)
+    {
+        if (!TryId(projectId, out var id)) return ValidationProblem(ModelState);
+        await projects.DeleteAsync(Actor(), id, cancellationToken);
+        return NoContent();
+    }
+
+    private bool TryId(string value, out long id)
+    {
+        id = 0;
+        if (value.Length > 0 && value.All(char.IsAsciiDigit)
+            && long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out id) && id > 0) return true;
+        ModelState.AddModelError("projectId", "Enter a positive decimal ID within the signed BIGINT range.");
+        return false;
     }
 
     private long? Actor() => long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), NumberStyles.None,
         CultureInfo.InvariantCulture, out var id) && id > 0 ? id : null;
 }
 
-public sealed class CreateProjectRequest
+public sealed class ProjectWriteRequest
 {
     private string name = "";
     private string? description;

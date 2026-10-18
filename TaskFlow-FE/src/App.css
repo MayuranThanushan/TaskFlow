@@ -114,3 +114,7 @@ h1 { font-size: clamp(40px, 6vw, 76px); line-height: 1.06; letter-spacing: -.055
   .pagination { gap: 12px; }
   .pagination .button { padding-inline: 14px; }
 }
+
+.project-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
+.button.danger { background: #a32135; color: white; border-color: #a32135; }
+.delete-confirmation { border: 1px solid #a32135; border-radius: 12px; padding: 24px; width: 100%; overflow-wrap: anywhere; }

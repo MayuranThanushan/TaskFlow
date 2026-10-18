@@ -10,6 +10,8 @@ public sealed record ProjectListOptions(int Page = 1, int PageSize = 20, string?
 public interface IProjectService
 {
     Task<ProjectDto> CreateAsync(long? actorId, string name, string? description, CancellationToken cancellationToken = default);
+    Task<ProjectDto> UpdateAsync(long? actorId, long projectId, string name, string? description, CancellationToken cancellationToken = default);
+    Task DeleteAsync(long? actorId, long projectId, CancellationToken cancellationToken = default);
     Task<ProjectPage> ListAsync(long? actorId, ProjectListOptions options, CancellationToken cancellationToken = default);
     Task<ProjectDetailsDto> GetAsync(long? actorId, long projectId, CancellationToken cancellationToken = default);
 }

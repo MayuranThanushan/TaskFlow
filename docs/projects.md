@@ -1,6 +1,6 @@
-# Project creation, listing and detail - step 11
+# Project workflows - steps 11 and 12
 
-The first project workflow is implemented across the API, database use cases and React pages. Project updates/deletion remain step 12; membership management and task editing follow in their own steps. No migration or dependency change is required.
+The first project workflow is implemented across the API, database use cases and React pages. Owner-only editing and confirmed soft deletion are implemented in step 12; membership management and task editing follow in their own steps. No migration or dependency change is required.
 
 ## API
 
@@ -11,6 +11,8 @@ All project routes require the authenticated cookie session. Responses use no-st
 | POST /api/v1/projects | Accepts name and optional nullable description; returns 201 ProjectDto and Location pointing to detail |
 | GET /api/v1/projects | Returns access-scoped, deterministically paginated ProjectDto items and actual totals |
 | GET /api/v1/projects/{projectId} | Returns ProjectDetailsDto or generic 404 for missing/inaccessible/deleted projects |
+| PUT /api/v1/projects/{projectId} | Owner-only replacement of name/description; returns 200 ProjectDto |
+| DELETE /api/v1/projects/{projectId} | Owner-only soft deletion; returns 204 |
 
 Name is trimmed and required, with 150 UTF-16 code units maximum. Optional description is trimmed, blank becomes null, and the maximum is 10,000. Unknown/duplicate body properties are rejected, including caller-supplied owner/id/audit fields. Owner comes exclusively from the current authenticated user. The step 10 transaction boundary saves the project and ProjectCreated activity atomically; failure of activity insertion rolls back creation.
 
@@ -20,9 +22,9 @@ The shared ProjectAccess.VisibleProjects query applies active-project and curren
 
 ## Frontend
 
-Protected routes are `/projects`, `/projects/new` and `/projects/:projectId`, linked from navigation and the workspace overview. The project list includes name search, sort/direction, page size, pagination and URL history. Applying filters resets the page; back/reload restores applied URL options. Empty workspace, no matches, out-of-range page, loading and retryable failure states are handled separately.
+Protected routes are `/projects`, `/projects/new`, `/projects/:projectId` and `/projects/:projectId/edit`, linked from navigation and the workspace overview. The project list includes name search, sort/direction, page size, pagination and URL history. Applying filters resets the page; back/reload restores applied URL options. Empty workspace, no matches, out-of-range page, loading and retryable failure states are handled separately.
 
-Creation validates and focuses invalid fields, associates server field errors, preserves input after failure and disables duplicate submissions. It sends only name/description, then opens the saved detail with a success notice. Returning to the list reloads it from the API. Detail displays plain text description, creation date and real task/progress values. Missing/private/deleted resources show one generic unavailable view. Editing, deletion, member controls and task actions are not shown before their endpoints are implemented.
+Creation validates and focuses invalid fields, associates server field errors, preserves input after failure and disables duplicate submissions. It sends only name/description, then opens the saved detail with a success notice. Returning to the list reloads it from the API. Detail displays plain text description, creation date and real task/progress values. Missing/private/deleted resources show one generic unavailable view. Owners see Edit project and Delete project actions. Editing prefills the shared validated form, preserves input on failure and reloads detail after save. Members cannot open the edit form. Deletion opens an inline confirmation section, focuses Keep project, supports Escape/cancellation and restores trigger focus. Confirmed deletion disables both controls while pending, keeps the project visible on failure with an explicit retry, and returns to a freshly loaded list after success. Member controls and task actions follow later.
 
 GET effects cancel/ignore superseded responses. A change of authenticated user invalidates in-memory CSRF/session generations and remounts protected page content. Project data, form drafts and document titles clear before the new account's data is shown. A create response arriving after its form unmounts/account changes does not navigate the new account into the old request's resource. Already-authorized server mutations may still finish, consistent with decision 0002; the UI does not assume aborting navigation cancels a write. Project API 401s use the shared expiry redirect and preserve the intended route.
 
@@ -37,4 +39,16 @@ The layouts follow the existing responsive shell, with visible focus, associated
 
 The PowerShell publisher now builds the frontend in a unique ignored `.local/build` directory, copies only build inputs (no local environment files), runs npm ci/build, and copies only dist into the release. This avoids Windows native-module locks from active workspace dev/test processes. Cleanup validates the resolved build path stays inside that build directory; a locked temporary directory can be retained without deleting workspace dependencies. The isolated publish succeeded, and workspace dependencies were restored/checked without lockfile changes.
 
-Synthetic records/accounts and the disposable production-smoke database were removed, and verification services stopped. Browser drivers/screenshots/releases/keys remain ignored local artifacts. Existing CI picks up the new tests; no hosted workflow run or publication is claimed. Step 09's Docker/selected-host verification gates remain pending. Next is step 12: owner-only project editing and confirmed soft deletion with retention/visibility checks.
+Synthetic records/accounts and the disposable production-smoke database were removed, and verification services stopped. Browser drivers/screenshots/releases/keys remain ignored local artifacts. Existing CI picks up the new tests; no hosted workflow run or publication is claimed. Step 09's Docker/selected-host verification gates remain pending. Next is step 13: owner-managed project membership.
+
+## Step 12 mutation and retention guarantees
+
+PUT requires a trimmed name; omitted, null or blank description clears the stored description. Invalid/unknown/duplicate fields return 400. IDs use the same positive signed BIGINT validation on GET, PUT and DELETE. Anonymous writes return 401; CSRF is required; a visible member receives 403, while outsiders, missing and deleted projects receive the same 404.
+
+Both writes lock the parent project and recheck current access inside the existing transaction boundary. A normalized no-op PUT leaves timestamps and activity unchanged. Actual edits append ProjectUpdated; deletion sets DeletedAtUtc, updates the audit timestamp and appends ProjectDeleted. Activity failure rolls back the mutation. No raw project description is copied into activity payloads.
+
+Deletion retains project, task, membership and activity rows. Task deletion timestamps remain untouched. Global parent filters hide tasks, memberships and history; list/count/detail exclude the project, and repeated deletion or further editing returns 404. There is no restore/purge endpoint. Pending write completions cannot navigate after page unmount or an account switch.
+
+Step 12 verification: 67 backend tests passed with real MySQL and zero skips, including HTTP role/CSRF enforcement, replacement/no-op validation, retained related rows, post-delete invisibility and activity-failure rollback for both mutations. All 42 frontend tests, type-check, lint and production build passed. No schema change is pending.
+
+The step 12 published Production app passed the HTTPS migration/readiness/restart smoke rehearsal and real Edge editing/reload, confirmation focus/Escape cancellation, confirmed deletion/list refresh/deleted deep-link rejection, plus the existing project/account/mobile checks. The disposable database was removed and all verification services stopped.

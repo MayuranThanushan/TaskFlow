@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { api } from './api/client'
 import type { ApiClient } from './api/client'
-import { ProjectsPage, NewProjectPage, ProjectDetailPage } from './features/projects/ProjectPages'
+import { ProjectsPage, NewProjectPage, ProjectDetailPage, EditProjectPage } from './features/projects/ProjectPages'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { useAuth } from './features/auth/auth-context'
 import { GuestRoute, ProtectedRoute } from './features/auth/RouteGates'
@@ -100,6 +100,7 @@ export default function App({ client = api }: { client?: ApiClient }) {
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="projects" element={<ProjectsPage client={client} />} />
       <Route path="projects/new" element={<NewProjectPage client={client} />} />
+      <Route path="projects/:projectId/edit" element={<EditProjectPage client={client} />} />
       <Route path="projects/:projectId" element={<ProjectDetailPage client={client} />} />
     </Route>
     <Route path="*" element={<NotFoundPage />} />

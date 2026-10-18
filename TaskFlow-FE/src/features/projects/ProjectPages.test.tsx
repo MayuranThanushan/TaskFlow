@@ -14,7 +14,7 @@ const project = (name = 'Launch', id = '9007199254741111'): ProjectDetails => ({
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = '/projects', projects: ProjectDetails[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { projects, listStatus: 200, createStatus: 201, wait: null as Promise<void> | null,
+  const state = { projects, listStatus: 200, createStatus: 201, writeStatus: 200, wait: null as Promise<void> | null,
     currentProfile: { ...profile }, posts: [] as object[], calls: [] as InternalAxiosRequestConfig[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
@@ -26,6 +26,15 @@ function setup(path = '/projects', projects: ProjectDetails[] = [], authenticate
       if (state.createStatus !== 201) return reply(config, state.createStatus, { errors: { name: ['Please choose a valid name.'] } })
       const created = { ...project(), ...values, totalTasks: 0, completedTasks: 0, progressPercentage: 0 }; state.projects.push(created)
       return reply(config, 201, created)
+    }
+    if (config.method === 'put' || config.method === 'delete') {
+      await state.wait
+      if (state.writeStatus !== 200) return reply(config, state.writeStatus)
+      const found = state.projects.find(item => '/projects/' + item.id === url.pathname)
+      if (!found) return reply(config, 404)
+      if (found.ownerId !== state.currentProfile.id) return reply(config, 403)
+      if (config.method === 'delete') { state.projects = state.projects.filter(item => item !== found); return reply(config, 204) }
+      Object.assign(found, JSON.parse(config.data)); return reply(config, 200, found)
     }
     if (url.pathname === '/projects') {
       if (state.listStatus !== 200) return reply(config, state.listStatus)
@@ -42,6 +51,44 @@ function setup(path = '/projects', projects: ProjectDetails[] = [], authenticate
 }
 
 describe('Project pages', () => {
+  it('prefills owner editing and replaces the description with null when cleared', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); const user = userEvent.setup()
+    await user.click(await screen.findByRole('link', { name: 'Edit project' }))
+    expect(await screen.findByLabelText('Project name')).toHaveValue('Launch')
+    await user.clear(screen.getByLabelText('Project name')); await user.type(screen.getByLabelText('Project name'), ' Revised ')
+    await user.clear(screen.getByLabelText(/Description/)); await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('heading', { name: 'Revised' })).toBeVisible()
+    expect(screen.getByText('Project updated.')).toBeVisible()
+    expect(JSON.parse(state.calls.find(call => call.method === 'put')!.data)).toEqual({ name: 'Revised', description: null })
+  })
+  it('hides owner actions and prevents a member from opening the edit form', async () => {
+    setup('/projects/9007199254741111/edit', [{ ...project(), ownerId: 'other' }])
+    expect(await screen.findByRole('heading', { name: 'Only the owner can edit this project.' })).toBeVisible()
+    expect(screen.queryByLabelText('Project name')).not.toBeInTheDocument()
+  })
+  it('requires confirmation, supports cancellation and deletes once while pending', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Delete project' }))
+    expect(screen.getByRole('button', { name: 'Keep project' })).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(state.calls.filter(call => call.method === 'delete')).toHaveLength(0)
+    await user.click(screen.getByRole('button', { name: 'Delete project' }))
+    let release!: () => void; state.wait = new Promise<void>(resolve => { release = resolve })
+    await user.dblClick(screen.getByRole('button', { name: 'Confirm deletion' }))
+    expect(screen.getByRole('button', { name: 'Deleting project...' })).toBeDisabled()
+    expect(state.calls.filter(call => call.method === 'delete')).toHaveLength(1)
+    await act(async () => { release() })
+    expect(await screen.findByText('Project deleted.')).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Your first project starts here.' })).toBeVisible()
+  })
+  it('keeps a project available when deletion fails and permits an explicit retry', async () => {
+    const state = setup('/projects/9007199254741111', [project()]); state.writeStatus = 500; const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Delete project' }))
+    await user.click(screen.getByRole('button', { name: 'Confirm deletion' }))
+    expect(await screen.findByRole('alert')).toBeVisible(); expect(state.projects).toHaveLength(1)
+    state.writeStatus = 200; await user.click(screen.getByRole('button', { name: 'Confirm deletion' }))
+    expect(await screen.findByText('Project deleted.')).toBeVisible()
+  })
   it('protects creation before any project request', async () => {
     const state = setup('/projects/new', [], false)
     expect(await screen.findByRole('heading', { name: 'Sign in to TaskFlow' })).toBeVisible()

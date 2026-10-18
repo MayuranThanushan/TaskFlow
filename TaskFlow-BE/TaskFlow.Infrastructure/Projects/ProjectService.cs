@@ -7,7 +7,7 @@ using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Projects;
 
-public sealed class ProjectService(TaskFlowDbContext database, IProjectTransactions transactions) : IProjectService
+public sealed class ProjectService(TaskFlowDbContext database, IProjectTransactions transactions, TimeProvider clock) : IProjectService
 {
     public async Task<ProjectDto> CreateAsync(long? actorId, string name, string? description, CancellationToken cancellationToken = default)
     {
@@ -21,6 +21,34 @@ public sealed class ProjectService(TaskFlowDbContext database, IProjectTransacti
             return Task.FromResult(scope.Project);
         }, cancellationToken);
         return Map(project);
+    }
+
+    public async Task<ProjectDto> UpdateAsync(long? actorId, long projectId, string name, string? description, CancellationToken cancellationToken = default)
+    {
+        RequireActor(actorId);
+        name = TextRules.Required(name, 150, nameof(name));
+        description = TextRules.Optional(description, 10_000, nameof(description));
+        var project = await transactions.ExecuteAsync(actorId, projectId, ProjectOperation.ManageProject, (scope, _) =>
+        {
+            if (scope.Project.Name != name || scope.Project.Description != description)
+            {
+                scope.Project.Name = name;
+                scope.Project.Description = description;
+                scope.Record(ActivityAction.ProjectUpdated);
+            }
+            return Task.FromResult(scope.Project);
+        }, cancellationToken);
+        return Map(project);
+    }
+
+    public async Task DeleteAsync(long? actorId, long projectId, CancellationToken cancellationToken = default)
+    {
+        await transactions.ExecuteAsync(actorId, projectId, ProjectOperation.ManageProject, (scope, _) =>
+        {
+            scope.Project.DeletedAtUtc = clock.GetUtcNow().UtcDateTime;
+            scope.Record(ActivityAction.ProjectDeleted);
+            return Task.FromResult(true);
+        }, cancellationToken);
     }
 
     public async Task<ProjectPage> ListAsync(long? actorId, ProjectListOptions options, CancellationToken cancellationToken = default)
