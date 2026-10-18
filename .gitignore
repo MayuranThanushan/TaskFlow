@@ -1,0 +1,34 @@
+# Build output and dependencies
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/*.tsbuildinfo
+**/coverage/
+**/TestResults/
+**/playwright-report/
+**/test-results/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/secrets.json
+**/*.pfx
+**/*.p12
+**/*.key
+.local/
+
+# IDE and operating system files
+.vs/
+.idea/
+**/*.user
+**/*.suo
+**/*.log
+.DS_Store
+Thumbs.db
+~$*

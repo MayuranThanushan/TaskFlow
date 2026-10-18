@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/TaskFlow-BE/">
+    <Project Path="TaskFlow-BE/TaskFlow.Api/TaskFlow.Api.csproj" />
+    <Project Path="TaskFlow-BE/TaskFlow.Application/TaskFlow.Application.csproj" />
+    <Project Path="TaskFlow-BE/TaskFlow.Domain/TaskFlow.Domain.csproj" />
+    <Project Path="TaskFlow-BE/TaskFlow.Infrastructure/TaskFlow.Infrastructure.csproj" />
+    <Project Path="TaskFlow-BE/TaskFlow.Tests/TaskFlow.Tests.csproj" />
+  </Folder>
+</Solution>
