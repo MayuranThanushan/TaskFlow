@@ -1,6 +1,6 @@
 # API contract amendments: implementation baseline
 
-Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). These contracts are not implemented endpoints yet. Unchanged Word specification routes remain in scope.
+Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Spec - TaskFlow.docx`, with decisions in [the register](../decisions/README.md). Implementation status: authentication/CSRF and liveness are implemented; project/task/dashboard/activity/profile-update contracts remain planned. Unchanged Word specification routes remain in scope.
 
 ## Common contracts
 
@@ -86,4 +86,8 @@ Activity DTO: id, projectId, actorUserId, optional taskId, actionType, details, 
 
 ## Foundation endpoint amendment (step 04)
 
-GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with no-store caching. It checks process liveness only, without querying MySQL. Error responses carry traceId and all responses include X-Trace-Id. See [API foundation](../api-foundation.md) for implementation and verification details. All business/authentication routes above remain pending their feature steps.
+GET /api/v1/health/live is public and returns 200 `{ "status": "Healthy" }` with no-store caching. It checks process liveness only, without querying MySQL. Error responses carry traceId and all responses include X-Trace-Id. See [API foundation](../api-foundation.md) for implementation and verification details. Authentication/CSRF routes above are now implemented; business/profile-update routes remain pending their feature steps.
+
+## Authentication implementation amendment (step 07)
+
+Registration/login passwords have a 128-code-unit upper bound; the password is never trimmed. Auth routes require HTTPS, use no-store caching and emit profile DTOs with string IDs. State-changing controller requests require antiforgery validation; all controller actions require authentication by default except explicit anonymous actions. Validation field names follow JSON names, and duplicate JSON keys are rejected globally. See [authentication](../authentication.md) for session, rate-limit, certificate and verification details.

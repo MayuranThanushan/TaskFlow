@@ -1,6 +1,6 @@
 # Initial setup review
 
-Date: 18 October 2026. Updated through delivery step 06. This records observed local evidence; it does not certify unimplemented features.
+Date: 18 October 2026. Updated through delivery step 07. This records observed local evidence; it does not certify unimplemented features.
 
 ## Verified
 
@@ -9,7 +9,7 @@ Date: 18 October 2026. Updated through delivery step 06. This records observed l
 | Solution | Root TaskFlow.slnx includes Api, Application, Domain, Infrastructure, Tests | Correct |
 | Dependencies | Api → Application/Infrastructure; Application → Domain; Infrastructure → Application/Domain | Matches architecture |
 | Backend | All projects target net10.0; SDK 10.0.400; runtime 10.0.11 | Build passes with zero warnings/errors |
-| Backend runner | xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1 | 22 tests pass with live MySQL; 15 run without it |
+| Backend runner | xUnit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1 | 30 tests pass with live MySQL; 15 run without it |
 | Backend runtime | Start compiled API in Development on an isolated port; request /openapi/v1.json | HTTP 200 and valid OpenAPI after template cleanup |
 | Frontend | React/DOM 19.3.1, Router 7.18.4, Axios 1.20.0, TypeScript 6.0.3, Vite 8.3.4 | Production build and ESLint pass |
 | Frontend runtime | Node 22.15.0, npm 11.3.0 | Installed Node satisfies local Vite/Vitest/jsdom engine declarations |
@@ -29,7 +29,7 @@ Date: 18 October 2026. Updated through delivery step 06. This records observed l
 
 Package selection is now resolved by [decision 0004](decisions/0004-runtime-and-database-provider.md): keep .NET 10, use EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 (MySql.Data 26.7.0). The selected MySQL server target is 8.4.11. This explicitly supersedes the earlier proposed Pomelo provider. Exact dependencies and reproducible commands are in [toolchain.md](toolchain.md).
 
-NuGet restore and backend build pass with zero warnings/errors. 22 tests pass with a dedicated MySQL test connection: 15 API/provider/safety checks and seven live persistence checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
+NuGet restore and backend build pass with zero warnings/errors. 30 tests pass with a dedicated MySQL test connection: 15 API/provider/safety checks and 15 live persistence/auth checks. The empty template test was removed in step 03. Frontend build/lint pass with exact direct package pins. NuGet lockfiles cover every project; local dotnet-ef 10.0.11 is restored.
 
 No Docker/MySQL CLI was on PATH initially. Step 05 provisioned Oracle portable MySQL under ignored .local/mysql, with separate local development/test credentials. The initial migration was applied to both isolated databases and live constraints verified. The server is stopped; no Windows service was installed. Compose remains an unexecuted alternative.
 
@@ -57,3 +57,7 @@ The earlier live-database gaps described above are now resolved for initial migr
 ## Step 06 update
 
 Shared xUnit collection initialization and safety guards passed against MySQL. Mandatory mode fails instead of skipping when its connection is absent. Frontend Vitest/JUnit checks, type-check/lint/build pass. Backend Release tests produced TRX and Cobertura reports with 22 passes and no skips. CI passed actionlint validation; the hosted workflow has not run because no remote is configured. See [testing](testing.md).
+
+## Step 07 update
+
+Registration, login, current-user and logout APIs are implemented with cookie sessions, global CSRF validation and default controller authorization. Thirty backend tests pass with live MySQL, two frontend tests and type/lint/build pass, and certificate-verified HTTPS proxy/session-restart checks pass. No migration changes are pending. Local processes are stopped and generated passwords/certificates/keys remain ignored. See [authentication](authentication.md).

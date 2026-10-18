@@ -39,7 +39,7 @@ Example missing route response (trace value illustrative):
 }
 ```
 
-Presence-aware PATCH, duplicate-key rejection, business error mappings, authorization and antiforgery remain feature implementation work. Do not treat global JSON/model validation as fulfillment of those domain contracts.
+Step 07 added global duplicate-key rejection, default controller authorization and antiforgery validation. Presence-aware PATCH, resource permission checks and business error mappings remain feature implementation work. Do not treat global JSON/model validation as fulfillment of those domain contracts.
 
 ## Logging and verification
 
@@ -50,3 +50,5 @@ ApiFoundationTests uses WebApplicationFactory with test-only probe controllers i
 A separate local smoke check started API and Vite on temporary ports and verified both a successful health request and a 404 Problem Details response through the proxy. Both processes were stopped afterward. Frontend type-check/build/lint and backend build pass. No live MySQL verification occurred.
 
 Implementation follows [ASP.NET Core error-handling guidance](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-10.0) and [Vite proxy configuration](https://vite.dev/config/server-options#server-proxy).
+
+Step 07 account routes now require HTTPS and use default controller authorization plus global CSRF protection. Liveness remains explicitly public. The initial HTTP proxy configuration is for foundation checks; see [authentication](authentication.md) for the implemented HTTPS proxy configuration.

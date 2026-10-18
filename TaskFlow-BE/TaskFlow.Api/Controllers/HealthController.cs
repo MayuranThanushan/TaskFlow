@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace TaskFlow.Api.Controllers;
 
-[ApiController]
+[ApiController, AllowAnonymous]
 [Route("api/v1/health")]
 public sealed class HealthController(HealthCheckService healthChecks) : ControllerBase
 {

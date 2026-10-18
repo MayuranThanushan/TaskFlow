@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TaskFlow.Infrastructure.Identity;
 using TaskFlow.Infrastructure.Persistence;
+using TaskFlow.Application.Features.Auth;
 
 namespace TaskFlow.Infrastructure;
 
@@ -30,7 +31,9 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = true;
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-        }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>();
+        }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddSingleton<UnknownUserPasswordCheck>();
         return services;
     }
 }

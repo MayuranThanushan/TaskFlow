@@ -66,10 +66,12 @@ Review migrations before targeting shared databases. Never commit connection str
 
 ## Live verification
 
-With TASKFLOW_TEST_CONNECTION set to a dedicated test database, run `dotnet test TaskFlow.slnx --no-restore`. The shared live fixture refuses databases other than taskflow_test or names starting taskflow_test_ and rejects root accounts. It applies migrations once per collection without dropping the database, uses unique synthetic users, and rolls fixture changes back in transactions. Without that variable, seven live tests are explicitly skipped unless mandatory mode is enabled; 15 other checks still run.
+With TASKFLOW_TEST_CONNECTION set to a dedicated test database, run `dotnet test TaskFlow.slnx --no-restore`. The shared live fixture refuses databases other than taskflow_test or names starting taskflow_test_ and rejects root accounts. It applies migrations once per collection without dropping the database, uses unique synthetic users, and rolls fixture changes back in transactions. Without that variable, the live tests are explicitly skipped unless mandatory mode is enabled; 15 other checks still run. Step 07 expanded live checks to 15 (seven persistence and eight authentication tests).
 
 The completed live run passed **16 tests, zero skips**. It verified migration application/idempotency, schema constraints, normalized-email uniqueness, duplicate memberships, foreign keys, invalid enums, soft-delete filters/history retention, UTC/deadline round trips, rollback, append-only/history guards, and Identity password hashing/email lookup. The EF model has no changes pending against its migration.
 
 Step 06 added shared database fixture lifecycle, frontend test infrastructure and CI; see [testing](testing.md). Project authorization, assignment/removal concurrency and mutation-created activity will be tested with their actual use cases. Current persistence tests do not claim those future workflows are implemented.
 
 Step 06 verification passed 22 backend tests with no skips using the shared fixture, plus two frontend tests. Mandatory-MySQL mode also correctly fails when no connection is supplied.
+
+The current suite totals 30 backend tests. Auth HTTP tests clean up only their own synthetic accounts, while persistence tests retain transaction rollback isolation. See [authentication](authentication.md) for live HTTPS configuration.

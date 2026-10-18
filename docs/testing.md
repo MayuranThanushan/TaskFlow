@@ -1,14 +1,14 @@
 # Testing and continuous integration
 
-Delivery step 06 is implemented. The suite currently contains 22 backend tests (seven requiring MySQL) and two frontend component checks. Local Release verification passed all 22 backend tests with no skips, plus frontend type-check, lint, tests and production build. GitHub execution has not been performed: no remote repository is configured.
+Delivery step 06 is implemented. After step 07, the suite contains 30 backend tests (15 requiring MySQL) and two frontend component checks. Local Release verification passed all 30 backend tests with no skips, plus frontend type-check, lint, tests and production build. GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
-PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime fixture validates the connection before access, applies migrations once per collection, verifies the MySQL 8.4 server line, and creates a fresh DbContext for each test. Collection execution is serialized. Each mutation test owns a transaction and rolls it back; the fixture does not delete databases or wipe shared tables. Database/container startup and shutdown belong to the runner.
+PersistenceTests belongs to the MySQL integration collection. Its IAsyncLifetime fixture validates the connection before access, applies migrations once per collection, verifies the MySQL 8.4 server line, and creates a fresh DbContext for each test. Collection execution is serialized. Each persistence mutation test owns a transaction and rolls it back. Authentication HTTP tests span request scopes and instead remove only the synthetic accounts created by their own host. The fixture does not delete databases or wipe shared tables. Database/container startup and shutdown belong to the runner.
 
 Only `taskflow_test` or a name beginning `taskflow_test_` is accepted. A non-root test account is required. Safety tests exercise rejection of development/production database names and privileged/missing accounts before a connection is attempted. These guards reduce accidental misuse; always supply an isolated test database and restricted credentials.
 
-Local mode (no TASKFLOW_TEST_CONNECTION): 15 checks run and seven live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
+Local mode (no TASKFLOW_TEST_CONNECTION): 15 checks run and 15 live tests are explicitly skipped. Mandatory mode (`TASKFLOW_REQUIRE_MYSQL=true`): a missing connection fails the fixture instead of skipping. An unreachable/invalid database fails setup in either mode when a connection was supplied. The missing-connection mandatory failure path has been verified locally.
 
 With a dedicated connection already configured:
 
@@ -68,3 +68,5 @@ The disposable MySQL service uses hardcoded CI-only credentials and a dynamicall
 The workflow passed actionlint v1.7.12 validation locally. All invoked application check commands were exercised locally; the hosted Ubuntu/container path still requires its first GitHub run. When a remote is connected, configure **Backend checks** and **Frontend checks** as required branch checks through repository settings if desired; no remote/branch settings were changed here.
 
 References: [xUnit shared context](https://xunit.net/docs/shared-context), [Testing Library setup](https://testing-library.com/docs/react-testing-library/setup/), and [GitHub .NET build/test guidance](https://docs.github.com/en/actions/tutorials/build-and-test-code/net).
+
+Step 07 authentication coverage and real HTTPS verification are detailed in [authentication.md](authentication.md). No browser account form tests exist before step 08.

@@ -1,6 +1,9 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using TaskFlow.Api.Middleware;
+using TaskFlow.Api.Filters;
 
 namespace TaskFlow.Api.Extensions;
 
@@ -11,10 +14,16 @@ public static class ApiServiceExtensions
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
             ProblemResponses.Enrich(context.HttpContext, context.ProblemDetails));
         services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddControllers()
+        services.AddControllers(options =>
+            {
+                options.Filters.Add<AntiforgeryProblemFilter>();
+                options.Filters.Add(new AuthorizeFilter());
+                options.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider());
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
+                options.JsonSerializerOptions.AllowDuplicateProperties = false;
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
             })
             .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context =>

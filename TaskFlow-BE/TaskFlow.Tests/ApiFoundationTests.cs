@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -56,7 +57,9 @@ public class ApiFoundationTests
     public async Task InvalidBodiesReturnValidationProblems(string body)
     {
         await using var factory = CreateProbeFactory("Testing");
-        using var client = factory.CreateClient();
+        using var client = factory.CreateClient(new() { BaseAddress = new Uri("https://localhost") });
+        var token = await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf");
+        client.DefaultRequestHeaders.Add("X-CSRF-TOKEN", token.GetProperty("requestToken").GetString());
         var response = await client.PostAsync("/_tests/validation", new StringContent(body, Encoding.UTF8, "application/json"));
         var problem = await AssertProblem(response, HttpStatusCode.BadRequest);
         Assert.True(problem.TryGetProperty("errors", out _));
@@ -93,7 +96,7 @@ public class ApiFoundationTests
     }
 }
 
-[ApiController]
+[ApiController, AllowAnonymous]
 [Route("_tests")]
 public class FoundationProbeController : ControllerBase
 {

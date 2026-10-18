@@ -29,3 +29,7 @@ Persist data-protection keys outside ephemeral deployment storage; configure res
 ## Consequences and verification
 
 Cookie/CSRF behavior needs browser verification through the same origin. Checking the security stamp on every request adds a database lookup; acceptable for the demonstration workload. Logout signs out all devices. Test registration, generic invalid login, lockout, expiry, CSRF, profile retrieval, replay after logout, and safe 401/403 responses. No authentication code is introduced by this decision task.
+
+## Step 07 implementation
+
+The account API is now implemented. Password inputs are bounded to 128 UTF-16 code units in addition to the established registration policy. The cookie callback directly calls SignInManager.ValidateSecurityStampAsync on every request without issuing a renewed principal/ticket; this makes revocation immediate while preserving absolute expiry. A global authorization filter protects controllers by default, and a global CSRF filter uses IAntiforgery directly without adding MVC view services. Local certificates and data-protection keys stay outside source control. See [authentication](../authentication.md) for implementation evidence and HTTPS setup.
