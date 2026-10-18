@@ -13,7 +13,7 @@ flowchart LR
     Host --> Keys[Persistent data-protection keys]
 ```
 
-Production is one API process serving the compiled SPA and /api/v1. Development uses Vite's HTTPS proxy to the HTTPS API. Cookies are Secure/HttpOnly; the client keeps CSRF tokens in memory and obtains a fresh token across identity changes. Logout rotates the user's security stamp and invalidates all device sessions. No worker, broker or cache is required. No arbitrary forwarded headers are trusted; a hosting proxy must preserve HTTPS to the API or receive an explicitly reviewed forwarding policy.
+Production is one API process serving the compiled SPA and /api/v1. Development supports Vite HTTP or HTTPS proxies with matching API schemes. [Transport policy](transport.md) selects strict HTTPS or HTTP-compatible cookies; cookies remain HttpOnly and HTTPS requests receive Secure cookies; the client keeps CSRF tokens in memory and obtains a fresh token across identity changes. Logout rotates the user's security stamp and invalidates all device sessions. No worker, broker or cache is required. No arbitrary forwarded headers are trusted; a hosting proxy must preserve HTTPS to the API or receive an explicitly reviewed forwarding policy.
 
 ## Code boundaries
 

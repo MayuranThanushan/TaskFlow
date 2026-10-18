@@ -1,5 +1,7 @@
 # API foundation
 
+Current transport behavior: [environment HTTP/HTTPS policy](transport.md). Local/Development now supports authentication over HTTP; HTTPS-only remains the UAT/Production default. Historical step notes below describe the earlier strict baseline.
+
 Delivery step 04 is complete. No database connection, authentication, or business resources are implemented by this step.
 
 ## Run and inspect

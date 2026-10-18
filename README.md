@@ -43,7 +43,7 @@ $env:TASKFLOW_API_CA = $taskflowCert.certificatePath
 npm --prefix TaskFlow-FE run dev
 ```
 
-Open https://localhost:5173, register, then sign in. Registration does not sign in automatically. HTTPS is required for secure cookies; HTTP cannot establish an authenticated session. Check `/api/v1/health/live` for process health and `/api/v1/health/ready` for database/schema readiness. No automatic migrations or seeded demo accounts run at startup. See [authentication](docs/authentication.md) for session and CSRF details.
+Open https://localhost:5173, register, then sign in. Registration does not sign in automatically. Local/Development also supports HTTP using the http launch profile and Vite default proxy. See [environment transport settings](docs/transport.md) for HTTP/HTTPS in Local, UAT and Production. Check `/api/v1/health/live` for process health and `/api/v1/health/ready` for database/schema readiness. No automatic migrations or seeded demo accounts run at startup. See [authentication](docs/authentication.md) for session and CSRF details.
 
 ## Verification
 
@@ -61,7 +61,7 @@ npm --prefix TaskFlow-FE run build
 python -m unittest discover -s tests/operations -v
 ```
 
-Latest local results: 110 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 75 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
+Latest local results: 119 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 76 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
 
 ## Architecture and contracts
 

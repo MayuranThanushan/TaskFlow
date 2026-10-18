@@ -33,3 +33,7 @@ Cookie/CSRF behavior needs browser verification through the same origin. Checkin
 ## Step 07 implementation
 
 The account API is now implemented. Password inputs are bounded to 128 UTF-16 code units in addition to the established registration policy. The cookie callback directly calls SignInManager.ValidateSecurityStampAsync on every request without issuing a renewed principal/ticket; this makes revocation immediate while preserving absolute expiry. A global authorization filter protects controllers by default, and a global CSRF filter uses IAntiforgery directly without adding MVC view services. Local certificates and data-protection keys stay outside source control. See [authentication](../authentication.md) for implementation evidence and HTTPS setup.
+
+## Transport amendment
+
+The user-authorized environment transport configuration supersedes the unconditional HTTPS requirement for Local/Development and explicitly opted-in UAT/Production environments. See [transport policy](../transport.md). HTTPS-only deployments retain the original Secure/__Host cookie contract; HTTP-compatible deployments use request-dependent Secure flags and ordinary host-scoped cookie names. CSRF and authorization remain mandatory.

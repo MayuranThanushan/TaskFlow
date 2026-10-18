@@ -12,6 +12,8 @@ Date: 18 October 2026. Implements delivery step 01. Applies to `Documents/API Sp
 
 ## Authentication
 
+Transport amendment: Local/Development supports HTTP and HTTPS by default. UAT/Production remains HTTPS-only unless Transport__RequireHttps=false is explicitly set. See [transport policy](../transport.md) for cookie names, flags and scheme consistency; authentication/CSRF semantics below remain unchanged.
+
 | Method and route | Body/response | Rules |
 | --- | --- | --- |
 | GET /auth/csrf | 200 `{ "requestToken": "opaque token", "headerName": "X-CSRF-TOKEN" }` | Public; issue framework antiforgery cookie; Cache-Control: no-store |

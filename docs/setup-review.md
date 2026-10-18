@@ -123,3 +123,7 @@ Portable release/migration artifacts and checksum receipts, separate migration s
 ## Step 23 documentation and demo handoff
 
 Completed the current README, accepted architecture/ERD, Development OpenAPI export and inventory check, demo walkthrough, SRS acceptance matrix and final clean-artifact recovery evidence. External container/hosted CI/selected-host gates remain pending; see the [handoff](handoff.md).
+
+## Environment transport amendment
+
+Authentication transport is configurable for Local, UAT and Production. Local/Development accepts HTTP/HTTPS by default; other environments default to strict HTTPS and allow an explicit override. Cookie Secure flags follow the configured policy and request scheme; CSRF, authentication and logout revocation remain enforced. See [transport setup](transport.md).

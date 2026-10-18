@@ -27,6 +27,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSessionAuthentication(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
+    !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local"));
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseExceptionHandler();
@@ -41,13 +43,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Never redirect an auth request that was submitted over an insecure connection.
+// Strict deployments reject insecure credentials; optional transport also supports local HTTP.
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api/v1/auth"))
     {
         context.Response.Headers.CacheControl = "no-store";
-        if (!context.Request.IsHttps)
+        if (requireHttps && !context.Request.IsHttps)
         {
             var problem = ProblemResponses.Create(context, StatusCodes.Status400BadRequest);
             problem.Title = "HTTPS is required for authentication.";
@@ -58,8 +60,9 @@ app.Use(async (context, next) =>
     await next(context);
 });
 
-// The local HTTP profile supports foundation checks; deployed traffic requires HTTPS.
-if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+// HSTS and redirects must agree with the configured transport policy.
+if (requireHttps && !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local")
+    && !app.Environment.IsEnvironment("Testing"))
 {
     app.UseHsts();
     app.UseHttpsRedirection();

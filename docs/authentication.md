@@ -4,7 +4,7 @@ Delivery step 07 implements the account API. Step 08 adds [frontend account form
 
 ## API contract
 
-All routes below are under `/api/v1/auth` and require HTTPS. HTTP requests are rejected with 400 Problem Details rather than redirected. Auth responses are no-store. Error responses include traceId and the matching X-Trace-Id header.
+All routes below are under `/api/v1/auth`. HTTPS-only mode rejects HTTP with 400 Problem Details rather than redirecting credentials. Local/Development defaults to HTTP-compatible mode; UAT/Production can opt in explicitly. See [environment transport configuration](transport.md). Auth responses are no-store. Error responses include traceId and the matching X-Trace-Id header.
 
 | Method / route | Input | Successful response |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Controllers are authenticated by default through a global authorization filter. 
 
 All state-changing controller requests use a global filter calling the framework IAntiforgery service. Supply the bootstrap requestToken in X-CSRF-TOKEN. Tokens are bound to the client's antiforgery cookie and authenticated identity. Missing, invalid, borrowed or stale-identity tokens return safe 400 validation problems. Fetch a fresh token after login and logout; keep it in application memory rather than localStorage.
 
-The session cookie is `__Host-TaskFlow.Auth`, Secure, HttpOnly, SameSite=Lax, Path=/ with no Domain. It is not persistent across browser sessions and its server ticket expires after eight hours. There is no sliding renewal. The antiforgery cookie is similarly Secure/HttpOnly/SameSite=Lax with the __Host prefix.
+In HTTPS-only mode the session cookie is `__Host-TaskFlow.Auth`, Secure, HttpOnly, SameSite=Lax, Path=/ with no Domain. HTTP-compatible mode uses `TaskFlow.Auth` and `TaskFlow.Csrf`, marking cookies Secure on HTTPS requests. It is not persistent across browser sessions and its server ticket expires after eight hours. There is no sliding renewal. The antiforgery cookie is similarly Secure/HttpOnly/SameSite=Lax with the __Host prefix.
 
 Each authenticated request validates the Identity security stamp directly through SignInManager. This avoids periodically cached checks and avoids Identity's principal-renewal path, so revalidation cannot extend the ticket lifetime. Logout persists a new security stamp before clearing cookies, invalidating all of that account's device sessions on subsequent requests. A failed stamp write returns an error, not a successful logout. Requests already authorized before logout commits may finish.
 
@@ -65,7 +65,7 @@ cd TaskFlow-FE
 npm run dev
 ```
 
-The origin is now https://localhost:5173. Vite uses the exported certificate and validates the API certificate with the public PEM; no certificate-validation bypass is configured. These TASKFLOW_ settings are Vite server settings, not VITE_ browser variables. The existing HTTP profile still supports foundation/liveness checks, but cannot establish an authenticated session.
+The origin is now https://localhost:5173. Vite uses the exported certificate and validates the API certificate with the public PEM; no certificate-validation bypass is configured. These TASKFLOW_ settings are Vite server settings, not VITE_ browser variables. The HTTP profile also supports authenticated sessions in Local/Development with the default HTTP-compatible configuration.
 
 Data-protection keys persist under ignored .local/data-protection by default. Set DataProtection__KeysPath to an access-controlled persistent directory for hosting, with appropriate at-rest protection for the host. Ephemeral containers need a persistent key volume. For TLS-terminating proxies, configure a known-proxy forwarding policy during deployment or use HTTPS to the API; accepting arbitrary forwarded scheme/IP headers is intentionally not enabled here.
 

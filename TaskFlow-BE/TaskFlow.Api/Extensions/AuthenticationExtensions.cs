@@ -28,10 +28,12 @@ public static class AuthenticationExtensions
         services.AddOptions<SecurityStampValidatorOptions>().Configure<TimeProvider>((options, clock) => options.TimeProvider = clock);
         services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme).Configure<TimeProvider>((options, clock) =>
         {
+            var requireHttps = configuration.GetValue("Transport:RequireHttps",
+                !environment.IsDevelopment() && !environment.IsEnvironment("Local"));
             options.TimeProvider = clock;
-            options.Cookie.Name = "__Host-TaskFlow.Auth";
+            options.Cookie.Name = requireHttps ? "__Host-TaskFlow.Auth" : "TaskFlow.Auth";
             options.Cookie.HttpOnly = true;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy = requireHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
             options.Cookie.SameSite = SameSiteMode.Lax;
             options.Cookie.Path = "/";
             options.ExpireTimeSpan = TimeSpan.FromHours(8);
@@ -59,10 +61,12 @@ public static class AuthenticationExtensions
         });
         services.AddAntiforgery(options =>
         {
+            var requireHttps = configuration.GetValue("Transport:RequireHttps",
+                !environment.IsDevelopment() && !environment.IsEnvironment("Local"));
             options.HeaderName = "X-CSRF-TOKEN";
-            options.Cookie.Name = "__Host-TaskFlow.Csrf";
+            options.Cookie.Name = requireHttps ? "__Host-TaskFlow.Csrf" : "TaskFlow.Csrf";
             options.Cookie.HttpOnly = true;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy = requireHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
             options.Cookie.SameSite = SameSiteMode.Lax;
             options.Cookie.Path = "/";
         });

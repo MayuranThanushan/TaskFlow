@@ -216,14 +216,14 @@ public partial class AuthTests(MySqlFixture fixture)
         private readonly WebApplicationFactory<Program> factory;
         public AuthClock Clock { get; } = new();
 
-        public AuthHost(MySqlFixture fixture, FailStampUpdate? failure = null)
+        public AuthHost(MySqlFixture fixture, FailStampUpdate? failure = null, bool requireHttps = true, string environment = "Testing")
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
-                builder.UseEnvironment("Testing");
+                builder.UseEnvironment(environment);
                 builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-                    new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString }));
+                    new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["Transport:RequireHttps"] = requireHttps.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
