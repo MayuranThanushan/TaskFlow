@@ -1,5 +1,6 @@
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Middleware;
+using TaskFlow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Logging.AddJsonConsole(options =>
 builder.Logging.AddDebug();
 
 builder.Services.AddApiFoundation();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

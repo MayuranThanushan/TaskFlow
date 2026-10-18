@@ -1,6 +1,6 @@
 # Toolchain baseline
 
-Date: 18 October 2026. Step 02 completed for dependency selection, pinning and package compatibility. Live database provisioning and migration verification remain pending.
+Date: 18 October 2026. Step 02 completed for dependency selection, pinning and package compatibility. Step 05 subsequently verified the initial migration on portable MySQL 8.4.11; see [database setup](database-setup.md).
 
 | Component | Selected version | Source of truth |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Date: 18 October 2026. Step 02 completed for dependency selection, pinning and p
 | EF Design and dotnet-ef | 10.0.11 | Api project / .config/dotnet-tools.json |
 | MySql.EntityFrameworkCore | 10.0.9 | Infrastructure project |
 | MySql.Data | 26.7.0 | NuGet transitive lock |
-| MySQL server target | 8.4.12 | compose.yaml; not installed or run here |
+| MySQL server target | 8.4.11 | compose.yaml; portable server verified in step 05 |
 | Node / npm baseline | 22.15.0 / 11.3.0 | .nvmrc / packageManager |
 | React / React DOM | 19.3.1 | package.json and package-lock.json |
 | React Router / Axios | 7.18.4 / 1.20.0 | package.json |
@@ -57,4 +57,4 @@ The database binds only to 127.0.0.1:3306, uses a named volume, and creates task
 
 The future application connection string uses Oracle Connector/NET syntax: `Server=127.0.0.1;Port=3306;Database=taskflow_dev;User ID=taskflow;Password=<local value>`. Supply it through `ConnectionStrings__TaskFlow` in local process configuration/user secrets during step 05; the current API does not read it yet. Remote hosting requires TLS and separately provisioned credentials.
 
-Use a separate taskflow_test database/credentials for integration tests. Do not point test reset or migration commands at shared/production databases. The Compose recipe has not been executed here because no Docker CLI/daemon is available. Validate the image pull, server version, UTF-8 collation, migrations and transaction behavior when provisioning.
+Use a separate taskflow_test database/credentials for integration tests. Do not point test reset or migration commands at shared/production databases. The Compose recipe has not been executed here because no Docker CLI/daemon is available. Step 05 instead verified Oracle portable MySQL 8.4.11, applied the migration and ran live tests. Validate the Docker image pull separately when provisioning with Compose.

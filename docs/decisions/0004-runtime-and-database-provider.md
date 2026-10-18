@@ -4,7 +4,7 @@ Status: adopted. Date: 18 October 2026. Delivery step: 02.
 
 ## Decision
 
-Keep net10.0 and SDK 10.0.400. Use Microsoft EF Core/Identity EF persistence/design tooling 10.0.11, Oracle MySql.EntityFrameworkCore 10.0.9 and its locked MySql.Data 26.7.0 dependency. Target MySQL Community Server 8.4.12 (8.4 LTS line), InnoDB, utf8mb4 with utf8mb4_0900_ai_ci collation. Preserve Domain/Application independence from persistence packages.
+Keep net10.0 and SDK 10.0.400. Use Microsoft EF Core/Identity EF persistence/design tooling 10.0.11, Oracle MySql.EntityFrameworkCore 10.0.9 and its locked MySql.Data 26.7.0 dependency. Target MySQL Community Server 8.4.11 (8.4 LTS line), InnoDB, utf8mb4 with utf8mb4_0900_ai_ci collation. Preserve Domain/Application independence from persistence packages.
 
 This explicitly replaces the SAD's proposed Pomelo provider. [Oracle's package metadata](https://www.nuget.org/packages/MySql.EntityFrameworkCore/10.0.9) declares a net10.0 asset requiring EF Core/Relational >=10.0.9; the chosen 10.0.11 packages satisfy that range. [Pomelo's compatibility table](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql#compatibility) lists EF Core 9 for its 9.0.0 release. Avoid mixing Pomelo 9 with EF Core 10 or downgrading the user's runtime. [MySQL's 8.4 release notes](https://dev.mysql.com/doc/relnotes/mysql/8.4/en/) list the selected server patch. Recheck availability/security advisories before actually provisioning it.
 
@@ -21,3 +21,7 @@ These checks do not establish live-server compatibility, migration application, 
 ## Implementation consequences
 
 Oracle's EF configuration extension is `UseMySQL`, not Pomelo's `UseMySql`. Provider-specific configuration, annotations, migrations and integration tests must use Oracle APIs. Authentication remains ASP.NET Core Identity with long keys as previously decided. Before the first real migration, verify unique normalized-email indexes, required text lengths, DATETIME(6), enum constraints, restrictive FK deletes and soft-delete visibility against the actual server.
+
+## Step 05 correction and verification
+
+The originally chosen 8.4.12 was listed in release notes but its Windows archive was unavailable. Oracle publishes 8.4.11 on its actual download page; the selected target and Compose recipe were corrected accordingly. The portable 8.4.11 ZIP matched Oracle's published checksum. Initial migrations and 16 tests passed against isolated live databases, and the server was stopped afterward. Earlier no-live-database statements in this record describe step 02 evidence, not the current state. See [database setup](../database-setup.md).

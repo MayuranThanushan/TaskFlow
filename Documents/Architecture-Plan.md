@@ -75,7 +75,7 @@ TaskFlow/
   README.md
 ```
 
-Create folders as needed. Keep feature-specific UI, types, and API calls together. Retain the installed React Router and Axios for a centralized HTTP client, with component state/context initially. Add a separate integration-test project when its fixtures are introduced. Keep the user's directory names. Runtime/provider selection is resolved in ADR 0004: EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 on net10.0. See the toolchain guide for pins and pending live-server verification.
+Create folders as needed. Keep feature-specific UI, types, and API calls together. Retain the installed React Router and Axios for a centralized HTTP client, with component state/context initially. Add a separate integration-test project when its fixtures are introduced. Keep the user's directory names. Runtime/provider selection is resolved in ADR 0004: EF Core/Identity 10.0.11 and Oracle MySql.EntityFrameworkCore 10.0.9 on net10.0. See the toolchain guide for pins and database-setup.md for completed live-server verification.
 
 ## Authentication and hosting baseline
 

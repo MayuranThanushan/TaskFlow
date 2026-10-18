@@ -1,6 +1,6 @@
 # TaskFlow
 
-Project and task management application using React/TypeScript, ASP.NET Core, and a planned MySQL database. The existing frontend and backend are starter projects. Business features and database access are not implemented yet.
+Project and task management application using React/TypeScript, ASP.NET Core, and MySQL. The API foundation, Identity persistence, application entities and initial MySQL migration are implemented. Account endpoints and project/task workflows are still pending.
 
 ## Workspace
 
@@ -26,7 +26,7 @@ Keep these directory names. Dependency direction is Application → Domain; Infr
 
 - .NET SDK 10.0.400 (the root global.json allows compatible SDK patches).
 - Node 22.15.0 and npm 11.3.0 are the verified local versions. `TaskFlow-FE/.nvmrc` records Node; package.json declares supported engine ranges.
-- MySQL server target: 8.4.12. EF Core/Identity 10.0.11 and Oracle MySQL provider 10.0.9 are pinned and verified for schema generation. See [the toolchain guide](docs/toolchain.md) for the full matrix, local database recipe and remaining live-server checks.
+- MySQL server target: 8.4.11. EF Core/Identity 10.0.11 and Oracle MySQL provider 10.0.9 are pinned and verified against live MySQL. See [the toolchain guide](docs/toolchain.md) for the full matrix and [database setup](docs/database-setup.md) for completed live-server checks and local database instructions.
 
 ## Run the current starters
 
@@ -61,7 +61,7 @@ npm run build
 npm run lint
 ```
 
-The backend has nine passing tests covering API foundation behavior and provider/Identity schema generation. They do not verify live MySQL or unimplemented business features. Vitest and Testing Library are installed but have no configured test script or meaningful suite yet. Add behavior tests with the features and integration infrastructure in step 06.
+The backend has 16 passing tests when a dedicated TASKFLOW_TEST_CONNECTION is configured: nine API/provider checks and seven live MySQL checks. Without that connection the seven live tests are explicitly skipped. See [database setup](docs/database-setup.md) for migration commands and local server instructions. Vitest and Testing Library are installed but have no configured test script or meaningful suite yet. Add behavior tests with the features and integration infrastructure in step 06.
 
 Use `npm ci` with the committed package-lock.json for reproducible frontend installs. Do not commit secrets, local databases, build output, or dependencies. The workspace is a local Git repository on main. No remote is configured. Root ignore rules exclude local configuration, credentials and generated output; .env.example remains tracked.
 
@@ -74,4 +74,4 @@ Use `npm ci` with the committed package-lock.json for reproducible frontend inst
 - [Architecture plan](Documents/Architecture-Plan.md)
 - [Ordered delivery backlog](Documents/Delivery-Backlog.md)
 
-The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 04 are complete. Next is step 05: implement Identity/application entities, EF mappings and the initial database migration. Live MySQL provisioning and migrations remain pending steps 05/06.
+The Markdown decision/contract documents refine the original Word specifications. Read them together; explicitly documented amendments take precedence for implementation. Steps 01 through 05 are complete. Next is step 06: shared MySQL test fixtures, frontend test infrastructure and CI. The local verification databases are migrated; their portable server is stopped.
