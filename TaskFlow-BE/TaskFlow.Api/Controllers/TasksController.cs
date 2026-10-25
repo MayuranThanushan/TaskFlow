@@ -13,6 +13,7 @@ namespace TaskFlow.Api.Controllers;
 public sealed class TasksController(ITaskService tasks) : ControllerBase
 {
     [HttpPost("api/v1/projects/{projectId}/tasks")]
+    [ProducesResponseType<TaskDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(string projectId, CreateTaskRequest request, CancellationToken cancellationToken)
     {
         TryId(projectId, "projectId", out var project);
@@ -24,12 +25,14 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         return CreatedAtAction(nameof(Get), new { taskId = task.Id }, task);
     }
     [HttpGet("api/v1/tasks/{taskId}")]
+    [ProducesResponseType<TaskDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(string taskId, CancellationToken cancellationToken)
     {
         if (!TryId(taskId, "taskId", out var id)) return ValidationProblem(ModelState);
         return Ok(await tasks.GetAsync(Actor(), id, cancellationToken));
     }
     [HttpGet("api/v1/projects/{projectId}/tasks")]
+    [ProducesResponseType<TaskPage>(StatusCodes.Status200OK)]
     public async Task<IActionResult> List(string projectId, [FromQuery] TaskListQuery query, CancellationToken cancellationToken)
     {
         TryId(projectId, "projectId", out var project);
@@ -48,6 +51,7 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         return Ok(await tasks.ListAsync(Actor(), project, new(query.Page, query.PageSize, query.Search, status, priority, assignee, query.SortBy, query.SortDirection), cancellationToken));
     }
     [HttpPatch("api/v1/tasks/{taskId}")]
+    [ProducesResponseType<TaskDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Update(string taskId, [FromBody] JsonElement body, CancellationToken cancellationToken)
     {
         TryId(taskId, "taskId", out var id);
@@ -82,6 +86,7 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         return Ok(await tasks.UpdateAsync(Actor(), id, new(title, description, priority, assignee, due), cancellationToken));
     }
     [HttpPatch("api/v1/tasks/{taskId}/status")]
+    [ProducesResponseType<TaskStatusDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> SetStatus(string taskId, [FromBody] JsonElement body, CancellationToken cancellationToken)
     {
         TryId(taskId, "taskId", out var id); var fields = Fields(body, ["status"]); var status = TaskState.ToDo;
@@ -92,6 +97,7 @@ public sealed class TasksController(ITaskService tasks) : ControllerBase
         return Ok(await tasks.SetStatusAsync(Actor(), id, status, cancellationToken));
     }
     [HttpDelete("api/v1/tasks/{taskId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(string taskId, CancellationToken cancellationToken)
     {
         if (!TryId(taskId, "taskId", out var id)) return ValidationProblem(ModelState);

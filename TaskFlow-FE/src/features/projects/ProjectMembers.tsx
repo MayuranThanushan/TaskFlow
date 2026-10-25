@@ -1,13 +1,15 @@
+import type { components } from '../../api/generated'
+import type { ProjectMember, ProjectMemberList } from './types'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { ApiClient } from '../../api/client'
 import { asApiError } from '../../api/client'
 import { useProjectResource } from './use-project-resource'
 
-type Member = { userId: string; displayName: string; role: 'Owner' | 'Member'; joinedAtUtc: string }
+type Member = ProjectMember
 export function ProjectMembers({ client, projectId, owner }: { client: ApiClient; projectId: string; owner: boolean }) {
   const path = '/projects/' + encodeURIComponent(projectId) + '/members'
-  const { result, retry } = useProjectResource<{ items: Member[] }>(client, path)
+  const { result, retry } = useProjectResource<ProjectMemberList>(client, path)
   const [userId, setUserId] = useState('')
   const [confirm, setConfirm] = useState<Member | null>(null)
   const [pending, setPending] = useState(false)
@@ -26,7 +28,7 @@ export function ProjectMembers({ client, projectId, owner }: { client: ApiClient
     }
     lock.current = true; setPending(true); setError(''); setNotice('')
     try {
-      await client.request({ url: member ? path + '/' + encodeURIComponent(member.userId) : path, method: member ? 'delete' : 'post', ...(member ? {} : { data: { userId } }) })
+      await client.request({ url: member ? path + '/' + encodeURIComponent(member.userId) : path, method: member ? 'delete' : 'post', ...(member ? {} : { data: { userId } satisfies components['schemas']['AddProjectMemberRequest'] }) })
       if (!alive.current) return
       setConfirm(null); if (!member) setUserId('')
       setNotice(member ? 'Member removed. Their active tasks are now unassigned.' : 'Member added.')

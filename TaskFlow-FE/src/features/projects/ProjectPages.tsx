@@ -1,3 +1,4 @@
+import type { ProjectWrite } from './types'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -93,7 +94,7 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
     if (Object.keys(errors).length) { (event.currentTarget.elements.namedItem(Object.keys(errors)[0]) as HTMLElement)?.focus(); return }
     locked.current = true; setPending(true)
     try {
-      const project = await client.request<Project>({ url: initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects', method: initial ? 'put' : 'post', data: { name: name.trim(), description: description.trim() || null } })
+      const project = await client.request<Project>({ url: initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects', method: initial ? 'put' : 'post', data: { name: name.trim(), description: description.trim() || null } satisfies ProjectWrite })
       if (!alive.current) return
       navigate('/projects/' + encodeURIComponent(project.id), { replace: true, state: initial ? { updated: true } : { created: true } })
     } catch (failure) {

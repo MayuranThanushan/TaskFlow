@@ -1,3 +1,4 @@
+import type { TaskCreate, TaskPatch, TaskStatusUpdate } from './types'
 import { Badge } from '../../components/Workspace'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -72,17 +73,17 @@ function TaskRow({ task, client, now, members, refresh }: { task: TaskItem; clie
   const lock = useRef(false)
   const alive = useRef(true)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  async function changeStatus(status: string) {
+  async function changeStatus(status: TaskItem['status']) {
     if (lock.current || status === task.status) return
     lock.current = true; setPending(true); setError('')
     try {
-      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + '/status', method: 'patch', data: { status } })
+      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + '/status', method: 'patch', data: { status } satisfies TaskStatusUpdate })
       if (alive.current) refresh()
     } catch (failure) { if (alive.current) setError(asApiError(failure).message) }
     finally { lock.current = false; if (alive.current) setPending(false) }
   }
   return <tr aria-busy={pending}><td><Link className="task-name" to={'/tasks/' + encodeURIComponent(task.id)}>{task.title}</Link>{task.description && <span className="task-description-preview">{task.description}</span>}{error && <p className="field-error" role="alert">{error}</p>}</td>
-    <td><select className={'inline-status badge-' + task.status.toLowerCase()} aria-label={'Status for ' + task.title} disabled={pending} value={task.status} onChange={event => void changeStatus(event.target.value)}>{Object.entries(statusText).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{pending && <span className="sr-only" role="status">Saving task status...</span>}</td>
+    <td><select className={'inline-status badge-' + task.status.toLowerCase()} aria-label={'Status for ' + task.title} disabled={pending} value={task.status} onChange={event => void changeStatus(event.target.value as TaskItem['status'])}>{Object.entries(statusText).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{pending && <span className="sr-only" role="status">Saving task status...</span>}</td>
     <td><Badge value={task.priority}>{task.priority}</Badge></td><td>{task.assigneeId ? members.find(member => member.userId === task.assigneeId)?.displayName ?? 'User ' + task.assigneeId : <span className="unassigned">Unassigned</span>}</td>
     <td><span className={task.dueDateUtc && new Date(task.dueDateUtc).getTime() < now && task.status !== 'Done' ? 'overdue-label' : ''}>{deadline(task.dueDateUtc)}</span></td>
     <td><Link className="row-action" aria-label={'Edit ' + task.title} to={'/tasks/' + task.id + '/edit'}>Edit</Link><Link className="row-action" aria-label={'Open ' + task.title} to={'/tasks/' + task.id}>Open</Link></td></tr>
@@ -128,8 +129,8 @@ function TaskForm({ client, project, initial }: { client: ApiClient; project: Pr
     if (Object.keys(errors).length) { (event.currentTarget.elements.namedItem(Object.keys(errors)[0]) as HTMLElement)?.focus(); return }
     lock.current = true; setPending(true)
     try {
-      const values = { title: title.trim(), description: description.trim() || null, priority, assigneeId: assignee || null, dueDateUtc: parsed?.toISOString() ?? null }
-      const data: Record<string, unknown> = initial ? {} : values
+      const values: TaskCreate = { title: title.trim(), description: description.trim() || null, priority, assigneeId: assignee || null, dueDateUtc: parsed?.toISOString() ?? null }
+      const data: TaskPatch = initial ? {} : values
       if (initial) {
         if (values.title !== initial.title) data.title = values.title
         if (values.description !== initial.description) data.description = values.description
@@ -187,7 +188,7 @@ function TaskActions({ client, task, refresh }: { client: ApiClient; task: TaskI
     if (lock.current) return
     lock.current = true; setPending(true); setError('')
     try {
-      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + (remove ? '' : '/status'), method: remove ? 'delete' : 'patch', ...(remove ? {} : { data: { status } }) })
+      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + (remove ? '' : '/status'), method: remove ? 'delete' : 'patch', ...(remove ? {} : { data: { status } satisfies TaskStatusUpdate }) })
       if (!alive.current) return
       if (remove) navigate('/projects/' + encodeURIComponent(task.projectId) + '/tasks', { replace: true, state: { deleted: true } })
       else { navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: { statusUpdated: true } }); refresh() }

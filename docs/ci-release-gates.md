@@ -8,11 +8,11 @@ Local evidence: [SaaS-002 verification record](evidence/saas002-ci-baseline.json
 
 | Check | Gate and evidence |
 | --- | --- |
-| Backend checks | Locked restore/build, model snapshot drift, operations tests, live disposable MySQL integration tests; TRX verifier rejects empty/failed/skipped tests; TRX and coverage artifact |
-| Frontend checks | Locked install, typecheck, lint, component tests with JUnit, production build |
+| Backend checks | Locked restore/build, model snapshot drift, live OpenAPI snapshot comparison, operations tests, live disposable MySQL integration tests; TRX verifier rejects empty/failed/skipped tests; TRX and coverage artifact |
+| Frontend checks | Locked install, generated API type drift check, typecheck, lint, component tests with JUnit, production build |
 | Deployment smoke | Build actual app/migration images; private disposable MySQL; deliberate migration; HTTPS readiness and shell/authentication smoke; app recreation proves persisted keys/session and logout revocation |
 | Published browser journeys | Run after container restart smoke, against the same real HTTPS app/database; all business mutations use the actual API; one read-only 500 response is deliberately injected to verify error recovery. Prepare large project/task IDs; owner/member/outsider CRUD, assignment/removal, dashboard/activity, authentication/profile, accessibility/keyboard/security/performance checks; screenshots and JSON artifacts |
-| Dependency and secret checks | Audit all five .NET projects and frontend/browser direct/transitive packages; fail high/critical findings, unavailable sources and malformed reports. Gitleaks scans full fetched Git history with pinned, SHA-256-verified CLI and redacted findings |
+| Dependency and secret checks | Audit all five .NET projects and frontend/browser/contract-tool direct/transitive packages; fail high/critical findings, unavailable sources and malformed reports. Gitleaks scans full fetched Git history with pinned, SHA-256-verified CLI and redacted findings |
 | Static analysis | Pinned CodeQL action with security-extended analysis for C#, JavaScript/TypeScript and Python. SARIF validation rejects missing/unsuccessful analysis and security severity >=7. SARIF retained and uploaded to code scanning |
 | Release checks | Aggregate requires every preceding job to succeed; cancellation, failure or skipped work never closes the gate |
 
@@ -32,7 +32,7 @@ Follow [published browser setup](../tests/browser/README.md) for a fresh, isolat
 
 ## Software bills of materials and provenance policy
 
-Generate CycloneDX JSON for frontend, browser tools and all backend solution dependencies with pinned npm and CycloneDX 6.3.1. Include development/test dependencies and label the browser BOM as tooling. Record source revision and SHA-256 checksums alongside the BOMs. These are dependency inventories, not proof that every component ships in a customer artifact; container OS/runtime inventories are required when assembling a releasable image.
+Generate CycloneDX JSON for frontend, browser tools, contract tools and all backend solution dependencies with pinned npm and CycloneDX 6.3.1. Include development/test dependencies and label browser and contract-generator BOMs as tooling. Record source revision and SHA-256 checksums alongside the BOMs. These are dependency inventories, not proof that every component ships in a customer artifact; container OS/runtime inventories are required when assembling a releasable image.
 
 Retain CI security/SBOM artifacts for 14 days and browser/backend/frontend reports for 7 days. These are short-lived CI evidence, not customer audit retention. Do not upload cookies, mounted secrets, connection files, private certificates, production logs or user content. Synthetic screenshots and redacted scanner reports are permitted.
 

@@ -51,6 +51,7 @@ def run_audits():
         ("nuget", ["dotnet", "list", "TaskFlow.slnx", "package", "--vulnerable", "--include-transitive", "--format", "json", "--output-version", "1"]),
         ("frontend", [npm, "audit", "--prefix", "TaskFlow-FE", "--json"]),
         ("browser-tools", [npm, "audit", "--prefix", "tests/browser", "--json"]),
+        ("contract-tools", [npm, "audit", "--prefix", "tools/api-contracts", "--json"]),
     ]
     outcomes = []
     for name, command in commands:

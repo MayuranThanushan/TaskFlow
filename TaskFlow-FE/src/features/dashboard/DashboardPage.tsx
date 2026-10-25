@@ -1,3 +1,4 @@
+import type { components } from '../../api/generated'
 import { useState } from 'react'
 import { Badge, Icon } from '../../components/Workspace'
 import type { ProjectPage } from '../projects/types'
@@ -7,9 +8,7 @@ import type { ApiClient } from '../../api/client'
 import { useAuth } from '../auth/auth-context'
 import { useProjectResource } from '../projects/use-project-resource'
 
-export interface DashboardTotals {
-  totalProjects: number; totalTasks: number; tasksByStatus: { toDo: number; inProgress: number; done: number }; assignedToMe: number; overdueTasks: number
-}
+export type DashboardTotals = components['schemas']['DashboardDto']
 export function DashboardPage({ client }: { client: ApiClient }) {
   const { session } = useAuth()
   const { result, retry } = useProjectResource<DashboardTotals>(client, '/dashboard')

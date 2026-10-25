@@ -1,8 +1,9 @@
 {
   "openapi": "3.1.1",
   "info": {
-    "title": "TaskFlow.Api | v1",
-    "version": "1.0.0"
+    "title": "TaskFlow API",
+    "description": "Implemented project-based MVP contract. Future workspace/v2 routes and expectedVersion are not implemented. Session cookies are HttpOnly; CSRF requires cookie plus header. Local versus Strict security alternatives describe deployment modes, not interchangeable cookies accepted by one deployment. Transport:RequireHttps selects cookie names; public HTTPS is the hosted default. Unknown/repeated collection query parameters are rejected case-insensitively; Enums and dynamic task PATCH field names are case-sensitive; typed body binding accepts name casing variants.",
+    "version": "v1"
   },
   "servers": [
     {
@@ -15,86 +16,210 @@
         "tags": [
           "Activity"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Activity_List",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           },
           {
-            "name": "Page",
+            "name": "page",
             "in": "query",
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 1
             }
           },
           {
-            "name": "PageSize",
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "maximum": 100,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 20
             }
           },
           {
-            "name": "FromUtc",
+            "name": "fromUtc",
             "in": "query",
             "schema": {
-              "type": "string"
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,7})?(?:Z|[\u002B-]\\d{2}:\\d{2})$",
+              "type": "string",
+              "format": "date-time"
             }
           },
           {
-            "name": "ToUtc",
+            "name": "toUtc",
             "in": "query",
             "schema": {
-              "type": "string"
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,7})?(?:Z|[\u002B-]\\d{2}:\\d{2})$",
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityPage"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityPage"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ActivityPage"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
           "Auth"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Auth_Register",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -108,7 +233,7 @@
                 "$ref": "#/components/schemas/RegisterRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
               }
@@ -119,31 +244,191 @@
         "responses": {
           "201": {
             "description": "Created",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Location": {
+                "description": "Relative resource URL; registration requires subsequent sign-in.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Retry-After": {
+                "description": "Optional retry interval in seconds.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
           "Auth"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Auth_Login",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -157,7 +442,7 @@
                 "$ref": "#/components/schemas/LoginRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
               }
@@ -168,25 +453,165 @@
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Retry-After": {
+                "description": "Optional retry interval in seconds.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/auth/me": {
@@ -194,28 +619,114 @@
         "tags": [
           "Auth"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Auth_Me",
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v1/auth/logout": {
@@ -223,11 +734,123 @@
         "tags": [
           "Auth"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Auth_Logout",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "No Content",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/auth/csrf": {
@@ -235,28 +858,83 @@
         "tags": [
           "Csrf"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Csrf_Token",
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CsrfDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CsrfDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CsrfDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": []
       }
     },
     "/api/v1/dashboard": {
@@ -264,28 +942,114 @@
         "tags": [
           "Dashboard"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Dashboard_Get",
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/DashboardDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DashboardDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DashboardDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v1/health/live": {
@@ -293,28 +1057,59 @@
         "tags": [
           "Health"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Readiness 503 uses the health DTO, not Problem Details.",
+        "operationId": "Health_Live",
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": []
       }
     },
     "/api/v1/health/ready": {
@@ -322,21 +1117,27 @@
         "tags": [
           "Health"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Readiness 503 uses the health DTO, not Problem Details.",
+        "operationId": "Health_Ready",
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
                 }
@@ -345,25 +1146,54 @@
           },
           "503": {
             "description": "Service Unavailable",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": []
       }
     },
     "/api/v1/projects/{projectId}/members": {
@@ -371,32 +1201,175 @@
         "tags": [
           "ProjectMembers"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "ProjectMembers_List",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMemberList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "ProjectMembers"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "ProjectMembers_Add",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -413,7 +1386,7 @@
                 "$ref": "#/components/schemas/AddProjectMemberRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/AddProjectMemberRequest"
               }
@@ -422,10 +1395,217 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Location": {
+                "description": "Relative resource URL; registration requires subsequent sign-in.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMemberDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/projects/{projectId}/members/{userId}": {
@@ -433,13 +1613,17 @@
         "tags": [
           "ProjectMembers"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "ProjectMembers_Remove",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           },
           {
@@ -447,21 +1631,217 @@
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/projects": {
       "post": {
         "tags": [
           "Projects"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Projects_Create",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -475,7 +1855,7 @@
                 "$ref": "#/components/schemas/ProjectWriteRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/ProjectWriteRequest"
               }
@@ -486,61 +1866,175 @@
         "responses": {
           "201": {
             "description": "Created",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Location": {
+                "description": "Relative resource URL; registration requires subsequent sign-in.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       },
       "get": {
         "tags": [
           "Projects"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Projects_List",
         "parameters": [
           {
-            "name": "Page",
+            "name": "page",
             "in": "query",
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 1
             }
           },
           {
-            "name": "PageSize",
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "maximum": 100,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 20
             }
           },
           {
-            "name": "Search",
+            "name": "search",
             "in": "query",
             "schema": {
               "maxLength": 200,
@@ -549,44 +2043,139 @@
             }
           },
           {
-            "name": "SortBy",
+            "name": "sortBy",
             "in": "query",
             "schema": {
               "pattern": "^(name|createdAtUtc|updatedAtUtc)$",
-              "type": "string"
+              "enum": [
+                "name",
+                "createdAtUtc",
+                "updatedAtUtc"
+              ],
+              "type": "string",
+              "default": "createdAtUtc"
             }
           },
           {
-            "name": "SortDirection",
+            "name": "sortDirection",
             "in": "query",
             "schema": {
               "pattern": "^(asc|desc)$",
-              "type": "string"
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc"
             }
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectPage"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectPage"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectPage"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v1/projects/{projectId}": {
@@ -594,49 +2183,175 @@
         "tags": [
           "Projects"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Projects_Get",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectDetailsDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectDetailsDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectDetailsDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       },
       "put": {
         "tags": [
           "Projects"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Projects_Update",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -653,7 +2368,7 @@
                 "$ref": "#/components/schemas/ProjectWriteRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/ProjectWriteRequest"
               }
@@ -663,29 +2378,366 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "Projects"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Projects_Delete",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/projects/{projectId}/tasks": {
@@ -693,12 +2745,26 @@
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_Create",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -715,7 +2781,7 @@
                 "$ref": "#/components/schemas/CreateTaskRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/CreateTaskRequest"
               }
@@ -724,54 +2790,211 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Created",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Location": {
+                "description": "Relative resource URL; registration requires subsequent sign-in.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       },
       "get": {
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_List",
         "parameters": [
           {
             "name": "projectId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           },
           {
-            "name": "Page",
+            "name": "page",
             "in": "query",
             "schema": {
               "maximum": 2147483647,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 1
             }
           },
           {
-            "name": "PageSize",
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "maximum": 100,
               "minimum": 1,
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
-              "format": "int32"
+              "type": "integer",
+              "format": "int32",
+              "default": 20
             }
           },
           {
-            "name": "Search",
+            "name": "search",
             "in": "query",
             "schema": {
               "maxLength": 200,
@@ -780,48 +3003,197 @@
             }
           },
           {
-            "name": "Status",
+            "name": "status",
             "in": "query",
             "schema": {
+              "enum": [
+                "ToDo",
+                "InProgress",
+                "Done"
+              ],
               "type": "string"
             }
           },
           {
-            "name": "Priority",
+            "name": "priority",
             "in": "query",
             "schema": {
+              "enum": [
+                "Low",
+                "Medium",
+                "High"
+              ],
               "type": "string"
             }
           },
           {
-            "name": "AssigneeId",
+            "name": "assigneeId",
             "in": "query",
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range; omit rather than supplying an empty filter."
             }
           },
           {
-            "name": "SortBy",
+            "name": "sortBy",
             "in": "query",
             "schema": {
               "pattern": "^(title|priority|dueDateUtc|createdAtUtc)$",
-              "type": "string"
+              "enum": [
+                "title",
+                "priority",
+                "dueDateUtc",
+                "createdAtUtc"
+              ],
+              "type": "string",
+              "default": "createdAtUtc"
             }
           },
           {
-            "name": "SortDirection",
+            "name": "sortDirection",
             "in": "query",
             "schema": {
               "pattern": "^(asc|desc)$",
-              "type": "string"
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskPage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v1/tasks/{taskId}": {
@@ -829,32 +3201,175 @@
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_Get",
         "parameters": [
           {
             "name": "taskId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       },
       "patch": {
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_Update",
         "parameters": [
           {
             "name": "taskId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -863,17 +3378,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JsonElement"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonElement"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonElement"
+                "$ref": "#/components/schemas/TaskPatchRequest"
               }
             }
           },
@@ -881,29 +3386,342 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_Delete",
         "parameters": [
           {
             "name": "taskId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/tasks/{taskId}/status": {
@@ -911,12 +3729,26 @@
         "tags": [
           "Tasks"
         ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Tasks_SetStatus",
         "parameters": [
           {
             "name": "taskId",
             "in": "path",
             "required": true,
             "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -925,17 +3757,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JsonElement"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonElement"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/JsonElement"
+                "$ref": "#/components/schemas/TaskStatusRequest"
               }
             }
           },
@@ -943,15 +3765,182 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStatusDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     },
     "/api/v1/users/me": {
       "patch": {
         "tags": [
           "Users"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "Users_Update",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -965,7 +3954,7 @@
                 "$ref": "#/components/schemas/ProfileUpdateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/ProfileUpdateRequest"
               }
@@ -976,25 +3965,161 @@
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfileDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileDto"
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
       }
     }
   },
@@ -1013,27 +4138,41 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "projectId": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "actorUserId": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "taskId": {
+            "pattern": "^0*[1-9][0-9]*$",
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "actionType": {
+            "minLength": 1,
             "type": "string"
           },
           "details": {
+            "minLength": 1,
             "type": "string"
           },
           "createdAtUtc": {
+            "minLength": 1,
             "type": "string",
             "format": "date-time"
           }
@@ -1056,52 +4195,94 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
       },
       "AddProjectMemberRequest": {
         "required": [
-          "userId",
-          "role"
+          "userId"
         ],
         "type": "object",
         "properties": {
           "userId": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "role": {
             "pattern": "^Member$",
+            "enum": [
+              "Member"
+            ],
+            "type": "string",
+            "default": "Member"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApiProblem": {
+        "required": [
+          "type",
+          "title",
+          "status",
+          "traceId"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "minLength": 1,
             "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "traceId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       },
@@ -1113,7 +4294,7 @@
         "properties": {
           "title": {
             "maxLength": 200,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -1128,18 +4309,24 @@
             "$ref": "#/components/schemas/TaskPriority"
           },
           "assigneeId": {
+            "pattern": "^0*[1-9][0-9]*$",
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "dueDateUtc": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,7})?(?:Z|[\u002B-]\\d{2}:\\d{2})$",
             "type": [
               "null",
               "string"
-            ]
+            ],
+            "description": "ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.",
+            "format": "date-time"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "CsrfDto": {
         "required": [
@@ -1149,9 +4336,11 @@
         "type": "object",
         "properties": {
           "requestToken": {
+            "minLength": 1,
             "type": "string"
           },
           "headerName": {
+            "minLength": 1,
             "type": "string"
           }
         }
@@ -1167,38 +4356,22 @@
         "type": "object",
         "properties": {
           "totalProjects": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalTasks": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "tasksByStatus": {
             "$ref": "#/components/schemas/TaskStatusCounts"
           },
           "assignedToMe": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "overdueTasks": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1210,11 +4383,16 @@
         "type": "object",
         "properties": {
           "status": {
+            "minLength": 1,
+            "enum": [
+              "Healthy",
+              "Unhealthy",
+              "Degraded"
+            ],
             "type": "string"
           }
         }
       },
-      "JsonElement": {},
       "LoginRequest": {
         "required": [
           "email",
@@ -1224,15 +4402,17 @@
         "properties": {
           "email": {
             "maxLength": 256,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
           },
           "password": {
             "maxLength": 128,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "ProfileDto": {
         "required": [
@@ -1243,13 +4423,19 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "displayName": {
+            "minLength": 1,
             "type": "string"
           },
           "email": {
-            "type": "string"
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
           }
         }
       },
@@ -1261,10 +4447,11 @@
         "properties": {
           "displayName": {
             "maxLength": 100,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "ProjectDetailsDto": {
         "required": [
@@ -1281,9 +4468,13 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "name": {
+            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -1293,38 +4484,31 @@
             ]
           },
           "ownerId": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "createdAtUtc": {
+            "minLength": 1,
             "type": "string",
             "format": "date-time"
           },
           "updatedAtUtc": {
+            "minLength": 1,
             "type": "string",
             "format": "date-time"
           },
           "totalTasks": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "completedTasks": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "progressPercentage": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1341,9 +4525,13 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "name": {
+            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -1353,15 +4541,68 @@
             ]
           },
           "ownerId": {
-            "type": "string"
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
           },
           "createdAtUtc": {
+            "minLength": 1,
             "type": "string",
             "format": "date-time"
           },
           "updatedAtUtc": {
+            "minLength": 1,
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "ProjectMemberDto": {
+        "required": [
+          "userId",
+          "displayName",
+          "role",
+          "joinedAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "displayName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "role": {
+            "minLength": 1,
+            "enum": [
+              "Owner",
+              "Member"
+            ],
+            "type": "string"
+          },
+          "joinedAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProjectMemberList": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMemberDto"
+            }
           }
         }
       },
@@ -1382,35 +4623,19 @@
             }
           },
           "page": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "pageSize": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "totalPages": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
@@ -1423,7 +4648,7 @@
         "properties": {
           "name": {
             "maxLength": 150,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           },
           "description": {
@@ -1434,7 +4659,8 @@
               "string"
             ]
           }
-        }
+        },
+        "additionalProperties": false
       },
       "RegisterRequest": {
         "required": [
@@ -1446,23 +4672,195 @@
         "properties": {
           "displayName": {
             "maxLength": 100,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
           },
           "email": {
             "maxLength": 256,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
           },
           "password": {
             "maxLength": 128,
-            "minLength": 0,
+            "minLength": 1,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TaskDto": {
+        "required": [
+          "id",
+          "projectId",
+          "title",
+          "description",
+          "status",
+          "priority",
+          "assigneeId",
+          "dueDateUtc",
+          "createdAtUtc",
+          "updatedAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "projectId": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "minLength": 1,
+            "enum": [
+              "ToDo",
+              "InProgress",
+              "Done"
+            ],
+            "type": "string"
+          },
+          "priority": {
+            "minLength": 1,
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "dueDateUtc": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,7})?(?:Z|[\u002B-]\\d{2}:\\d{2})$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.",
+            "format": "date-time"
+          },
+          "createdAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
+      "TaskPage": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "totalPages"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TaskPatchRequest": {
+        "minProperties": 1,
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 10000,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priority": {
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "dueDateUtc": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,7})?(?:Z|[\u002B-]\\d{2}:\\d{2})$",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "At least one editable field. Omission preserves the current value; null clears only description, assigneeId and dueDateUtc. Text is trimmed. Unknown/duplicate properties are rejected."
+      },
       "TaskPriority": {
-        "type": "integer"
+        "enum": [
+          "Low",
+          "Medium",
+          "High"
+        ],
+        "type": "string",
+        "default": "Medium"
       },
       "TaskStatusCounts": {
         "required": [
@@ -1473,30 +4871,96 @@
         "type": "object",
         "properties": {
           "toDo": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "inProgress": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "done": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           }
         }
+      },
+      "TaskStatusDto": {
+        "required": [
+          "id",
+          "status",
+          "updatedAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "status": {
+            "minLength": 1,
+            "enum": [
+              "ToDo",
+              "InProgress",
+              "Done"
+            ],
+            "type": "string"
+          },
+          "updatedAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TaskStatusRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "ToDo",
+              "InProgress",
+              "Done"
+            ],
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "SessionLocal": {
+        "type": "apiKey",
+        "description": "HttpOnly session cookie; sent by browser, never stored as a bearer token. Strict requires HTTPS; Local supports configured HTTP/HTTPS.",
+        "name": "TaskFlow.Auth",
+        "in": "cookie"
+      },
+      "CsrfCookieLocal": {
+        "type": "apiKey",
+        "description": "HttpOnly antiforgery cookie issued by GET /api/v1/auth/csrf; must match the request token and current identity.",
+        "name": "TaskFlow.Csrf",
+        "in": "cookie"
+      },
+      "SessionStrict": {
+        "type": "apiKey",
+        "description": "HttpOnly session cookie; sent by browser, never stored as a bearer token. Strict requires HTTPS; Local supports configured HTTP/HTTPS.",
+        "name": "__Host-TaskFlow.Auth",
+        "in": "cookie"
+      },
+      "CsrfCookieStrict": {
+        "type": "apiKey",
+        "description": "HttpOnly antiforgery cookie issued by GET /api/v1/auth/csrf; must match the request token and current identity.",
+        "name": "__Host-TaskFlow.Csrf",
+        "in": "cookie"
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "name": "X-CSRF-TOKEN",
+        "in": "header"
       }
     }
   },

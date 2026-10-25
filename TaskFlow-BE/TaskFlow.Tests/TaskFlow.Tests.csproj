@@ -26,4 +26,7 @@
     <ProjectReference Include="..\TaskFlow.Api\TaskFlow.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="../../docs/contracts/openapi.json" Link="Contracts/openapi.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

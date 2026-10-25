@@ -1,6 +1,8 @@
-export interface TaskItem {
-  id: string; projectId: string; title: string; description: string | null
-  status: 'ToDo' | 'InProgress' | 'Done'; priority: 'Low' | 'Medium' | 'High'
-  assigneeId: string | null; dueDateUtc: string | null; createdAtUtc: string; updatedAtUtc: string
-}
-export interface TaskPage { items: TaskItem[]; page: number; pageSize: number; totalCount: number; totalPages: number }
+import type { components } from '../../api/generated'
+
+export type TaskItem = components['schemas']['TaskDto']
+export type TaskPage = components['schemas']['TaskPage']
+export type TaskCreate = components['schemas']['CreateTaskRequest']
+export type TaskPatch = components['schemas']['TaskPatchRequest']
+export type TaskStatusUpdate = components['schemas']['TaskStatusRequest']
+export type TaskStatusResult = components['schemas']['TaskStatusDto']

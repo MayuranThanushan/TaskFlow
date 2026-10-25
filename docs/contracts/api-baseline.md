@@ -99,3 +99,8 @@ Step 09 adds public GET /api/v1/health/ready with no-store caching: 200 `{ "stat
 Step 10 implements the internal project/task access service, owner/member operation policy, safe 401/403/404 denial mapping and transactional activity boundary. This does not expose project/task/activity HTTP routes yet. See [project foundation](../project-foundation.md) for integration rules and verification.
 
 Step 11 implements POST /projects, GET /projects and GET /projects/{projectId}, including the documented list queries, stable ordering, current access/deletion scope, string IDs, real detail counts/progress and transactional ProjectCreated activity. Protected writes authenticate before CSRF validation; anonymous POST /projects returns 401. See [projects](../projects.md) for validation and verification.
+
+
+## SaaS-003 machine contract amendment
+
+The [typed contract workflow](README.md) replaces the earlier route-only snapshot limitation. Controller success annotations and OpenAPI transformers now describe request/response DTOs, dynamic PATCH presence/null rules, cookie/CSRF security, errors and query allowlists. Canonical JSON names are camelCase; current typed MVC body binding accepts casing variants, while dynamic task PATCH names are exact. No new v2 endpoints, tenant roles or expectedVersion fields are implemented by this amendment. Full live-document drift and generated frontend type drift are mandatory CI checks.

@@ -1,0 +1,87 @@
+{
+  "task": "SaaS-003",
+  "recordedAtUtc": "2026-10-25T13:40:20.272523+00:00",
+  "sourceBaseRevision": "01d99dcd0b7268ca054b27d34c478011cb438006",
+  "scope": "Local Windows verification of working changes before commit. No tenant migration, production API behavior change, deployment or hosted CI run.",
+  "contract": {
+    "openApiVersion": "3.1.1",
+    "paths": 17,
+    "operations": 24,
+    "schemas": 25,
+    "securitySchemes": [
+      "SessionLocal",
+      "CsrfCookieLocal",
+      "SessionStrict",
+      "CsrfCookieStrict",
+      "CsrfHeader"
+    ],
+    "typeGenerator": "openapi-typescript 7.13.0 with isolated TypeScript 5.9.3",
+    "frontendTypeScript": "6.0.3",
+    "snapshotSha256NormalizedLf": "59eb00a08a042fd2f4c78897b0f956951b56ce3f5cd3551a447007f1df6bf978",
+    "generatedTypesSha256NormalizedLf": "d351f517bc5bc402a42b3d9a85417868143ad99ef3b625cee06631f5606dfbe2"
+  },
+  "checks": {
+    "backend": {
+      "passed": 126,
+      "skipped": 0,
+      "liveMySqlRequired": true,
+      "contractTests": 4,
+      "report": "TestResults/saas003-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 95,
+      "typecheck": true,
+      "generatedTypeDriftCheck": true,
+      "lint": true,
+      "productionBuild": true,
+      "productionJavaScriptIdenticalToSaas002BrowserVerifiedBundle": true
+    },
+    "operationsTestsPassed": 23,
+    "workflowLintPassed": true,
+    "workflowLintShellcheckAvailable": false,
+    "intentionalNegativeProbes": {
+      "apiSnapshotMismatchRejected": true,
+      "staleGeneratedTypesRejected": true,
+      "checkedInFilesMutated": false
+    },
+    "dependencyAudits": [
+      {
+        "source": "nuget",
+        "passed": true,
+        "blockingFindings": []
+      },
+      {
+        "source": "frontend",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "browser-tools",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "contract-tools",
+        "passed": true,
+        "blockingFindings": {}
+      }
+    ],
+    "contractToolingLockedInstallAndSbom": {
+      "passed": true,
+      "components": 33
+    },
+    "stagedSecretScanFindings": 0
+  },
+  "ciChanges": [
+    "Backend tests compare full live Development document with snapshot; no export flag in CI",
+    "Frontend checks generated models before compiling consumers",
+    "Contract tools use an isolated locked package; audited and included in SBOM generation and Dependabot"
+  ],
+  "limitations": [
+    "Generated TypeScript does not validate untrusted runtime JSON, authorization or nonempty PATCH objects",
+    "BIGINT numeric range, trimming, timestamp/year checks and cross-field constraints remain server validation rules",
+    "No future workspace v2/expectedVersion behavior is implemented",
+    "Hosted CI, Docker/CodeQL execution and repository protection remain open SaaS-002 gates",
+    "Production browser suite not rerun: type-only frontend changes emit the identical previously verified bundle; backend integration suite was rerun"
+  ]
+}

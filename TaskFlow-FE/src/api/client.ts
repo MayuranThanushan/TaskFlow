@@ -1,6 +1,6 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosAdapter, AxiosInstance, AxiosRequestConfig, RawAxiosHeaders } from 'axios'
-import type { Credentials, FieldErrors, Profile, Registration } from './types'
+import type { Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Registration } from './types'
 
 export class ApiError extends Error {
   readonly status?: number
@@ -61,7 +61,7 @@ export class ApiClient {
     if (this.token) return Promise.resolve(this.token)
     if (this.pendingToken) return this.pendingToken
     const version = this.tokenVersion
-    const pending = this.transport.get<{ requestToken: string }>('/auth/csrf').then(response => {
+    const pending = this.transport.get<CsrfToken>('/auth/csrf').then(response => {
       if (version === this.tokenVersion) this.token = response.data.requestToken
       return response.data.requestToken
     }).catch(error => { throw asApiError(error) }).finally(() => {
@@ -101,7 +101,7 @@ export class ApiClient {
     throw new ApiError('Please try the request again.')
   }
 
-  updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } }) }
+  updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } satisfies ProfileUpdate }) }
 
   currentUser() { return this.request<Profile>({ url: '/auth/me' }, false) }
   register(values: Registration) { return this.request<Profile>({ url: '/auth/register', method: 'post', data: values }, false) }

@@ -11,12 +11,14 @@ namespace TaskFlow.Api.Controllers;
 public sealed class ProjectMembersController(IProjectMembersService members) : ControllerBase
 {
     [HttpGet]
+    [ProducesResponseType<ProjectMemberList>(StatusCodes.Status200OK)]
     public async Task<IActionResult> List(string projectId, CancellationToken cancellationToken)
     {
         if (!TryId(projectId, "projectId", out var id)) return ValidationProblem(ModelState);
         return Ok(await members.ListAsync(Actor(), id, cancellationToken));
     }
     [HttpPost]
+    [ProducesResponseType<ProjectMemberDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> Add(string projectId, AddProjectMemberRequest request, CancellationToken cancellationToken)
     {
         var projectValid = TryId(projectId, "projectId", out var id);
@@ -26,6 +28,7 @@ public sealed class ProjectMembersController(IProjectMembersService members) : C
         return CreatedAtAction(nameof(List), new { projectId }, member);
     }
     [HttpDelete("{userId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Remove(string projectId, string userId, CancellationToken cancellationToken)
     {
         var projectValid = TryId(projectId, "projectId", out var id);

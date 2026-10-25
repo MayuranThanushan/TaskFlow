@@ -41,6 +41,7 @@ public sealed class ProjectsController(IProjectService projects) : ControllerBas
     }
 
     [HttpPut("{projectId}")]
+    [ProducesResponseType<ProjectDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Update(string projectId, ProjectWriteRequest request, CancellationToken cancellationToken)
     {
         if (!TryId(projectId, out var id)) return ValidationProblem(ModelState);
@@ -48,6 +49,7 @@ public sealed class ProjectsController(IProjectService projects) : ControllerBas
     }
 
     [HttpDelete("{projectId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(string projectId, CancellationToken cancellationToken)
     {
         if (!TryId(projectId, out var id)) return ValidationProblem(ModelState);

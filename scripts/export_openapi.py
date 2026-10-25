@@ -29,11 +29,24 @@ def validate(document):
         raise ValueError("Unexpected OpenAPI inventory; review controller changes and update EXPECTED")
 
 
+def normalize(document):
+    document = json.loads(json.dumps(document))
+    document["servers"] = [{"url": "/"}]
+    return document
+
+
+def check_snapshot(expected, actual):
+    validate(actual)
+    if normalize(expected) != normalize(actual):
+        raise ValueError("OpenAPI drift detected; regenerate and review the snapshot and frontend types")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", required=True)
     parser.add_argument("--ca", help="Public CA PEM; TLS verification remains enabled")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "docs/contracts/openapi.json")
+    parser.add_argument("--check", action="store_true", help="Compare to the snapshot without overwriting it")
     args = parser.parse_args()
     target = urlsplit(args.url)
     if target.username or target.password or not (target.scheme == "https" or
@@ -43,10 +56,13 @@ def main():
     with urlopen(args.url, context=context, timeout=20) as response:
         document = json.load(response)
     validate(document)
-    # Development emits the serving URL; use the same-origin root for a portable snapshot.
-    document["servers"] = [{"url": "/"}]
-    args.output.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
-    print("Exported 17 paths / 24 operations to", args.output)
+    document = normalize(document)
+    if args.check:
+        check_snapshot(json.loads(args.output.read_text(encoding="utf-8")), document)
+        print("OpenAPI snapshot matches live API.")
+    else:
+        args.output.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+        print("Exported 17 paths / 24 operations to", args.output)
 
 if __name__ == "__main__":
     main()

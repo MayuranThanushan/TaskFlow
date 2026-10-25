@@ -1,10 +1,11 @@
+import type { components } from '../../api/generated'
 import { Badge } from '../../components/Workspace'
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import type { ApiClient } from '../../api/client'
 import { useProjectResource } from '../projects/use-project-resource'
-export interface ActivityItem { id: string; projectId: string; actorUserId: string; taskId: string | null; actionType: string; details: string; createdAtUtc: string }
-export interface ActivityResult { items: ActivityItem[]; page: number; pageSize: number; totalCount: number; totalPages: number }
+export type ActivityItem = components['schemas']['ActivityDto']
+export type ActivityResult = components['schemas']['ActivityPage']
 function localTime(value: string | null) { if (!value) return ''; const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 23) }
 function ActivityFilters({ params, apply }: { params: URLSearchParams; apply: (next: URLSearchParams) => void }) {
   const [from, setFrom] = useState(localTime(params.get('fromUtc'))); const [to, setTo] = useState(localTime(params.get('toUtc')))

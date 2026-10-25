@@ -1,0 +1,13 @@
+{
+  "name": "taskflow-api-contract-tools",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "generate": "openapi-typescript ../../docs/contracts/openapi.json -o ../../TaskFlow-FE/src/api/generated.d.ts --alphabetize --default-non-nullable false",
+    "check": "npm run generate -- --check"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

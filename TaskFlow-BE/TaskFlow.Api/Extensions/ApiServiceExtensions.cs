@@ -47,7 +47,12 @@ public static class ApiServiceExtensions
             });
         services.AddHealthChecks().AddCheck<TaskFlow.Api.Health.DatabaseReadinessCheck>(
             "database", tags: ["ready"], timeout: TimeSpan.FromSeconds(5));
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddSchemaTransformer<TaskFlow.Api.Contracts.ContractSchemaTransformer>();
+            options.AddOperationTransformer<TaskFlow.Api.Contracts.ContractOperationTransformer>();
+            options.AddDocumentTransformer<TaskFlow.Api.Contracts.ContractDocumentTransformer>();
+        });
         return services;
     }
 }
