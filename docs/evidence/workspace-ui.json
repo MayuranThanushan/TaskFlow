@@ -1,0 +1,285 @@
+{
+  "date": "2026-10-25",
+  "scope": "Local Vite with intercepted synthetic API fixtures; no production data touched",
+  "frontendTestsPassed": 95,
+  "backendChanged": false,
+  "viewports": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "scans": 42,
+  "detectedAccessibilityViolations": 0,
+  "pageOverflowScans": 0,
+  "browserErrors": [],
+  "journeys": [
+    "inline status",
+    "edit task",
+    "cancel delete",
+    "confirmed delete task",
+    "project create/edit/delete",
+    "current-page audit JSON export",
+    "profile edit",
+    "password visibility",
+    "form validation focus",
+    "member permission controls",
+    "keyboard confirmation cancel",
+    "keyboard table scrolling"
+  ],
+  "screens": [
+    {
+      "name": "overview-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "projects-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "tasks-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "project-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "activity-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "activity-center",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "profile-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "create-project-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "edit-project-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "create-task-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "task-detail-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "edit-task-desktop",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "overview-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "projects-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "tasks-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "activity-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "profile-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "new-project-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "new-task-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "project-detail-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "overview-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "projects-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "tasks-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "activity-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "profile-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "new-project-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "new-task-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "project-detail-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "overview-tablet",
+      "width": 768,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "project-tablet",
+      "width": 768,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "home-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "not-found-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "login-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "register-1440",
+      "width": 1440,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "home-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "not-found-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "login-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "register-390",
+      "width": 390,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "home-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "not-found-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "login-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    },
+    {
+      "name": "register-320",
+      "width": 320,
+      "violations": [],
+      "overflow": false
+    }
+  ],
+  "productionHostVerification": false
+}

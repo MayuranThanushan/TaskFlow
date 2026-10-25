@@ -1,6 +1,6 @@
 # Testing and continuous integration
 
-The suite now contains 122 backend tests (76 requiring MySQL) and 92 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
+The suite now contains 122 backend tests (76 requiring MySQL) and 95 frontend API/component checks. Local Release verification passed all backend tests with no skips, plus frontend type-check, lint, tests and production build. Deployment checks and the separate published-app smoke rehearsal are described in [deployment.md](deployment.md). GitHub execution has not been performed: no remote repository is configured.
 
 ## Shared MySQL fixture
 
@@ -54,7 +54,7 @@ npm run test:ci
 npm run build
 ```
 
-Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. The 92 frontend tests cover authentication, navigation, session lifecycle, errors, CSRF/API behavior and the implemented project/task/dashboard/activity/profile features. See [frontend authentication](frontend-authentication.md) for coverage and the separate real-Edge HTTPS verification. The separate [published-app browser suite](../tests/browser/README.md) covers real-browser journeys; it has been run locally and is not part of the hosted workflow.
+Use `npm run test:watch` interactively. The CI command generates test-results/junit.xml and fails when no tests are discovered. The 95 frontend tests cover authentication, navigation, session lifecycle, errors, CSRF/API behavior and the implemented project/task/dashboard/activity/profile features. See [frontend authentication](frontend-authentication.md) for coverage and the separate real-Edge HTTPS verification. The separate [published-app browser suite](../tests/browser/README.md) covers real-browser journeys; it has been run locally and is not part of the hosted workflow.
 
 ## GitHub Actions
 
@@ -97,3 +97,5 @@ Step 20 adds three live profile API cases and seven frontend cases. All 108 back
 Step 21 adds a logging-safety backend test, a client account-change/CSRF dispatch test, and the locked [real-browser review suite](../tests/browser/README.md). Current totals are 109 backend and 92 frontend tests. E2E-001 through E2E-004, 30 accessibility/responsive scans, keyboard/security checks and demo performance measurements pass locally. See [review evidence](verification-review.md). Hosted/container CI remains pending.
 
 Step 22 adds an unknown-applied-migration readiness case (safe 503, liveness 200) and 16 separate standard-library operations tests: `python -m unittest discover -s tests/operations -v`. They cover backup checksums/layout, traversal, invalid/occupied targets, incompatible table-case mode, failed import/count validation, session-stamp rotation and release-payload drift. All 110 backend and 92 frontend tests pass, alongside those 16 operations checks. The operations suite is in backend CI. Real restricted-role recovery, key/data verification and compatible rollback passed locally; see [release evidence](release-runbook.md). Hosted/container verification remains pending.
+
+The workspace UI refresh adds three component regressions (95 frontend tests total) and a separate mocked-API browser review covering 42 route/viewport scans and CRUD/keyboard/export flows. See [workspace UI evidence](workspace-ui.md). These synthetic API checks do not replace the published-app/backend integration suite.

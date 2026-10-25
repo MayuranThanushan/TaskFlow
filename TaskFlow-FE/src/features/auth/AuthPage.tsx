@@ -16,6 +16,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [fields, setFields] = useState<FieldErrors>({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const locked = useRef(false)
   const summary = useRef<HTMLDivElement>(null)
   const notice = state.notice ?? auth.session.message
@@ -61,12 +62,12 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
 
   const field = (name: 'displayName' | 'email' | 'password', label: string, type = 'text') => <div className="form-field">
     <label htmlFor={name}>{label}</label>
-    <input id={name} name={name} type={type} value={values[name]}
+    <div className={name === 'password' ? 'password-control' : undefined}><input id={name} name={name} type={name === 'password' && showPassword ? 'text' : type} value={values[name]}
       autoComplete={name === 'password' ? registering ? 'new-password' : 'current-password' : name === 'email' ? 'email' : 'name'}
       maxLength={name === 'displayName' ? 100 : name === 'email' ? 256 : 128}
       aria-invalid={!!fields[name]?.length}
       aria-describedby={fields[name]?.length ? `${name}-error` : name === 'password' && registering ? 'password-hint' : undefined}
-      onChange={event => { setValues(previous => ({ ...previous, [name]: event.target.value })); setFields(previous => ({ ...previous, [name]: [] })) }} />
+      onChange={event => { setValues(previous => ({ ...previous, [name]: event.target.value })); setFields(previous => ({ ...previous, [name]: [] })) }} />{name === 'password' && <button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide' : 'Show'}</button>}</div>
     {!!fields[name]?.length && <p className="field-error" id={`${name}-error`}>{fields[name].join(' ')}</p>}
   </div>
 
@@ -75,7 +76,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       <p className="eyebrow">A little more clarity.</p>
       <p className="story-title">Make room<br />for good work.</p>
       <p>Bring your projects, tasks, and team into one thoughtful workspace.</p>
-      <div className="story-lines" aria-hidden="true"><span /><span /><span /></div>
+      <div className="auth-preview" aria-hidden="true"><div className="auth-preview-title"><span className="preview-window-dot" /> YOUR NEXT CHAPTER</div><strong>Good work starts with a clear plan.</strong><div className="auth-preview-row"><span className="preview-check">&#10003;</span> Set a direction<span className="preview-pill">Complete</span></div><div className="auth-preview-row"><span className="preview-check" /> Bring your team together</div><div className="auth-preview-row"><span className="preview-check" /> Make meaningful progress</div><div className="auth-preview-progress"><span /></div></div>
       <p className="story-footnote">Less chasing. More moving forward.</p>
     </aside>
     <section className="auth-card" aria-labelledby="form-title">

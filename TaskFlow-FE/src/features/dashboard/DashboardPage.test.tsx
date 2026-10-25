@@ -12,17 +12,28 @@ const empty: DashboardTotals = { totalProjects: 0, totalTasks: 0, tasksByStatus:
 const value = (label: string) => screen.getByText(label, { selector: 'dt' }).nextElementSibling
 function setup(authenticated = true, totals = populated) {
   const auth = server(authenticated)
-  const state = { totals, currentProfile: { ...profile }, status: 200, wait: null as Promise<void> | null, calls: 0 }
+  const state = { totals, currentProfile: { ...profile }, status: 200, wait: null as Promise<void> | null, calls: 0, projects: [] as { id: string; name: string; description: string | null }[], taskProjects: [] as string[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (config.url === '/dashboard') { state.calls++; const snapshot = structuredClone(state.totals); const status = state.status; await state.wait; return reply(config, status, snapshot) }
-    if (config.url?.startsWith('/projects')) return reply(config, 200, { items: [], page: 1, pageSize: 20, totalCount: 0, totalPages: 0 })
+    if (config.url?.includes('/tasks')) { state.taskProjects.push(config.url); return reply(config, 200, { items: [{ id: 'task-1', title: 'Recent delivery task', status: 'ToDo', priority: 'Medium' }], page: 1, pageSize: 5, totalCount: 1, totalPages: 1 }) }
+    if (config.url?.startsWith('/projects')) return reply(config, 200, { items: state.projects, page: 1, pageSize: 20, totalCount: state.projects.length, totalPages: 1 })
     return auth.adapter(config)
   })
   render(<StrictMode><MemoryRouter initialEntries={['/dashboard']}><App client={client} /></MemoryRouter></StrictMode>)
   return state
 }
 describe('Dashboard overview', () => {
+  it('shows live recent projects and switches the task preview without losing project context', async () => {
+    const state = setup(); state.projects = [{ id: 'project-a', name: 'First delivery', description: 'First scope' }, { id: 'project-b', name: 'Second delivery', description: null }]
+    const user = userEvent.setup()
+    expect(await screen.findByRole('link', { name: 'First delivery' })).toBeVisible()
+    expect(await screen.findByRole('link', { name: 'Recent delivery task' })).toBeVisible()
+    await user.click(screen.getAllByRole('button', { name: 'Preview tasks' })[1])
+    await waitFor(() => expect(state.taskProjects.at(-1)).toContain('/projects/project-b/tasks'))
+    expect(screen.getByRole('link', { name: 'View task list' })).toHaveAttribute('href', '/projects/project-b/tasks')
+  })
+
   it('protects the overview before requesting any totals', async () => {
     const state = setup(false); expect(await screen.findByRole('heading', { name: 'Sign in to TaskFlow' })).toBeVisible(); expect(state.calls).toBe(0)
   })

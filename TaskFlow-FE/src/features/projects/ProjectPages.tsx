@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Badge, Icon } from '../../components/Workspace'
 import { asApiError } from '../../api/client'
 import type { ApiClient } from '../../api/client'
 import type { FieldErrors } from '../../api/types'
@@ -32,6 +33,7 @@ function QueryForm({ params, apply }: { params: URLSearchParams; apply: (params:
 
 export function ProjectsPage({ client }: { client: ApiClient }) {
   const location = useLocation()
+  const { session } = useAuth()
   const [params, setParams] = useSearchParams()
   const query = params.toString()
   const { result, retry } = useProjectResource<ProjectPage>(client, '/projects' + (query ? '?' + query : ''))
@@ -48,9 +50,9 @@ export function ProjectsPage({ client }: { client: ApiClient }) {
         <p>{result.data.totalCount > 0 ? 'Return to the first page to see your projects.' : params.get('search')?.trim() ? 'Try another name or reset the filters.' : 'Create a project to give your next idea a place to grow.'}</p>
         {result.data.totalCount > 0 && <button className="button subtle" onClick={() => changePage(1)}>Go to first page</button>}
       </div> : <ul className="project-grid">{result.data.items.map(project => <li className="project-card" key={project.id}>
-        <h2><Link to={'/projects/' + encodeURIComponent(project.id)}>{project.name}</Link></h2>
+        <div className="card-heading"><span className="project-symbol"><Icon name="projects" /></span><Badge value={project.ownerId === session.user?.id ? 'owner' : 'member'}>{project.ownerId === session.user?.id ? 'Owner' : 'Member'}</Badge></div><h2><Link to={'/projects/' + encodeURIComponent(project.id)}>{project.name}</Link></h2>
         <p className="project-excerpt">{project.description || 'No description added.'}</p>
-        <p className="project-date">Created <time dateTime={project.createdAtUtc}>{date(project.createdAtUtc)}</time></p>
+        <p className="project-date">Updated <time dateTime={project.updatedAtUtc}>{date(project.updatedAtUtc)}</time></p><div className="card-links"><Link to={'/projects/' + project.id + '/tasks'}><Icon name="tasks" size={15} />Tasks</Link><Link to={'/projects/' + project.id + '/activity'}><Icon name="activity" size={15} />Activity</Link>{project.ownerId === session.user?.id && <Link to={'/projects/' + project.id + '/edit'}>Edit</Link>}</div>
       </li>)}</ul>}
       {result.data.totalPages > 1 && <nav className="pagination" aria-label="Project pages"><button className="button subtle" disabled={result.data.page <= 1} onClick={() => changePage(result.data.page - 1)}>Previous</button>
         <span>Page {result.data.page} of {result.data.totalPages}</span><button className="button subtle" disabled={result.data.page >= result.data.totalPages} onClick={() => changePage(result.data.page + 1)}>Next</button></nav>}
@@ -103,7 +105,7 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
   return <section className="projects-page project-form-page"><Link className="text-link" to="/projects">Back to projects</Link>
     <div className="page-heading"><div><p className="eyebrow">A fresh start</p><h1>{initial ? 'Edit project' : 'Create a project'}</h1><p className="muted">Give your work a name and a little context.</p></div></div>
     <div className="project-form-card">{error && <div ref={summary} tabIndex={-1} className="error-summary" role="alert">{error}</div>}
-      <form noValidate aria-busy={pending} onSubmit={submit}><fieldset disabled={pending}>
+      <p className="form-intro">{initial ? 'Keep the project brief clear and current. Changes are recorded in activity.' : 'Start with a clear name and a short brief. Add tasks and teammates once your project is ready.'}</p><form noValidate aria-busy={pending} onSubmit={submit}><fieldset disabled={pending}>
         <div className="form-field"><label htmlFor="project-name">Project name</label><input id="project-name" name="name" value={name} maxLength={150} aria-invalid={!!fields.name?.length} aria-describedby={fields.name?.length ? 'name-error' : undefined} onChange={event => { setName(event.target.value); setFields(previous => ({ ...previous, name: [] })) }} />
           {!!fields.name?.length && <p className="field-error" id="name-error">{fields.name.join(' ')}</p>}</div>
         <div className="form-field"><label htmlFor="project-description">Description <span className="optional">(optional)</span></label><textarea id="project-description" name="description" rows={7} maxLength={10_000} value={description} aria-invalid={!!fields.description?.length} aria-describedby={fields.description?.length ? 'description-error' : 'description-hint'} onChange={event => { setDescription(event.target.value); setFields(previous => ({ ...previous, description: [] })) }} />
@@ -121,7 +123,7 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
   const { result, retry } = useProjectResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(projectId))
   const name = result.status === 'ready' ? result.data.name : null
   useEffect(() => { document.title = name ? name + ' | TaskFlow' : 'Project | TaskFlow' }, [name])
-  return <section className="projects-page project-detail"><Link className="text-link" to="/projects">Back to projects</Link>
+  return <section className="projects-page project-detail project-detail-page"><Link className="text-link" to="/projects">Back to projects</Link>
     {result.status === 'loading' && <p role="status" className="project-state">Loading project...</p>}
     {result.status === 'error' && <div className="project-state"><h1>{result.error.status === 404 ? 'Project not available.' : result.error.status === 400 ? 'That project link is invalid.' : 'We could not load this project.'}</h1>
       <p role="alert">{result.error.status === 404 ? 'It may have been removed, or you may not have access.' : result.error.message}</p>
@@ -129,9 +131,8 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
     </div>}
     {result.status === 'ready' && <>
       {location.state?.updated && <p role="status" className="notice">Project updated.</p>}
-      {session.user?.id === result.data.ownerId && <ProjectActions key={projectId} client={client} project={result.data} />}
       {location.state?.created && <p role="status" className="notice">Project created.</p>}
-      <div className="page-heading"><div><p className="eyebrow">{session.user?.id === result.data.ownerId ? 'Your project' : 'Shared project'}</p><h1>{result.data.name}</h1><p className="muted">Created <time dateTime={result.data.createdAtUtc}>{date(result.data.createdAtUtc)}</time></p></div></div>
+      <div className="page-heading"><div><p className="eyebrow">{session.user?.id === result.data.ownerId ? 'Your project' : 'Shared project'}</p><h1>{result.data.name}</h1><p className="muted">Created <time dateTime={result.data.createdAtUtc}>{date(result.data.createdAtUtc)}</time></p></div>{session.user?.id === result.data.ownerId && <ProjectActions key={projectId} client={client} project={result.data} />}</div>
       <section className="project-about" aria-labelledby="project-about"><h2 id="project-about">About this project</h2><p className="project-description">{result.data.description || 'No description added.'}</p></section>
       <section className="project-about"><h2>Tasks</h2><p>Plan the next steps and track your project work.</p><Link className="button primary" to={'/projects/' + encodeURIComponent(projectId) + '/tasks'}>View tasks</Link></section>
       <section className="project-about"><h2>Project history</h2><p>See changes to this project, its tasks and membership.</p><Link className="button subtle" to={'/projects/' + encodeURIComponent(projectId) + '/activity'}>View activity</Link></section>

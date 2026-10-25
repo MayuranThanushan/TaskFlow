@@ -185,7 +185,7 @@ npm --prefix TaskFlow-FE run build
 python -m unittest discover -s tests/operations -v
 ```
 
-Recorded local results: 122 backend passes with live MySQL and zero skips, 92 frontend passes and 16 operations passes. Without a test connection, 76 live backend tests skip in optional mode; mandatory mode fails. See [testing/CI](docs/testing.md) and the isolated [browser suite](tests/browser/README.md).
+Recorded local results: 122 backend passes with live MySQL and zero skips, 95 frontend passes and 16 operations passes. Without a test connection, 76 live backend tests skip in optional mode; mandatory mode fails. See [testing/CI](docs/testing.md) and the isolated [browser suite](tests/browser/README.md).
 
 ## Project and release references
 

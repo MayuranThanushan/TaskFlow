@@ -31,3 +31,14 @@ The runner executes authentication, project/task/membership/dashboard/activity j
 Results and screenshots go to ignored TestResults/browser, or TASKFLOW_BROWSER_OUTPUT. review.json includes the browser version, scan findings and incomplete checks, keyboard/security results, fixture totals and operation timings. There are 20 timed samples after three warmups for each of 11 operations at concurrency one; TASKFLOW_BROWSER_SAMPLES accepts 5-100. Each warm maximum must remain below 2,000 ms. This measures demonstration behavior, not production load capacity. The final review project is soft-deleted; caller cleanup must remove the entire owned disposable database and stop verification services. No cookies, credentials or private key artifacts are written by this suite.
 
 See [step 21 evidence](../../docs/verification-review.md). Hosted CI/container execution and selected-host release checks remain separate gates.
+
+## Local workspace UI review
+
+With the frontend running on http://localhost:5173, run from the repository root:
+
+```powershell
+npm ci --prefix tests/browser
+node tests/browser/workspace.cjs
+```
+
+This separate review intercepts every /api/v1 request with synthetic in-memory fixtures. It does not create real accounts or modify the development database. It accepts only localhost/127.0.0.1 origins (optional TASKFLOW_UI_ORIGIN), uses installed Edge, and generates screenshots plus TestResults/workspace-ui/review.json. It covers 42 route/viewport scans at 320/390/768/1440, axe WCAG A/AA checks, page overflow, owner/member controls, task/project CRUD UI, inline status, keyboard confirmation cancellation/table scrolling, profile, password visibility, form focus and current-page audit JSON download. This validates UI interactions, not backend authorization, database transactions, production CSP or deployed-host behavior; use the published-app suite above for those.

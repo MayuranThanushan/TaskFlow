@@ -48,6 +48,24 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
   return state
 }
 describe('Task pages', () => {
+  it('updates status in the table once, reloads filtered results and retains a failed row for retry', async () => {
+    const state = setup(base + '/tasks?status=ToDo', [item()]); const user = userEvent.setup()
+    const control = await screen.findByLabelText('Status for First task')
+    state.writeStatus = 503
+    await user.selectOptions(control, 'Done')
+    expect(await screen.findByRole('alert')).toBeVisible()
+    expect(screen.getByLabelText('Status for First task')).toHaveValue('ToDo')
+    expect(state.writes).toHaveLength(1)
+    state.writeStatus = 200
+    let release!: () => void; state.writeWait = new Promise<void>(resolve => { release = resolve })
+    await user.selectOptions(screen.getByLabelText('Status for First task'), 'Done')
+    await waitFor(() => expect(screen.getByLabelText('Status for First task')).toBeDisabled())
+    expect(state.writes).toHaveLength(2)
+    await act(async () => { release() })
+    expect(await screen.findByRole('heading', { name: 'No tasks match your filters.' })).toBeVisible()
+    expect(state.writes.at(-1)).toMatchObject({ path: '/tasks/' + taskId + '/status', method: 'patch', data: { status: 'Done' } })
+  })
+
   it('restores all filters from the URL and preserves them through paging and browser back', async () => {
     const query = 'status=Done&priority=High&assigneeId=' + memberId + '&sortBy=dueDateUtc&sortDirection=asc&pageSize=10&page=2'
     const state = setup(base + '/tasks?' + query, Array.from({ length: 25 }, (_, i) => ({ ...item('Match ' + i, String(i + 1)), status: 'Done', priority: 'High', assigneeId: memberId }))); const user = userEvent.setup()
@@ -61,7 +79,7 @@ describe('Task pages', () => {
   it('applies search, status, priority and opaque assignee together and renders returned sort order', async () => {
     const state = setup(base + '/tasks', [{ ...item('Zulu match', '1'), status: 'Done', priority: 'High', assigneeId: memberId }, { ...item('Alpha match', '2'), status: 'Done', priority: 'High', assigneeId: memberId }, item('Wrong status', '3')]); const user = userEvent.setup()
     await screen.findByText('3 tasks'); await user.type(screen.getByLabelText('Search tasks'), ' match '); await user.selectOptions(screen.getByLabelText('Filter by status'), 'Done'); await user.selectOptions(screen.getByLabelText('Filter by priority'), 'High'); await waitFor(() => expect(screen.getByLabelText('Filter by assignee').querySelector('option[value="' + memberId + '"]')).not.toBeNull()); await user.selectOptions(screen.getByLabelText('Filter by assignee'), memberId); await user.selectOptions(screen.getByLabelText('Sort tasks by'), 'title'); await user.selectOptions(screen.getByLabelText('Task order'), 'asc'); await user.click(screen.getByRole('button', { name: 'Apply' }))
-    expect(await screen.findByText('2 tasks')).toBeVisible(); expect([...document.querySelectorAll('.project-card h2')].map(node => node.textContent)).toEqual(['Alpha match', 'Zulu match'])
+    expect(await screen.findByText('2 tasks')).toBeVisible(); expect([...document.querySelectorAll('.task-table tbody .task-name')].map(node => node.textContent)).toEqual(['Alpha match', 'Zulu match'])
     const query = new URLSearchParams(state.listQueries.at(-1)); expect(Object.fromEntries(query)).toMatchObject({ search: 'match', status: 'Done', priority: 'High', assigneeId: memberId, sortBy: 'title', sortDirection: 'asc' }); expect(screen.queryByRole('link', { name: 'Wrong status' })).not.toBeInTheDocument()
   })
   it('recovers invalid query URLs with a reset instead of reporting an invalid task link', async () => {

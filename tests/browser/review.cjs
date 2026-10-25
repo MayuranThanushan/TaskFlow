@@ -91,7 +91,7 @@ const { launch, origin, artifact, submitLogin } = require('./support.cjs');
     await page.getByRole('button', { name: 'Delete project', exact: true }).click(); assert.equal(await page.getByRole('button', { name: 'Keep project', exact: true }).evaluate(e => e === document.activeElement), true); await scan('project-delete', 390);
     await page.keyboard.press('Escape'); await page.waitForFunction(() => document.activeElement?.textContent === 'Delete project'); report.keyboard.push('Delete cancellation has safe initial focus and restores trigger on Escape');
     await page.goto(origin + projectPath + '/edit'); await page.getByLabel('Project name').waitFor(); await scan('project-edit', 768);
-    await page.goto(origin + projectPath + '/tasks'); await page.locator('.project-grid a').first().waitFor(); await scan('tasks'); await scan('tasks', 320);
+    await page.goto(origin + projectPath + '/tasks'); await page.locator('.task-table .task-name').first().waitFor(); await scan('tasks'); await scan('tasks', 320);
     await page.goto(origin + projectPath + '/tasks/new'); await page.getByLabel('Task title').waitFor(); await scan('task-form'); await scan('task-form', 320);
     await page.goto(origin + taskPath); await page.getByRole('heading', { name: tasks[0].title, exact: true }).waitFor(); await scan('task-detail'); await scan('task-detail', 320);
     await page.goto(origin + taskPath + '/edit'); await page.getByLabel('Task title').waitFor(); await scan('task-edit', 768);

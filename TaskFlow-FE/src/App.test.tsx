@@ -20,6 +20,17 @@ async function credentials() {
   return user
 }
 describe('Authentication navigation', () => {
+  it('reveals and hides a password without submitting or losing input', async () => {
+    setup(); const user = await credentials()
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password')
+    await user.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'text')
+    expect(screen.getByLabelText('Password')).toHaveValue('CorrectPassword123!')
+    await user.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password')
+    expect(screen.getByTestId('location')).toHaveTextContent('/login')
+  })
+
   it('redirects anonymous protected visits and returns after sign-in', async () => {
     setup('/dashboard')
     const user = await credentials()

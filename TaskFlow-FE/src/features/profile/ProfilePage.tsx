@@ -36,7 +36,7 @@ function ProfileForm({ user }: { user: Profile }) {
   return <section className="auth-card profile-card" aria-labelledby="profile-title">
     <p className="eyebrow">Your account</p><h1 id="profile-title">Profile</h1>
     <p className="muted">Choose the name your project teammates see.</p>
-    <p>Account ID: {user.id}</p><p>Email address: {user.email}</p>
+    <div className="profile-identity"><span className="profile-avatar" aria-hidden="true">{user.displayName.slice(0, 1).toUpperCase()}</span><div><p>Email address: {user.email}</p><p>Account ID: {user.id}</p><span className="badge badge-readonly">Account details are read-only</span></div></div>
     {error && <p className="error-summary" role="alert">{error}</p>}
     {saved && <p className="notice" role="status">Profile saved.</p>}
     <form onSubmit={submit} noValidate aria-busy={pending}><fieldset disabled={pending}>

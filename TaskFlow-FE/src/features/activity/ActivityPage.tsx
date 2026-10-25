@@ -1,3 +1,4 @@
+import { Badge } from '../../components/Workspace'
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import type { ApiClient } from '../../api/client'
@@ -25,16 +26,29 @@ function ActivityFilters({ params, apply }: { params: URLSearchParams; apply: (n
 }
 export function ActivityPage({ client }: { client: ApiClient }) {
   const { projectId = '' } = useParams(); const [params, setParams] = useSearchParams(); const query = params.toString()
+  const [exportError, setExportError] = useState('')
+  const members = useProjectResource<{ items: { userId: string; displayName: string }[] }>(client, '/projects/' + encodeURIComponent(projectId) + '/members')
   const { result, retry } = useProjectResource<ActivityResult>(client, '/projects/' + encodeURIComponent(projectId) + '/activity' + (query ? '?' + query : ''))
+  function exportPage() {
+    if (result.status !== 'ready') return
+    setExportError('')
+    try {
+      const content = { projectId, exportedAtUtc: new Date().toISOString(), scope: 'Current filtered page only', filters: Object.fromEntries(params), page: result.data.page, totalCount: result.data.totalCount, events: result.data.items }
+      const url = URL.createObjectURL(new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' }))
+      const link = document.createElement('a'); link.href = url; link.download = `taskflow-activity-${projectId}-page-${result.data.page}.json`; link.click()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch { setExportError('Export is unavailable in this browser. Please try again.') }
+  }
   function page(value: number) { const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next) }
   return <section className="projects-page"><Link className="text-link" to={'/projects/' + encodeURIComponent(projectId)}>Back to project</Link>
-    <div className="page-heading"><div><p className="eyebrow">Project history</p><h1>Project activity</h1><p className="muted">Most recent events first. Times are shown in your local time zone.</p></div><button className="button subtle" disabled={result.status === 'loading'} onClick={retry}>Refresh activity</button></div>
+    <div className="page-heading"><div><p className="eyebrow">Project history</p><h1>Project activity</h1><p className="muted">An immutable timeline of project, task and team changes. Most recent events first.</p></div><div className="form-actions"><button className="button subtle" disabled={result.status !== 'ready' || result.data.items.length === 0} onClick={exportPage}>Export this page</button><button className="button subtle" disabled={result.status === 'loading'} onClick={retry}>Refresh activity</button></div></div>
+    {exportError && <p role="alert" className="error-summary">{exportError}</p>}
     <ActivityFilters key={query} params={params} apply={setParams} /><p className="field-hint">Date limits include both endpoints. Your local time ({Intl.DateTimeFormat().resolvedOptions().timeZone}) is converted to UTC.</p>
     {result.status === 'loading' && <p role="status" className="project-state">Loading activity...</p>}
     {result.status === 'error' && (result.error.status === 400 ? <div role="alert" className="error-summary"><p>These activity filters are invalid. Choose a valid date range or reset the filters.</p><button className="button subtle" onClick={() => setParams(new URLSearchParams())}>Reset invalid filters</button></div> : result.error.status === 404 ? <div className="project-state"><h2>Project not available.</h2><p role="alert">It may have been removed, or you may not have access.</p></div> : <div role="alert" className="error-summary"><p>{result.error.message}</p><button className="button subtle" onClick={retry}>Try again</button></div>)}
     {result.status === 'ready' && <><p role="status">{result.data.totalCount} {result.data.totalCount === 1 ? 'event' : 'events'}</p>
       {result.data.items.length === 0 ? <div className="empty-workspace"><h2>{result.data.totalCount > 0 ? 'No activity on this page.' : params.get('fromUtc') || params.get('toUtc') ? 'No activity in this range.' : 'No activity yet.'}</h2><p>Activity appears here as your project changes.</p>{result.data.totalCount > 0 && <button className="button subtle" onClick={() => page(1)}>Go to first page</button>}</div>
-        : <ol className="activity-list">{result.data.items.map(event => <li key={event.id}><h2>{event.details}</h2><p>User ID: {event.actorUserId}{event.taskId && <span> | Task ID: {event.taskId}</span>}</p><time dateTime={event.createdAtUtc}>{new Date(event.createdAtUtc).toLocaleString()}</time></li>)}</ol>}
+        : <ol className="activity-list audit-timeline">{result.data.items.map(event => <li key={event.id}><span className="timeline-marker" aria-hidden="true">{event.actionType.includes('Deleted') || event.actionType.includes('Removed') ? '-' : event.actionType.includes('Created') || event.actionType.includes('Added') ? '+' : '\u2197'}</span><div className="audit-event-top"><Badge value={event.actionType.includes('Deleted') || event.actionType.includes('Removed') ? 'removed' : 'event'}>{event.actionType.replace(/([a-z])([A-Z])/g, '$1 $2')}</Badge><span className="audit-record">Event #{event.id}</span></div><h2>{event.details}</h2><p>{members.result.status === 'ready' && members.result.data.items.find(member => member.userId === event.actorUserId)?.displayName && <strong>{members.result.data.items.find(member => member.userId === event.actorUserId)?.displayName} &middot; </strong>}User ID: {event.actorUserId}{event.taskId && <span> | Task ID: {event.taskId}</span>}</p><time dateTime={event.createdAtUtc}>{new Date(event.createdAtUtc).toLocaleString()}</time></li>)}</ol>}
       {result.data.totalPages > 1 && <nav className="pagination" aria-label="Activity pages"><button className="button subtle" disabled={result.data.page <= 1} onClick={() => page(result.data.page - 1)}>Previous</button><span>Page {result.data.page} of {result.data.totalPages}</span><button className="button subtle" disabled={result.data.page >= result.data.totalPages} onClick={() => page(result.data.page + 1)}>Next</button></nav>}
     </>}
   </section>
