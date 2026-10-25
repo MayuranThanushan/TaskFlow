@@ -47,14 +47,31 @@ try {
     if ($taskflowDatabaseName -ne 'taskflow_dev' -and !$taskflowDatabaseName.StartsWith('taskflow_dev_')) {
         throw 'Start-Local only migrates taskflow_dev or taskflow_dev_* databases. Use the release runbook for shared/UAT/Production databases.'
     }
+    # Windows locks loaded DLLs. Stop only this checkout's API before rebuilding it.
+    $taskflowApiDirectory = Join-Path $taskflowRoot 'TaskFlow-BE/TaskFlow.Api'
+    $taskflowReleaseDll = Join-Path $taskflowApiDirectory 'bin/Release/net10.0/TaskFlow.Api.dll'
+    $taskflowReleaseExe = Join-Path $taskflowApiDirectory 'bin/Release/net10.0/TaskFlow.Api.exe'
+    $taskflowProcesses = @(Get-CimInstance Win32_Process | Where-Object {
+        ($_.Name -eq 'dotnet.exe' -and $_.CommandLine -and
+            $_.CommandLine -match ('(?i)(?:^|[\s"])' + [regex]::Escape($taskflowReleaseDll) + '(?=[\s"]|$)')) -or
+        ($_.Name -eq 'TaskFlow.Api.exe' -and $_.ExecutablePath -eq $taskflowReleaseExe)
+    })
+    foreach ($taskflowProcess in $taskflowProcesses) {
+        Write-Output "Stopping this checkout's Release API process $($taskflowProcess.ProcessId) before rebuilding."
+        Stop-Process -Id $taskflowProcess.ProcessId -ErrorAction Stop
+        Wait-Process -Id $taskflowProcess.ProcessId -Timeout 15 -ErrorAction SilentlyContinue
+    }
+    if (Test-TaskFlowPort 5140) {
+        throw 'Port 5140 is occupied by another API/process. Stop it in its terminal before building; this helper does not stop unrelated processes.'
+    }
     Write-Output '2/5 Restore and build' 
     & dotnet restore TaskFlow.slnx --locked-mode
     if ($LASTEXITCODE -ne 0) { throw 'Backend restore failed.' }
     & dotnet tool restore
     if ($LASTEXITCODE -ne 0) { throw 'EF tool restore failed.' }
     & dotnet build TaskFlow.slnx -c Release --no-restore
-    if ($LASTEXITCODE -ne 0) { throw 'Backend build failed. Close an older backend process if it locks the output.' }
-    if (!(Test-Path TaskFlow-FE/node_modules)) {
+    if ($LASTEXITCODE -ne 0) { throw 'Backend build failed. If MSB3026/MSB3027 reports a lock, stop the API in its original terminal, then retry.' }
+    if (!(Test-Path TaskFlow-FE/node_modules/.bin/vite.cmd)) {
         & npm.cmd --prefix TaskFlow-FE ci
         if ($LASTEXITCODE -ne 0) { throw 'Frontend dependency installation failed.' }
     }

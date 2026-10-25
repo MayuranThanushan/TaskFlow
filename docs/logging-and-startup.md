@@ -26,12 +26,13 @@ The script performs these steps in order:
 4. Start the API on http://localhost:5140 with the development connection and HTTP-compatible authentication. Wait for /api/v1/health/ready to return 200.
 5. Start Vite on http://localhost:5173. Check the page, proxied database readiness and CSRF bootstrap. Open this frontend URL, register if needed, then sign in.
 
-Existing listeners are reused only after health checks; the script does not kill an unrelated process. A frontend already running with a different proxy/HTTPS configuration must be stopped in its terminal and restarted with the intended settings. Newly launched process IDs and stdout/stderr are saved under .local/runtime. On failure, services already started remain available for diagnosis. They are also left running after successful startup. This helper is a local convenience, not a Windows service or production supervisor.
+Before rebuilding on Windows, the helper stops a Release API only when its executable/command line identifies this checkout. This releases loaded DLLs and fixes MSB3026/MSB3027 on repeated startup. An unknown process on port 5140 is rejected before building; it must be stopped in its original terminal. Existing frontend listeners are reused only after health checks. A frontend already running with a different proxy/HTTPS configuration must be stopped in its terminal and restarted with the intended settings. Newly launched process IDs and stdout/stderr are saved under .local/runtime. On failure, services already started remain available for diagnosis. They are also left running after successful startup. This helper is a local convenience, not a Windows service or production supervisor.
 
 For a fresh checkout, first install [the toolchain](toolchain.md), provision MySQL using [database setup](database-setup.md), and follow the [README](../README.md). Portable binaries/data/credentials are machine-local, not part of Git. If you run your own development database, set ConnectionStrings__TaskFlow privately and use ./scripts/Start-Local.ps1 -SkipDatabase. Do not pass credentials as command-line arguments. UAT/Production uses the [release runbook](release-runbook.md), not this development migration helper.
 
 ## Manual startup, one step at a time
 
+0. Stop the existing API with Ctrl+C before building. For a background Release API, use the verified process selection in the [README checklist](../README.md).
 1. Start MySQL using the portable command in [database setup](database-setup.md), or start the development Compose service. Confirm the expected port is listening.
 2. In the API PowerShell terminal, set the development connection without displaying it. For this initialized workspace:
 
@@ -97,3 +98,7 @@ A [Filebeat filestream example](../deploy/filebeat.example.yml) decodes dotted J
 ## Verification on 25 October 2026
 
 Release build: zero warnings/errors. Full backend suite: 122 passes, live MySQL, zero skips. The focused logging/deployment suite was rerun after the deleted-file recovery guard: eight passes. Operations suite: 16 passes. Start-Local completed all five stages, applied no new migrations, and verified frontend/backend readiness and CSRF. Edge rendered sign-in without script errors. A nonexistent synthetic account returned the expected 401 through the frontend proxy, with a corresponding parseable NDJSON event. The development-database name guard rejected a production-like name before migration. Existing user accounts were not changed. Frontend application code/dependencies are unchanged. No SIEM server, container host or public deployment was contacted.
+
+## Repeated-start correction
+
+The reported MSB3026/MSB3027 build failure was caused by an already-running Release API holding build output DLLs. The helper now identifies and stops only this checkout's Release API before building, then starts it again. An occupied API port belonging to another process is rejected before building. It also repairs missing Vite installation when node_modules exists but node_modules/.bin/vite.cmd is absent. Repeated startup with the API already running passed with zero build warnings/errors, migrations already current, four HTTP health/CSRF checks returning 200 and the sign-in screen verified in Edge. The [README](../README.md) now provides the complete manual checklist without invoking the helper.

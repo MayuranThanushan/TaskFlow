@@ -1,61 +1,183 @@
 # TaskFlow
 
-TaskFlow is a private project and task workspace: secure accounts, owner-managed membership, task assignment/status/priority/deadlines, searchable lists, dashboard progress, activity history and editable display names.
+Private projects, membership, tasks, dashboard progress, activity history and profiles. Follow this checklist in order to run the application manually on Windows. Commands use PowerShell and the existing D:\TaskFlow workspace.
 
-The MVP and local verification are complete. Portable release and recovery tooling are ready. Docker execution, hosted CI and verification on a selected hosting target remain release gates; nothing has been published. Start with the [demo and developer handoff](docs/handoff.md).
+## 1. Stop the old backend before building
 
-For this initialized Windows workspace, run `./scripts/Start-Local.ps1` to start DB, BE and FE in order. See [startup troubleshooting and SIEM logging](docs/logging-and-startup.md) for the manual steps, log files and diagnostic codes.
+- [ ] In the terminal running the API, press **Ctrl+C**. Also stop Vite with Ctrl+C if you want to restart the frontend. Keep MySQL running.
+- [ ] If the backend was started in the background, stop only the API from this checkout with the commands below. Windows locks its loaded DLLs while it is running. Rebuilding first causes MSB3026/MSB3027/MSB3021.
 
-## Clean checkout setup
+```powershell
+Set-Location D:\TaskFlow
+$taskflowRoot = (Get-Location).Path
+$taskflowApiDll = Join-Path $taskflowRoot 'TaskFlow-BE\TaskFlow.Api\bin\Release\net10.0\TaskFlow.Api.dll'
+$taskflowApiExe = Join-Path $taskflowRoot 'TaskFlow-BE\TaskFlow.Api\bin\Release\net10.0\TaskFlow.Api.exe'
+Get-CimInstance Win32_Process | Where-Object {
+    ($_.Name -eq 'dotnet.exe' -and $_.CommandLine -match ('(?i)(?:^|[\s"])' + [regex]::Escape($taskflowApiDll) + '(?=[\s"]|$)')) -or
+    ($_.Name -eq 'TaskFlow.Api.exe' -and $_.ExecutablePath -eq $taskflowApiExe)
+} | ForEach-Object {
+    Stop-Process -Id $_.ProcessId
+    Wait-Process -Id $_.ProcessId -Timeout 15 -ErrorAction SilentlyContinue
+}
+```
 
-Prerequisites: .NET SDK from global.json (10.0.400 with compatible patches), Node 22.15.0/npm 11.3.0, MySQL 8.4.11 and Python 3.12+ for operations checks. See [pinned toolchain](docs/toolchain.md). Commands below use PowerShell from the repository root.
+- [ ] Check ports. MySQL uses 13306, API 5140, frontend 5173. If 5140 is still occupied, stop that API in its original terminal before proceeding. Do not terminate every dotnet/node process.
+
+```powershell
+Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
+    Where-Object { $_.LocalPort -in 13306, 5140, 5173 } |
+    Select-Object LocalAddress, LocalPort, OwningProcess
+```
+
+## 2. Check the required tools
+
+- [ ] Open **Terminal A** in D:\TaskFlow. Check installed tools: .NET SDK 10.0.400 or its allowed compatible patch, Node 22.15.0 and npm 11.3.0. Full version details: [toolchain](docs/toolchain.md).
+
+```powershell
+Set-Location D:\TaskFlow
+dotnet --version
+node --version
+npm --version
+```
+
+- [ ] Confirm this machine's portable MySQL and private settings exist. All three commands should return True. If they do not, provision a database using [database setup](docs/database-setup.md) before continuing. These ignored files are not included in a fresh checkout.
+
+```powershell
+Test-Path .local/mysql/mysql-8.4.11-winx64/bin/mysqld.exe
+Test-Path .local/mysql/data
+Test-Path .local/mysql/connections.json
+```
+
+## 3. Start and verify the database
+
+- [ ] In **Terminal A**, start portable MySQL only if port 13306 is not already listening. This does not initialize, erase or recreate database files.
+
+```powershell
+$taskflowMysqlBase = Join-Path (Get-Location) '.local/mysql/mysql-8.4.11-winx64'
+$taskflowMysqlData = Join-Path (Get-Location) '.local/mysql/data'
+New-Item -ItemType Directory -Force .local/runtime | Out-Null
+if (!(Get-NetTCPConnection -State Listen -LocalPort 13306 -ErrorAction SilentlyContinue)) {
+    Start-Process -FilePath "$taskflowMysqlBase/bin/mysqld.exe" -ArgumentList @(
+        '--no-defaults', "--basedir=$taskflowMysqlBase", "--datadir=$taskflowMysqlData",
+        '--port=13306', '--bind-address=127.0.0.1', '--mysqlx=0',
+        '--default-time-zone=+00:00', '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_0900_ai_ci'
+    ) -WindowStyle Hidden -RedirectStandardOutput .local/runtime/mysql.stdout.log -RedirectStandardError .local/runtime/mysql.stderr.log
+}
+```
+
+- [ ] Wait a few seconds, then check MySQL. Expected: mysqld is alive. If it is still starting, repeat the ping. If startup fails, inspect .local/runtime/mysql.stderr.log.
+
+```powershell
+$taskflowMysqlAdmin = (Resolve-Path .local/mysql/admin.cnf).Path
+& "$taskflowMysqlBase/bin/mysqladmin.exe" "--defaults-extra-file=$taskflowMysqlAdmin" ping
+```
+
+## 4. Configure the backend connection
+
+- [ ] In the **same Terminal A**, load the development connection privately. Do not print or commit the connection string. A different terminal does not inherit this setting.
+
+```powershell
+$taskflowConnections = Get-Content .local/mysql/connections.json -Raw | ConvertFrom-Json
+$env:ConnectionStrings__TaskFlow = $taskflowConnections.development
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+$env:Transport__RequireHttps = 'false'
+```
+
+For your own MySQL or Docker database, configure ConnectionStrings__TaskFlow for that development database instead. The Compose development port is 3306, while this portable instance uses 13306. Do not target UAT/Production with development migration commands.
+
+## 5. Restore, build and migrate
+
+- [ ] Keep the API stopped. Run each command in **Terminal A** and proceed only after it succeeds.
 
 ```powershell
 dotnet restore TaskFlow.slnx --locked-mode
 dotnet tool restore
+dotnet build TaskFlow.slnx --configuration Release --no-restore
+dotnet ef database update --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build
+```
+
+Expected: build succeeds; migration reports applied changes or database already up to date. A missing connection setting or stopped MySQL must be corrected before starting the API.
+
+## 6. Start the backend
+
+- [ ] In **Terminal A**, run the API in the foreground. Leave this terminal open. It uses the build from step 5 and does not rebuild locked files.
+
+```powershell
+dotnet run --project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build --launch-profile http
+```
+
+Expected: listening on http://localhost:5140. The standalone development API root can return 404; open the frontend URL in step 8.
+
+## 7. Install and start the frontend
+
+- [ ] Open **Terminal B**. Run npm ci on first setup or after package-lock.json changes; stop any existing Vite process before reinstalling dependencies.
+
+```powershell
+Set-Location D:\TaskFlow
 npm --prefix TaskFlow-FE ci
 ```
 
-Provision an empty development database and a separate non-root integration database using [database setup](docs/database-setup.md) and [testing](docs/testing.md). The clean-checkout Compose option is `Copy-Item .env.example .env`, set two distinct private passwords, then `docker compose up -d --wait mysql`. It creates taskflow_dev on loopback port 3306 with user taskflow. Set ConnectionStrings__TaskFlow privately to that database's connection string; Compose does not export it into your terminal. The optional portable MySQL files under .local are machine-specific and are not in a checkout.
+- [ ] Configure the HTTP API proxy and start Vite. Leave Terminal B open.
 
 ```powershell
-# ConnectionStrings__TaskFlow must already contain your development connection.
-dotnet build TaskFlow.slnx --no-restore
-dotnet ef database update --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --no-build
-./scripts/Export-DevCertificate.ps1
-```
-
-For a fresh machine, explicitly trust the localhost certificate with `dotnet dev-certs https --trust`. Export creates ignored private settings without changing machine trust. Start the API in this terminal:
-
-```powershell
-$taskflowCert = Get-Content .local/dev-certs/settings.json -Raw | ConvertFrom-Json
-$env:ASPNETCORE_Kestrel__Certificates__Default__Path = $taskflowCert.pfxPath
-$env:ASPNETCORE_Kestrel__Certificates__Default__Password = $taskflowCert.password
-dotnet run --project TaskFlow-BE/TaskFlow.Api --launch-profile https
-```
-
-Start the frontend in another terminal from the root:
-
-```powershell
-$taskflowCert = Get-Content .local/dev-certs/settings.json -Raw | ConvertFrom-Json
-$env:TASKFLOW_API_TARGET = 'https://localhost:7258'
-$env:TASKFLOW_HTTPS_PFX = $taskflowCert.pfxPath
-$env:TASKFLOW_HTTPS_PASSWORD = $taskflowCert.password
-$env:TASKFLOW_API_CA = $taskflowCert.certificatePath
+$env:TASKFLOW_API_TARGET = 'http://localhost:5140'
+Remove-Item Env:TASKFLOW_HTTPS_PFX -ErrorAction SilentlyContinue
 npm --prefix TaskFlow-FE run dev
 ```
 
-Open https://localhost:5173, register, then sign in. Registration does not sign in automatically. Local/Development also supports HTTP using the http launch profile and Vite default proxy. See [environment transport settings](docs/transport.md) for HTTP/HTTPS in Local, UAT and Production. Check `/api/v1/health/live` for process health and `/api/v1/health/ready` for database/schema readiness. No automatic migrations or seeded demo accounts run at startup. See [authentication](docs/authentication.md) for session and CSRF details.
+Expected: http://localhost:5173. If port 5173 is occupied, stop the earlier Vite process in its terminal; do not start another copy on a different port accidentally.
 
-## Verification
+## 8. Verify and open the application
 
-Set TASKFLOW_TEST_CONNECTION privately to a separate taskflow_test or taskflow_test_* database using a non-root account before backend acceptance tests:
+- [ ] Open **Terminal C** and check process health, database readiness and the frontend proxy. Every command should print 200.
 
 ```powershell
+(Invoke-WebRequest http://localhost:5140/api/v1/health/live -UseBasicParsing).StatusCode
+(Invoke-WebRequest http://localhost:5140/api/v1/health/ready -UseBasicParsing).StatusCode
+(Invoke-WebRequest http://localhost:5173/api/v1/health/ready -UseBasicParsing).StatusCode
+(Invoke-WebRequest http://localhost:5173/api/v1/auth/csrf -UseBasicParsing).StatusCode
+```
+
+- [ ] Open **http://localhost:5173**. Register an account if needed, then sign in. Registration does not automatically sign in. There are no default passwords or automatically seeded accounts.
+
+## 9. Stop or restart cleanly
+
+- [ ] Stop backend and frontend with **Ctrl+C** in Terminals A and B. Before any new Release build, stop the Release backend first, then repeat steps 4-8. If the backend was launched in the background, use step 1.
+- [ ] To stop portable MySQL, run this from the root after stopping the API:
+
+```powershell
+$taskflowMysqlBase = Join-Path (Get-Location) '.local/mysql/mysql-8.4.11-winx64'
+$taskflowMysqlAdmin = (Resolve-Path .local/mysql/admin.cnf).Path
+& "$taskflowMysqlBase/bin/mysqladmin.exe" "--defaults-extra-file=$taskflowMysqlAdmin" shutdown
+```
+
+## Troubleshooting checklist
+
+- [ ] **MSB3026/MSB3027/MSB3021 / DLL locked:** stop the API first (step 1), then rebuild. Deleting bin/obj while the API is running does not resolve the underlying lock.
+- [ ] **Readiness 503:** confirm MySQL is running, set the connection in the API terminal, apply migrations, then restart the API.
+- [ ] **database.configuration_missing:** repeat step 4 in the terminal that actually starts the backend.
+- [ ] **401 on auth/me before login:** expected; sign in through the frontend.
+- [ ] **404 on API root / missing wwwroot:** development uses Vite at port 5173. A combined release is produced separately.
+- [ ] **HTTPS required / certificate problems:** follow [HTTP/HTTPS environment configuration](docs/transport.md). This checklist uses local HTTP; public deployments should use HTTPS.
+- [ ] **Need diagnostic files:** application JSON events are under .local/logs/taskflow-*.ndjson. See [logging and troubleshooting](docs/logging-and-startup.md).
+
+## Optional verification checklist
+
+- [ ] Stop the API before building. Start MySQL and set a separate non-root test connection, then run backend tests. This workspace already has a dedicated test connection; never use the development database for tests.
+
+```powershell
+$taskflowConnections = Get-Content .local/mysql/connections.json -Raw | ConvertFrom-Json
+$env:TASKFLOW_TEST_CONNECTION = $taskflowConnections.test
 $env:TASKFLOW_REQUIRE_MYSQL = 'true'
 dotnet build TaskFlow.slnx --configuration Release --no-restore
 dotnet test TaskFlow.slnx --configuration Release --no-build --no-restore --logger 'trx;LogFileName=backend.trx' --results-directory TestResults/backend
 python scripts/verify_test_results.py TestResults/backend/backend.trx
+```
+
+- [ ] Run frontend and operations checks from the root:
+
+```powershell
 npm --prefix TaskFlow-FE run typecheck
 npm --prefix TaskFlow-FE run lint
 npm --prefix TaskFlow-FE run test:ci
@@ -63,17 +185,10 @@ npm --prefix TaskFlow-FE run build
 python -m unittest discover -s tests/operations -v
 ```
 
-Latest local results: 122 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 76 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
+Recorded local results: 122 backend passes with live MySQL and zero skips, 92 frontend passes and 16 operations passes. Without a test connection, 76 live backend tests skip in optional mode; mandatory mode fails. See [testing/CI](docs/testing.md) and the isolated [browser suite](tests/browser/README.md).
 
-## Architecture and contracts
+## Project and release references
 
-- [Accepted architecture and ERD](docs/architecture.md), [decisions](docs/decisions/README.md) and [original architecture plan](Documents/Architecture-Plan.md).
-- [OpenAPI snapshot and regeneration](docs/contracts/README.md), [API amendments](docs/contracts/api-baseline.md), [database amendments](docs/contracts/database-baseline.md).
-- [Acceptance matrix, demo walkthrough, evidence and limitations](docs/handoff.md).
-- [Ordered delivery backlog](Documents/Delivery-Backlog.md) and original Word specifications under Documents.
+[Architecture/ERD](docs/architecture.md), [decisions](docs/decisions/README.md), [API contracts/OpenAPI](docs/contracts/README.md), [demo/acceptance handoff](docs/handoff.md), [delivery backlog](Documents/Delivery-Backlog.md), [deployment](docs/deployment.md), [release runbook](docs/release-runbook.md), [backup/recovery](docs/backup-recovery.md).
 
-Backend: Domain entities, Application contracts/policies, Infrastructure persistence/services, API transport/composition, Tests. Frontend: React/TypeScript under TaskFlow-FE/src, with feature folders, a shared API client and protected routes. Production serves the built frontend and API from one HTTPS origin.
-
-## Release and operations
-
-[Deployment](docs/deployment.md), [release runbook](docs/release-runbook.md) and [backup/recovery](docs/backup-recovery.md) cover private MySQL, mounted secrets, separate migration/runtime accounts, persisted protection keys, explicit migrations and rollback. `scripts/Prepare-Release.ps1` produces app, migration SQL/bundle and checksum receipts. Production does not expose OpenAPI. Keep credentials, database files, keys, backups, dependencies and generated output outside Git; never put secrets in Vite client variables.
+The implemented MVP is locally verified. Container execution, hosted CI and selected-host verification remain release gates; nothing has been publicly deployed. Keep private settings, credentials, keys, databases and generated output outside Git.
