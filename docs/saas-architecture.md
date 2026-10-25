@@ -1,6 +1,6 @@
-# Proposed multi-company SaaS architecture
+# Multi-company SaaS architecture
 
-Status: proposal for the post-MVP roadmap, 25 October 2026. User-confirmed audience: multiple companies using TaskFlow. This does not replace the [accepted MVP architecture](architecture.md) until corresponding decisions/migrations/features are implemented. See the [gap assessment](../Documents/Product-Gap-Assessment.md) and [release tasks](../Documents/Feature-Release-Roadmap.md).
+Status: company boundaries, roles, identity, API cutover and migration policy adopted in [ADR 0005](decisions/0005-commercial-saas-boundaries.md) for SaaS-001, 25 October 2026. Remaining feature details are proposals; runtime implementation is pending. User-confirmed audience: multiple companies using TaskFlow. This does not replace the [accepted MVP architecture](architecture.md) until corresponding decisions/migrations/features are implemented. See the [gap assessment](../Documents/Product-Gap-Assessment.md) and [release tasks](../Documents/Feature-Release-Roadmap.md).
 
 ## 1. Keep a modular monolith
 
@@ -8,18 +8,18 @@ Retain React, ASP.NET Core, Identity and MySQL. Add explicit Workspaces/Identity
 
 Proposed runtime: browser -> single-origin API -> scoped application modules -> MySQL; the mutation transaction also appends business audit and an outbox row. The worker claims committed outbox records -> creates inbox/delivery records -> sends through an email adapter. Private object storage/scanning comes with attachments. Provider-specific integrations stay behind adapters.
 
-A shared database/schema with tenant-keyed rows is the proposed pilot strategy. It reduces initial operating complexity but makes tenant enforcement a first-class invariant. Customer-specific databases or regional deployments are later options driven by actual requirements, not an assumption that a shared schema meets every isolation/residency need. This follows the distinction between identity and tenant-scoped authorization in [Microsoft's multitenancy guidance](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/identity).
+A shared database/schema with tenant-keyed rows is the adopted pilot strategy. It reduces initial operating complexity but makes tenant enforcement a first-class invariant. Customer-specific databases or regional deployments are later options driven by actual requirements, not an assumption that a shared schema meets every isolation/residency need. This follows the distinction between identity and tenant-scoped authorization in [Microsoft's multitenancy guidance](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/identity).
 
 ## 2. Company and identity boundaries
 
 One Workspace represents one company/customer. Accounts remain global so one person can belong to several companies without duplicate credentials. WorkspaceMembership grants entry into a company; ProjectMembership grants access to a particular private project. Joining a company does not automatically grant all its projects.
 
-Proposed workspace roles: Owner, Admin, Member and Guest. Proposed project roles: Owner, Editor and Viewer; existing Member maps to Editor. Guest is a company-level restriction, not a shortcut around project permissions. Roles map to named server capabilities, not UI-only checks. A platform support operator is a separate privilege boundary and is never synthesized from ordinary project/workspace membership.
+Adopted workspace roles: Owner, Admin, Member and Guest. Adopted project roles: Owner, Editor and Viewer; existing Member maps to Editor. Guest is a company-level restriction, not a shortcut around project permissions. Roles map to named server capabilities, not UI-only checks. A platform support operator is a separate privilege boundary and is never synthesized from ordinary project/workspace membership.
 
 | Action | Default policy |
 | --- | --- |
 | Manage company settings and membership | Workspace Owner/Admin; sensitive changes require reauthentication/MFA according to policy |
-| Manage billing/close company/transfer last ownership | Owner or explicit billing capability; last active owner protected |
+| Manage billing/close company/transfer last ownership | Owner only initially; last active owner protected; delegated billing deferred |
 | Read private project/task/comment/file | Active workspace membership AND explicit project read access |
 | Edit tasks/comment/change board status | Project Owner/Editor plus active workspace membership |
 | Edit project/manage project members/delete project or task | Project Owner, unless an explicit additional capability is approved |
@@ -31,7 +31,7 @@ Admins are not silently granted private project content. Governance transfer or 
 
 ## 3. Tenant context on every data path
 
-Prefer explicit workspace-scoped resource routes for the new contract, for example /api/v2/workspaces/{workspaceId}/projects and /api/v2/workspaces/{workspaceId}/tasks/{taskId}. Identity bootstrap/profile can remain global. The version/path is a proposed cutover contract; choose it in SaaS-001 before implementation. Do not merely add an optional tenant header to existing globally scoped queries.
+Use explicit workspace-scoped resource routes for the new contract, for example /api/v2/workspaces/{workspaceId}/projects and /api/v2/workspaces/{workspaceId}/tasks/{taskId}. Identity bootstrap/profile can remain global. ADR 0005 adopts this v2 workspace prefix, keeps existing global identity routes initially, and retires v1 tenant-data routes with authenticated 410 at coordinated cutover. Do not merely add an optional tenant header to existing globally scoped queries.
 
 The API resolves and authorizes workspace membership on each relevant operation, then passes an immutable WorkspaceContext to services. A route/header/cookie selection alone is not trusted authorization. Every task/project lookup and mutation includes workspace scope. Inaccessible resources stay 404; visible forbidden actions stay 403. Check access before returning stale-version details so conflicts cannot become an existence oracle.
 
@@ -62,8 +62,8 @@ Keep decimal-string IDs at browser boundaries and UTC timestamps. Use existing I
 
 ## 5. Legacy migration and rollout
 
-1. Inventory existing owners/projects/members and record a deterministic mapping. Default prototype: create a legacy/personal workspace per distinct project owner and put that owner's projects in it. This preserves private ownership; it does not invent a verified legal company.
-2. Add corresponding workspace memberships for existing collaborators without granting any additional project access. Treat existing cross-owner collaborators as explicitly scoped legacy guests unless migration policy chooses otherwise. Reconcile resulting capabilities against the old policy; do not silently downgrade current task editing or broaden access.
+1. Inventory existing owners/projects/members and record a deterministic mapping. Adopted legacy mapping: create a legacy/personal workspace per distinct project owner and put that owner's projects in it. This preserves private ownership; it does not invent a verified legal company.
+2. Add corresponding workspace memberships for existing collaborators without granting any additional project access. Treat existing cross-owner collaborators as explicitly scoped legacy guests as specified in the [migration contract](saas/migration-cutover.md). Reconcile resulting capabilities against the old policy; do not silently downgrade current task editing or broaden access.
 3. Add nullable tenant fields, backfill with a recorded mapping, validate every parent/child relationship and reject unresolved rows. Preserve existing account/project/task/activity IDs.
 4. Add constraints/indexes, then require tenant context. Switch the frontend and every backend entry point together. Legacy URLs can redirect only after an authorized, unambiguous mapping; old endpoints must not remain an unscoped bypass.
 5. Rehearse on a restored disposable snapshot: compare authorized record sets, counts, activity and member/task assignment invariants before/after. New-company creation is an explicit action; group projects into real companies only through an approved transfer flow.

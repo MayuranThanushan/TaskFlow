@@ -19,6 +19,8 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 Small means a focused module; Medium spans API/UI/tests; Large crosses policy/schema/operations. These are relative sizing signals, not calendar promises. Re-estimate after the tenant migration prototype. Each release can have small patch deliveries; do not combine all rows into one unreviewable change.
 
+SaaS-001 completed on 25 October 2026 as a design task: [ADR 0005](../docs/decisions/0005-commercial-saas-boundaries.md), [permissions](../docs/saas/permissions.md), [migration/cutover](../docs/saas/migration-cutover.md), and [24 planned threat cases](../docs/saas/tenant-threat-model.md). Tenant runtime and tests remain pending. Next: SaaS-002 delivery baseline, then SaaS-003 typed contracts.
+
 ## R0 - release hardening
 
 | Order / ID | Work | Dependencies | Acceptance criteria | Size |
