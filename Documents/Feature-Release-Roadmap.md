@@ -19,7 +19,7 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 Small means a focused module; Medium spans API/UI/tests; Large crosses policy/schema/operations. These are relative sizing signals, not calendar promises. Re-estimate after the tenant migration prototype. Each release can have small patch deliveries; do not combine all rows into one unreviewable change.
 
-SaaS-001 completed on 25 October 2026 as a design task: [ADR 0005](../docs/decisions/0005-commercial-saas-boundaries.md), [permissions](../docs/saas/permissions.md), [migration/cutover](../docs/saas/migration-cutover.md), and [24 planned threat cases](../docs/saas/tenant-threat-model.md). Tenant runtime and tests remain pending. Next: SaaS-002 delivery baseline, then SaaS-003 typed contracts.
+SaaS-001 completed on 25 October 2026 as a design task: [ADR 0005](../docs/decisions/0005-commercial-saas-boundaries.md), [permissions](../docs/saas/permissions.md), [migration/cutover](../docs/saas/migration-cutover.md), and [24 planned threat cases](../docs/saas/tenant-threat-model.md). Tenant runtime and tests remain pending. SaaS-002 implementation and local verification completed on 25 October 2026; hosted gates remain open; [CI gate policy](../docs/ci-release-gates.md) records required hosted evidence. SaaS-003 typed contracts follows.
 
 ## R0 - release hardening
 
@@ -33,7 +33,7 @@ SaaS-001 completed on 25 October 2026 as a design task: [ADR 0005](../docs/decis
 | 06 / SaaS-006 | Split shared UI primitives and feature hooks without changing access behavior | Current UI and 003 | Shared fields/confirmations/tables, consistent loading/error recovery; 95-test baseline retained; 42-scan baseline and real API journeys green | M |
 | 07 / SaaS-007 | Capture representative load, quotas and operating objectives for pilot | 004; 005 for host measurements | Agreed tenant/user/data/concurrency fixture; p95/error/DB-lock baseline; proposed SLOs labeled until measured; backup/alert ownership assigned | M |
 
-SaaS-002 and SaaS-005 require an external repository/host before their external gates can close. Local code, contract and tenancy work can continue while those decisions are pending. Do not create cloud accounts, publish or incur provider charges merely because a row lists them.
+SaaS-002 requires a successful hosted run and repository protection configuration; the GitHub remote is now configured. SaaS-005 requires a selected staging host. Local code, contract and tenancy work can continue while those decisions are pending. Do not create cloud accounts, publish or incur provider charges merely because a row lists them.
 
 ## R1 - company workspaces, integrity and audit
 
@@ -126,4 +126,4 @@ Custom workflow/column editors are deferred until actual usage justifies them. D
 
 ## Recommended next execution
 
-Start SaaS-001, then SaaS-002/003 and the tenant migration prototype. Produce the role/threat matrix and a tested legacy-to-workspace mapping before implementing invitation emails. The proposed defaults are in the architecture document; hosting/mail/billing providers remain decisions at the point they are needed. This roadmap itself creates no external accounts/issues/releases and changes no runtime behavior.
+SaaS-001 design is recorded; finish the SaaS-002 hosted gates and proceed with SaaS-003 typed contracts before the tenant migration prototype. Produce a tested legacy-to-workspace mapping before implementing invitation emails. Adopted boundaries and remaining proposals are in the architecture document; hosting/mail/billing providers remain decisions at the point they are needed. This roadmap itself creates no external accounts/issues/releases and changes no runtime behavior.

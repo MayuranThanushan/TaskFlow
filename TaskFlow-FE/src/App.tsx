@@ -48,7 +48,7 @@ function AppLayout() {
           <span className="nav-section">WORKSPACE</span><NavLink to="/dashboard"><Icon name="overview" />Overview</NavLink>
           <NavLink to="/projects"><Icon name="projects" />Projects</NavLink><NavLink to="/activity"><Icon name="activity" />Activity</NavLink>
           <NavLink to="/profile"><Icon name="profile" />Profile</NavLink>
-          <Link className="sidebar-create button primary" aria-label="Create a workspace project" to="/projects/new"><Icon name="plus" />New project</Link><span className="sidebar-note">A little structure.
+          <Link className="sidebar-create button primary" aria-label="New project in workspace" to="/projects/new"><Icon name="plus" />New project</Link><span className="sidebar-note">A little structure.
 A lot more clarity.</span><span className="user-name"><span className="user-avatar" aria-hidden="true">{session.user.displayName.slice(0, 1).toUpperCase()}</span><span>{session.user.displayName}<small>Personal workspace</small></span></span>
           <button className="button subtle" disabled={pending} onClick={() => void logout()}>{pending ? 'Signing out...' : 'Sign out'}</button>
         </> : session.status === 'anonymous' ? <>

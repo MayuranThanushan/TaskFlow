@@ -30,7 +30,7 @@ The runner executes authentication, project/task/membership/dashboard/activity j
 
 Results and screenshots go to ignored TestResults/browser, or TASKFLOW_BROWSER_OUTPUT. review.json includes the browser version, scan findings and incomplete checks, keyboard/security results, fixture totals and operation timings. There are 20 timed samples after three warmups for each of 11 operations at concurrency one; TASKFLOW_BROWSER_SAMPLES accepts 5-100. Each warm maximum must remain below 2,000 ms. This measures demonstration behavior, not production load capacity. The final review project is soft-deleted; caller cleanup must remove the entire owned disposable database and stop verification services. No cookies, credentials or private key artifacts are written by this suite.
 
-See [step 21 evidence](../../docs/verification-review.md). Hosted CI/container execution and selected-host release checks remain separate gates.
+See [step 21 evidence](../../docs/verification-review.md). The CI deployment job now installs Chromium and runs this suite against its disposable Production HTTPS container after restart/session verification. Hosted execution evidence and selected-host release checks remain separate gates; see the [CI gate policy](../../docs/ci-release-gates.md).
 
 ## Local workspace UI review
 

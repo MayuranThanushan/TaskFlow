@@ -1,0 +1,135 @@
+{
+  "task": "SaaS-002",
+  "recordedAtUtc": "2026-10-25T13:13:10.708104+00:00",
+  "sourceBaseRevision": "05252085880594bbd3471de36fbfb937a1616345",
+  "scope": "Uncommitted task changes verified locally before commit; Windows published Production HTTPS app with fresh disposable MySQL schema; not a hosted or container run.",
+  "verifiedSourceSha256": {
+    ".github/workflows/ci.yml": "c12c95c6175f1c276a0c659bd7860308618586fa064a74dd1e99d6d93223de8b",
+    ".github/dependabot.yml": "620a4e2da307489d90a6ffe5a841653e81009e7c9a06315dd3908ae2f00eb930",
+    "scripts/security_audit.py": "1b749d16532c00aaeb27040855d2fe82febb787d3092909cbae17a80fac80929",
+    "scripts/verify_codeql.py": "1700b89b24e3b9f636a3a3b0b0b1414e53200885a10f1906465ad3c0f7eb80a7",
+    "tests/operations/test_ci_security.py": "aec7e3be95a0ccd236bb21045fa54a76ef2bb3e1d9c1b25b52eb047d4c43f5ab",
+    "tests/browser/package.json": "cb99af698813fcccf269d2144d50ef19b1c8f5b7f40ad38a78950bea6e805f6e",
+    "tests/browser/package-lock.json": "fb7b2e0818af0854826f33c40c2c292c4e4df2b34ed56dea2b5d4d22fb72c0b5",
+    "TaskFlow-FE/src/App.tsx": "d57f1d0565f7566d75d6e1ce0a667d3aebf7e857e8d9c5c7224176b4f8af0fd9",
+    "TaskFlow-FE/src/workspace.css": "46f1cfd7410a5b5399b888a8f16ea2d293c175c234bbe8f2b1291b333ab3e8d8"
+  },
+  "checks": {
+    "backend": {
+      "passed": 122,
+      "skipped": 0,
+      "liveMySqlRequired": true,
+      "report": "TestResults/saas002-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 95,
+      "lint": true,
+      "typecheckAndProductionBuild": true
+    },
+    "operations": {
+      "passed": 21
+    },
+    "workflowLint": {
+      "tool": "actionlint 1.7.12",
+      "passed": true,
+      "shellcheckAvailable": false
+    },
+    "dependencyAudits": [
+      {
+        "source": "nuget",
+        "passed": true,
+        "blockingFindings": []
+      },
+      {
+        "source": "frontend",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "browser-tools",
+        "passed": true,
+        "blockingFindings": {}
+      }
+    ],
+    "secretScan": {
+      "tool": "gitleaks 8.30.1",
+      "historyCommitsScanned": 27,
+      "historyFindings": 0,
+      "reviewedNewFilesFindings": 0
+    },
+    "browser": {
+      "engine": "156.0.4314.42",
+      "suites": [
+        {
+          "script": "authentication.cjs",
+          "passed": true,
+          "durationMs": 4439
+        },
+        {
+          "script": "journeys.cjs",
+          "passed": true,
+          "durationMs": 28719
+        },
+        {
+          "script": "profile.cjs",
+          "passed": true,
+          "durationMs": 64432
+        },
+        {
+          "script": "review.cjs",
+          "passed": true,
+          "durationMs": 23312
+        }
+      ],
+      "accessibilityScans": 30,
+      "violations": 0,
+      "overflowScans": 0,
+      "formBoundaryContrastAtLeast3To1": true,
+      "pageErrors": 0,
+      "timedOperations": 11,
+      "samplesPerOperation": 20,
+      "concurrency": 1,
+      "demoTargetPassed": true,
+      "productionCapacityClaim": false,
+      "reportDirectory": "TestResults/saas002-browser",
+      "readOnlyFaultInjection": "One projects GET receives a synthetic 500 for error recovery; business writes use real API/MySQL."
+    },
+    "productionSmoke": [
+      "unmigrated readiness refused",
+      "clean migration and no-op rerun",
+      "HTTPS and static SPA",
+      "persisted-key restart session",
+      "logout revocation replay",
+      "HTTP authentication refused and SPA redirected",
+      "private body/query/header canaries absent from logs",
+      "test host stopped and disposable schema removed"
+    ]
+  },
+  "sboms": {
+    "frontend": {
+      "format": "CycloneDX",
+      "specVersion": "1.5",
+      "components": 263,
+      "sha256": "931a081eea5e439caab8f16b3146cf9ba545aae59277ce6e29ea06ecc7a5baf5"
+    },
+    "browser-tools": {
+      "format": "CycloneDX",
+      "specVersion": "1.5",
+      "components": 2,
+      "sha256": "259b3d27a65abdeda206f94a2f02d4f83528895503d74049397afb0e222e5bb6"
+    },
+    "backend": {
+      "format": "CycloneDX",
+      "specVersion": "1.7",
+      "components": 89,
+      "sha256": "c5169472b659a0b09fe2ff4f0fcce798d436da54b18396c4ad1fcef365ed6462"
+    }
+  },
+  "remainingGates": [
+    "Successful GitHub-hosted run of all jobs, including Linux Docker browser execution and CodeQL",
+    "Repository main protection requiring Release checks and reviewed changes",
+    "Code scanning availability/settings and scheduled-run evidence",
+    "Selected staging host checks remain SaaS-005; signed release provenance and container OS inventory required before customer release"
+  ],
+  "sourceHashEncoding": "SHA-256 of UTF-8 source text normalized to LF"
+}

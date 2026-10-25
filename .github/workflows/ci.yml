@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
 
 permissions:
   contents: read
@@ -110,7 +112,7 @@ jobs:
     name: Deployment smoke
     needs: [backend, frontend]
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       TASKFLOW_HOST: localhost
       TASKFLOW_BIND_ADDRESS: 127.0.0.1
@@ -123,6 +125,17 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: TaskFlow-FE/.nvmrc
+          cache: npm
+          cache-dependency-path: tests/browser/package-lock.json
+      - name: Install locked browser tools and Chromium
+        run: |
+          npm install --global npm@11.3.0
+          npm ci --prefix tests/browser
+          npx --prefix tests/browser playwright-core install --with-deps chromium
+          node -e "require('node:fs').appendFileSync(process.env.GITHUB_ENV, 'TASKFLOW_BROWSER_EXECUTABLE=' + require('./tests/browser/node_modules/playwright-core').chromium.executablePath() + '\n')"
       - name: Prepare isolated secrets and localhost TLS certificate
         run: |
           python3 - <<'PY'
@@ -168,6 +181,130 @@ jobs:
           docker compose -p taskflow-deploy-ci -f compose.deploy.yaml up -d --force-recreate app
           curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 2 --cacert "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" https://localhost:8443/api/v1/health/ready
           python3 scripts/smoke_deployment.py https://localhost:8443 --ca-file "$TASKFLOW_DEPLOY_SECRETS_DIR/tls.pem" --resume-session .local/restart-session.lwp
+      - name: Prepare BIGINT browser fixtures in disposable schema
+        run: |
+          docker compose -p taskflow-deploy-ci -f compose.deploy.yaml exec -T mysql sh -c 'MYSQL_PWD="$(cat /run/secrets/mysql_password)" mysql --protocol=tcp --host=127.0.0.1 --user=taskflow --database=taskflow --execute="ALTER TABLE Projects AUTO_INCREMENT = 9007199254741111; ALTER TABLE Tasks AUTO_INCREMENT = 9007199254741999;"'
+      - name: Real HTTPS browser journeys, accessibility and security review
+        env:
+          TASKFLOW_BROWSER_ORIGIN: https://localhost:8443
+          TASKFLOW_BROWSER_DISPOSABLE: '1'
+          TASKFLOW_BROWSER_CA_FILE: ${{ env.TASKFLOW_DEPLOY_SECRETS_DIR }}/tls.pem
+          PROJECT_OWNER_EMAIL: ${{ env.TASKFLOW_SMOKE_EMAIL }}
+          PROJECT_OWNER_PASSWORD: ${{ env.TASKFLOW_SMOKE_PASSWORD }}
+          BROWSER_TEST_EMAIL: ci-browser@example.test
+        run: node tests/browser/run.cjs
+      - name: Upload browser evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: published-browser-results
+          path: TestResults/browser/
+          retention-days: 7
+          if-no-files-found: warn
       - name: Remove disposable CI services and volumes
         if: always()
         run: docker compose -p taskflow-deploy-ci -f compose.deploy.yaml down --volumes --remove-orphans
+
+  security:
+    name: Dependency and secret checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: TaskFlow-FE/.nvmrc
+      - name: Restore locked dependencies
+        run: |
+          npm install --global npm@11.3.0
+          dotnet restore TaskFlow.slnx --locked-mode
+          npm ci --prefix TaskFlow-FE
+          npm ci --prefix tests/browser
+      - name: Audit all direct and transitive dependencies
+        run: python3 scripts/security_audit.py
+      - name: Scan repository history for secrets
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p .local/ci-tools TestResults/security
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o .local/ci-tools/gitleaks.tar.gz
+          echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  .local/ci-tools/gitleaks.tar.gz' | sha256sum --check --strict
+          tar -xzf .local/ci-tools/gitleaks.tar.gz -C .local/ci-tools gitleaks
+          .local/ci-tools/gitleaks git . --redact=100 --report-format json --report-path TestResults/security/gitleaks.json
+      - name: Generate software bills of materials
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p TestResults/security
+          npm sbom --prefix TaskFlow-FE --sbom-format cyclonedx > TestResults/security/frontend.cdx.json
+          npm sbom --prefix tests/browser --sbom-format cyclonedx > TestResults/security/browser-tools.cdx.json
+          dotnet tool install --tool-path .local/ci-tools CycloneDX --version 6.3.1
+          .local/ci-tools/dotnet-CycloneDX TaskFlow.slnx -o TestResults/security -fn backend.cdx.json -F Json -dpr
+          git rev-parse HEAD > TestResults/security/source-revision.txt
+          sha256sum TestResults/security/*.cdx.json > TestResults/security/sbom-checksums.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: security-and-sbom-results
+          path: TestResults/security/
+          retention-days: 14
+          if-no-files-found: warn
+
+  codeql:
+    name: Static analysis (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [csharp, javascript-typescript, python]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          category: /language:${{ matrix.language }}
+          output: TestResults/codeql
+      - name: Block high and critical static findings
+        run: python3 scripts/verify_codeql.py TestResults/codeql
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: codeql-${{ matrix.language }}
+          path: TestResults/codeql/
+          retention-days: 14
+          if-no-files-found: warn
+
+  release-checks:
+    name: Release checks
+    if: ${{ always() }}
+    needs: [backend, frontend, deployment, security, codeql]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every verification job to succeed
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ['JOB_RESULTS'])
+          failures = [name for name, job in results.items() if job['result'] != 'success']
+          if failures:
+              raise SystemExit('Verification incomplete or failed: ' + ', '.join(failures))
+          print('All required verification jobs passed.')
+          PY
