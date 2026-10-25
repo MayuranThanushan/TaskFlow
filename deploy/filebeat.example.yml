@@ -1,0 +1,13 @@
+# Example only: replace the mounted log path and configure your secured output separately.
+filebeat.inputs:
+  - type: filestream
+    id: taskflow-api-events
+    enabled: true
+    paths:
+      - /var/log/taskflow/taskflow-*.ndjson
+    parsers:
+      - ndjson:
+          target: ""
+          expand_keys: true
+          add_error_key: true
+# No remote destination or credentials are supplied by this example.

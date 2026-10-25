@@ -14,19 +14,40 @@ if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secre
 
 // Keep local and hosted logging independent of Windows Event Log permissions.
 builder.Logging.ClearProviders();
-builder.Logging.AddJsonConsole(options =>
-{
-    options.UseUtcTimestamp = true;
-    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-    options.IncludeScopes = true;
-});
-builder.Logging.AddDebug();
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Local"))
+    builder.Logging.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+        options.TimestampFormat = "HH:mm:ss ";
+        options.UseUtcTimestamp = true;
+        options.IncludeScopes = false;
+    });
+else
+    builder.Logging.AddJsonConsole(options =>
+    {
+        options.UseUtcTimestamp = true;
+        options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+        options.IncludeScopes = false;
+    });
 
 builder.Services.AddApiFoundation();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSessionAuthentication(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+if (app.Configuration.GetValue("FileLogging:Enabled", app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Local")))
+{
+    var logDirectory = app.Configuration["FileLogging:Directory"]
+        ?? Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "../../.local/logs"));
+    app.Services.GetRequiredService<ILoggerFactory>().AddProvider(new TaskFlow.Api.Logging.SiemFileLoggerProvider(
+        logDirectory, app.Environment.EnvironmentName,
+        app.Configuration.GetValue<long>("FileLogging:MaxBytes", 10 * 1024 * 1024),
+        app.Configuration.GetValue("FileLogging:RetainedFiles", 14)));
+}
+if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("TaskFlow")))
+    app.Logger.LogWarning(new EventId(2001, "database.configuration_missing"),
+        "Database connection is not configured. Set ConnectionStrings__TaskFlow in the API terminal; readiness and login will fail.");
+
 var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
     !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local"));
 
@@ -77,6 +98,7 @@ app.Use(async (context, next) =>
 });
 
 // Public compiled assets contain no credentials; all data remains behind the API's authorization.
+if (Directory.Exists(app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot")))
 app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api")
     && !context.Request.Path.StartsWithSegments("/openapi"), branch => branch.UseStaticFiles(new StaticFileOptions
 {

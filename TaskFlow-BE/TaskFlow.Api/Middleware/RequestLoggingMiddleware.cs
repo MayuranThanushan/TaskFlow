@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace TaskFlow.Api.Middleware;
 
@@ -21,10 +22,15 @@ public sealed class RequestLoggingMiddleware(RequestDelegate next, ILogger<Reque
         finally
         {
             // Route patterns avoid logging IDs, query strings, headers or request bodies.
-            logger.LogInformation("HTTP {Method} {Route} returned {StatusCode} in {ElapsedMs} ms",
+            var route = (context.GetEndpoint() as RouteEndpoint)
+                ?? (context.Features.Get<IExceptionHandlerPathFeature>()?.Endpoint as RouteEndpoint);
+            var level = context.Response.StatusCode >= 500 ? LogLevel.Error
+                : context.Response.StatusCode >= 400 ? LogLevel.Warning : LogLevel.Information;
+            logger.Log(level, new EventId(1000, "http.request_completed"),
+                "HTTP {Method} {Route} returned {StatusCode} in {ElapsedMs} ms; trace {TraceId}",
                 context.Request.Method,
-                (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unmatched",
-                context.Response.StatusCode, Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+                route?.RoutePattern.RawText ?? "unmatched",
+                context.Response.StatusCode, Math.Round(Stopwatch.GetElapsedTime(start).TotalMilliseconds, 2), traceId);
         }
     }
 }

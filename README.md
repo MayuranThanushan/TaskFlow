@@ -4,6 +4,8 @@ TaskFlow is a private project and task workspace: secure accounts, owner-managed
 
 The MVP and local verification are complete. Portable release and recovery tooling are ready. Docker execution, hosted CI and verification on a selected hosting target remain release gates; nothing has been published. Start with the [demo and developer handoff](docs/handoff.md).
 
+For this initialized Windows workspace, run `./scripts/Start-Local.ps1` to start DB, BE and FE in order. See [startup troubleshooting and SIEM logging](docs/logging-and-startup.md) for the manual steps, log files and diagnostic codes.
+
 ## Clean checkout setup
 
 Prerequisites: .NET SDK from global.json (10.0.400 with compatible patches), Node 22.15.0/npm 11.3.0, MySQL 8.4.11 and Python 3.12+ for operations checks. See [pinned toolchain](docs/toolchain.md). Commands below use PowerShell from the repository root.
@@ -61,7 +63,7 @@ npm --prefix TaskFlow-FE run build
 python -m unittest discover -s tests/operations -v
 ```
 
-Latest local results: 119 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 76 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
+Latest local results: 122 backend tests with zero skips, 92 frontend tests and 16 operations checks pass. Without the integration connection, 76 backend tests skip in optional mode; mandatory mode fails. See [testing and CI](docs/testing.md) and the isolated [real-browser suite](tests/browser/README.md). Browser tests require a disposable seeded environment and must not target a shared database.
 
 ## Architecture and contracts
 

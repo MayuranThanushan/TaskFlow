@@ -20,7 +20,7 @@ public static class DependencyInjection
         {
             var connection = configuration.GetConnectionString("TaskFlow");
             if (string.IsNullOrWhiteSpace(connection))
-                throw new InvalidOperationException("Configure ConnectionStrings__TaskFlow before using persistence.");
+                throw new PersistenceConfigurationException();
             options.UseMySQL(connection);
         });
         services.AddIdentityCore<ApplicationUser>(options =>

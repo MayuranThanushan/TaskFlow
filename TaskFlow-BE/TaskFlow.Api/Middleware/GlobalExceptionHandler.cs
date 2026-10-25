@@ -33,8 +33,12 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             return true;
         }
         // Keep exception messages and request payloads out of routine logs.
-        logger.LogError("Unhandled API failure {ExceptionType}; trace {TraceId}",
-            exception.GetType().Name, Activity.Current?.Id ?? context.TraceIdentifier);
+        var failureCode = exception is TaskFlow.Infrastructure.Persistence.PersistenceConfigurationException
+            ? "database.configuration_missing" : exception is MySql.Data.MySqlClient.MySqlException
+                ? "database.operation_failed" : "api.unhandled";
+        logger.LogError(new EventId(2000, "api.failure"),
+            "API failure {FailureCode} ({ExceptionType}); trace {TraceId}",
+            failureCode, exception.GetType().Name, Activity.Current?.Id ?? context.TraceIdentifier);
         await ProblemResponses.WriteAsync(context, ProblemResponses.Create(context, StatusCodes.Status500InternalServerError));
         return true;
     }
