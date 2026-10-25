@@ -64,7 +64,7 @@ jobs:
         run: dotnet test TaskFlow.slnx --configuration Release --no-build --no-restore --logger "trx;LogFileName=backend.trx" --results-directory TestResults/backend --collect:"XPlat Code Coverage"
       - name: Require executed tests with no skips
         run: python3 scripts/verify_test_results.py TestResults/backend/backend.trx
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: backend-test-results
@@ -100,7 +100,7 @@ jobs:
         run: npm run test:ci
       - name: Production build
         run: npm run build
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: frontend-test-results
@@ -194,7 +194,7 @@ jobs:
           BROWSER_TEST_EMAIL: ci-browser@example.test
         run: node tests/browser/run.cjs
       - name: Upload browser evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: published-browser-results
@@ -246,7 +246,7 @@ jobs:
           .local/ci-tools/dotnet-CycloneDX TaskFlow.slnx -o TestResults/security -fn backend.cdx.json -F Json -dpr
           git rev-parse HEAD > TestResults/security/source-revision.txt
           sha256sum TestResults/security/*.cdx.json > TestResults/security/sbom-checksums.txt
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: security-and-sbom-results
@@ -281,7 +281,7 @@ jobs:
           output: TestResults/codeql
       - name: Block high and critical static findings
         run: python3 scripts/verify_codeql.py TestResults/codeql
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: codeql-${{ matrix.language }}
