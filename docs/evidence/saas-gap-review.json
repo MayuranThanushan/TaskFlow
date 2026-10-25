@@ -1,0 +1,672 @@
+{
+  "reviewDate": "2026-10-25",
+  "sourceRevision": "18ba5f6f49ef2c70c7645f4a6ba1a11ea413ffc7",
+  "confirmedAudience": "Multiple companies using TaskFlow as SaaS",
+  "reviewType": "Static implementation/product/architecture review and official documentation research; no new runtime security or load verification",
+  "inventory": {
+    "markdownFiles": 39,
+    "originalWordSpecifications": 7,
+    "sourceTypes": {
+      ".yml": 2,
+      ".cs": 66,
+      ".css": 3,
+      ".tsx": 18,
+      ".ts": 12,
+      ".yaml": 3,
+      ".ps1": 4,
+      ".py": 6,
+      ".cjs": 7
+    },
+    "sourceFilesInventoried": 121
+  },
+  "existingRecordedEvidence": {
+    "backend": 122,
+    "frontend": 95,
+    "operations": 16,
+    "uiScans": 42,
+    "rerunInThisReview": false
+  },
+  "findings": [
+    {
+      "id": "G01",
+      "priority": "P0",
+      "finding": "No Workspace/Organization entity or tenant key on Projects, Tasks, ActivityLogs or memberships: [entities](../TaskFlow-BE/TaskFlow.Domain/Entities/Entities.cs), [schema](../TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/EntityConfigurations.cs).",
+      "impact": "Cannot express a company boundary or safely scope future company administration.",
+      "recommendation": "Workspace model, membership and enforced tenant scope across DB/API/UI/jobs/files/exports."
+    },
+    {
+      "id": "G02",
+      "priority": "P0",
+      "finding": "Only project Owner/Member roles; owner identity is immutable inside [transactions](../TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs).",
+      "impact": "No company admin, guest/read-only policy, owner handover or deprovisioning lifecycle.",
+      "recommendation": "Separate workspace roles from project permissions; explicit transfer, suspension, last-owner and leave policies."
+    },
+    {
+      "id": "G03",
+      "priority": "P0",
+      "finding": "Project row locks serialize mutations, but Project/Task have no client expected-version contract: [transactions](../TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs), [task requests](../TaskFlow-BE/TaskFlow.Api/Controllers/TasksController.cs). Identity concurrency stamps do exist.",
+      "impact": "Two editors can overwrite a changed title/description without a stale-edit warning.",
+      "recommendation": "App-managed entity revisions and conflict-aware forms/inline updates; keep membership locks."
+    },
+    {
+      "id": "G04",
+      "priority": "P0",
+      "finding": "[Account service](../TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountService.cs) implements register/login/profile/logout only; no verification/recovery flows or configured email-token delivery.",
+      "impact": "Cannot safely self-serve recovery or prove control of invitation email addresses.",
+      "recommendation": "Verified email, reset/change password and reauthentication, using framework token providers and durable delivery."
+    },
+    {
+      "id": "G05",
+      "priority": "P0",
+      "finding": "Containers, hosted CI and chosen-host smoke remain unexecuted in the [runbook](../docs/release-runbook.md).",
+      "impact": "Local verification cannot establish public-service readiness.",
+      "recommendation": "Real CI/container/host rehearsal, HTTPS/proxy/secrets checks and production rollback/recovery evidence."
+    },
+    {
+      "id": "G06",
+      "priority": "P0",
+      "finding": "ActivityLog has actor/project/task/action/details/time, but no general entity reference, schema version, correlation or comprehensive before/after contract. Detail JSON already records assignment and status information: [writer](../TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs), [reader](../TaskFlow-BE/TaskFlow.Infrastructure/Projects/ActivityService.cs).",
+      "impact": "Cannot reliably explain all changed fields or correlate future company-wide actions.",
+      "recommendation": "Versioned structured audit events and field allowlists; retain legacy summaries as legacy events."
+    },
+    {
+      "id": "G07",
+      "priority": "P0",
+      "finding": "[Activity query filter](../TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/EntityConfigurations.cs) hides all events whose parent project is deleted. Individual deleted-task events remain visible in active projects.",
+      "impact": "Company administrators cannot review project-deletion history through current routes.",
+      "recommendation": "Separate privileged tenant audit query that can include deleted resources without reopening their ordinary content routes."
+    },
+    {
+      "id": "G08",
+      "priority": "P0",
+      "finding": "[File sink](../TaskFlow-BE/TaskFlow.Api/Logging/SiemFileLoggerProvider.cs) is allowlisted operational NDJSON; no company/actor/security-outcome audit service or proven external retention.",
+      "impact": "Successful request status alone is not an attributable company security audit. Rotated local files are not tamper-evident evidence.",
+      "recommendation": "Separate security events, company-scoped audit authorization, external collection/alerts and documented retention."
+    },
+    {
+      "id": "G09",
+      "priority": "P0",
+      "finding": "No durable outbox/worker, event consumers, reminder scheduler or email sender in tracked services.",
+      "impact": "Directly adding email to request handlers would introduce lost/duplicate-message and latency risks.",
+      "recommendation": "MySQL-backed transactional outbox, worker leases, retries, deduplication and delivery visibility."
+    },
+    {
+      "id": "G10",
+      "priority": "P1",
+      "finding": "[Membership](../TaskFlow-BE/TaskFlow.Api/Controllers/ProjectMembersController.cs) accepts an existing user ID; no Invitation entity/routes.",
+      "impact": "Company onboarding is manual and cannot safely invite a new or unverified account.",
+      "recommendation": "Email invitation lifecycle: accept, reject/cancel, expiry, resend and role/project scope."
+    },
+    {
+      "id": "G11",
+      "priority": "P1",
+      "finding": "No inbox, notification preferences, subscriptions or delivery records.",
+      "impact": "Users must repeatedly inspect task/project screens to discover changes.",
+      "recommendation": "In-app inbox first, then email preferences, assignment/mention updates, reminders and digests."
+    },
+    {
+      "id": "G12",
+      "priority": "P1",
+      "finding": "Three fixed task states, no persisted board rank/columns; table inline status exists.",
+      "impact": "No visual workflow or stable manual prioritization.",
+      "recommendation": "Accessible three-column Kanban with per-column paging/counts and conflict-safe moves; custom workflows later."
+    },
+    {
+      "id": "G13",
+      "priority": "P1",
+      "finding": "Task lists are project-scoped; dashboard shows counts and one recent-project preview.",
+      "impact": "No cross-project My work, due/overdue queue, persisted views or global authorized search.",
+      "recommendation": "Tenant-scoped personal queues and saved views using the same access predicates as existing task queries."
+    },
+    {
+      "id": "G14",
+      "priority": "P1",
+      "finding": "No comments, mentions or watcher entities.",
+      "impact": "Decisions/discussion happen outside the task and cannot drive focused alerts.",
+      "recommendation": "Task conversations with edit/deletion policy, sanitized text, scoped mentions and subscriptions."
+    },
+    {
+      "id": "G15",
+      "priority": "P1",
+      "finding": "Soft deletion exists but no archive, trash, restore or ownership-transfer API.",
+      "impact": "Users cannot recover accidental deletion or manage inactive work and staff departure.",
+      "recommendation": "Archive vs delete semantics, bounded restore window and explicit ownership transfer."
+    },
+    {
+      "id": "G16",
+      "priority": "P1",
+      "finding": "[Activity hub](../TaskFlow-FE/src/components/Workspace.tsx) lists the first 100 projects; [export](../TaskFlow-FE/src/features/activity/ActivityPage.tsx) covers only the current page.",
+      "impact": "Neither is a searchable company audit console or complete asynchronous export.",
+      "recommendation": "Server-side tenant audit filters/cursor paging and permission-checked export jobs; keep current-page export clearly labeled."
+    },
+    {
+      "id": "G17",
+      "priority": "P1",
+      "finding": "Frontend feature files combine queries/forms/actions and [CSS](../TaskFlow-FE/src/workspace.css) layers many overrides; OpenAPI documents some dynamic payloads incompletely.",
+      "impact": "Feature growth will increase change risk and contract drift.",
+      "recommendation": "Incremental shared form/dialog/table primitives, feature hooks, split components and accurate typed contracts."
+    },
+    {
+      "id": "G18",
+      "priority": "P1",
+      "finding": "Project mutations lock a parent project; queries use offset paging and substring search; [indexes](../TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/EntityConfigurations.cs) are limited to the current model.",
+      "impact": "Hot projects and larger tenant datasets may contend or scan; no demonstrated capacity failure is claimed.",
+      "recommendation": "Representative tenant/load measurements, tenant-first indexes, bounded export/jobs, keyset feeds and query-plan review before optimization."
+    },
+    {
+      "id": "G19",
+      "priority": "P1",
+      "finding": "Local request logs/readiness exist, but no application metrics/tracing exporter, error-budget dashboard, tenant-aware quota or fleet limiter.",
+      "impact": "Cannot manage noisy neighbors, delivery backlog or service objectives across companies.",
+      "recommendation": "Measured SLOs, central traces/metrics, per-tenant quotas and shared limiter when multiple replicas are introduced."
+    },
+    {
+      "id": "G20",
+      "priority": "P2",
+      "finding": "No tags, subtasks, dependencies, recurring tasks, milestones or calendar.",
+      "impact": "Limited planning depth beyond single independent tasks.",
+      "recommendation": "Incremental planning model after collaboration/board adoption; cycle-safe dependencies and timezone-safe recurrence."
+    },
+    {
+      "id": "G21",
+      "priority": "P2",
+      "finding": "No attachments/object-store pipeline or file scanning/download authorization.",
+      "impact": "Cannot collaborate on artifacts; adding naive uploads would expand security/storage costs.",
+      "recommendation": "Private object storage, validation/quarantine/scanning, quotas, expiring authorized downloads and deletion lifecycle."
+    },
+    {
+      "id": "G22",
+      "priority": "P2",
+      "finding": "No subscription/entitlement model, seat accounting, billing webhooks or customer administration.",
+      "impact": "Cannot operate a paid multi-company product consistently.",
+      "recommendation": "Pilot limits immediately; versioned plan entitlements, seats and provider-verified idempotent billing before charging customers."
+    },
+    {
+      "id": "G23",
+      "priority": "P2",
+      "finding": "No webhooks, public API credentials, calendar integration or tenant-scoped connector settings.",
+      "impact": "Work cannot connect reliably to customers' tools.",
+      "recommendation": "Scoped/revocable credentials, signed webhook delivery with retries, and outbound destination controls."
+    },
+    {
+      "id": "G24",
+      "priority": "P3",
+      "finding": "No MFA setup UI, enterprise federation or SCIM. Current password/session controls are useful but narrower: [auth configuration](../TaskFlow-BE/TaskFlow.Api/Extensions/AuthenticationExtensions.cs).",
+      "impact": "Cannot satisfy stronger customer identity requirements.",
+      "recommendation": "MFA/recovery codes early in SaaS onboarding; OIDC/SAML broker and SCIM when demanded by enterprise customers."
+    },
+    {
+      "id": "G25",
+      "priority": "P1",
+      "finding": "[CI](../.github/workflows/ci.yml) has build/test/deployment smoke, but no scheduled dependency/secret/static-security scan or SBOM job. [Release receipts](../scripts/release_manifest.py) provide checksums, not publisher signatures.",
+      "impact": "Dependency drift and provenance risks are not continuously checked by the current pipeline.",
+      "recommendation": "Add scoped vulnerability/secret/static checks, dependency update policy, SBOM and deployment artifact provenance/signing according to the chosen host."
+    }
+  ],
+  "proposedTasks": [
+    {
+      "order": 1,
+      "id": "SaaS-001",
+      "work": "Record company/workspace boundary, role matrix, private-project policy, identity strategy and tenant threat model",
+      "dependencies": "Gap assessment",
+      "acceptance": "Explicit user/company/project/guest definitions; cross-company negative cases; migration mapping and API cutover decision recorded",
+      "size": "M"
+    },
+    {
+      "order": 2,
+      "id": "SaaS-002",
+      "work": "Establish authoritative CI baseline, including published-app real-browser checks",
+      "dependencies": "Existing CI and browser suite",
+      "acceptance": "Backend no-skip MySQL, frontend, operations and actual HTTP/browser mutation flows run in CI; dependency/secret/static scans and SBOM/provenance policy defined; attach reports",
+      "size": "M"
+    },
+    {
+      "order": 3,
+      "id": "SaaS-003",
+      "work": "Complete typed API/security/error contracts and contract drift verification",
+      "dependencies": "001",
+      "acceptance": "Current request/response types including PATCH, session/CSRF security, query allowlists and errors accurately described; drift check fails an intentional mismatch",
+      "size": "M"
+    },
+    {
+      "order": 4,
+      "id": "SaaS-004",
+      "work": "Add baseline service metrics, trace export and safe security-event vocabulary",
+      "dependencies": "001",
+      "acceptance": "Request errors/latency, DB readiness, worker-ready metric definitions and trace correlation available; no secret/high-cardinality tenant labels in fleet metrics",
+      "size": "M"
+    },
+    {
+      "order": 5,
+      "id": "SaaS-005",
+      "work": "Exercise container/migration/HTTPS/restart/recovery on selected staging host",
+      "dependencies": "002; hosting required",
+      "acceptance": "Run existing deploy smoke and restore rehearsal on target; prove secrets, keys, grants, rollback and strict public HTTPS; record results",
+      "size": "M"
+    },
+    {
+      "order": 6,
+      "id": "SaaS-006",
+      "work": "Split shared UI primitives and feature hooks without changing access behavior",
+      "dependencies": "Current UI and 003",
+      "acceptance": "Shared fields/confirmations/tables, consistent loading/error recovery; 95-test baseline retained; 42-scan baseline and real API journeys green",
+      "size": "M"
+    },
+    {
+      "order": 7,
+      "id": "SaaS-007",
+      "work": "Capture representative load, quotas and operating objectives for pilot",
+      "dependencies": "004; 005 for host measurements",
+      "acceptance": "Agreed tenant/user/data/concurrency fixture; p95/error/DB-lock baseline; proposed SLOs labeled until measured; backup/alert ownership assigned",
+      "size": "M"
+    },
+    {
+      "order": 8,
+      "id": "SaaS-008",
+      "work": "Add Workspace/WorkspaceMembership and staged legacy backfill",
+      "dependencies": "001, 003",
+      "acceptance": "Reviewed add/backfill/enforce migration; one unambiguous workspace per project; legacy IDs preserved; access reconciliation and restore plan verified",
+      "size": "L"
+    },
+    {
+      "order": 9,
+      "id": "SaaS-009",
+      "work": "Enforce tenant membership and scope on every read path",
+      "dependencies": "008",
+      "acceptance": "Projects/tasks/dashboard/activity/member lists and counts cannot leak another company; guessed IDs and mixed workspace URLs return safe denial",
+      "size": "L"
+    },
+    {
+      "order": 10,
+      "id": "SaaS-010",
+      "work": "Enforce tenant scope on writes and relational references",
+      "dependencies": "009",
+      "acceptance": "Cross-company assignee/project/member/event references rejected; tenant-aware FK/index constraints; bypass/raw-SQL paths reviewed; existing removal races still pass",
+      "size": "L"
+    },
+    {
+      "order": 11,
+      "id": "SaaS-011",
+      "work": "Add company creation/switching and workspace-aware client/resource keys",
+      "dependencies": "009, 010, 006",
+      "acceptance": "Switching clears data/drafts and ignores late old-company results; no queued write is retargeted to the newly selected company; project URLs carry context",
+      "size": "M"
+    },
+    {
+      "order": 12,
+      "id": "SaaS-012",
+      "work": "Implement company roles, project viewer/editor/owner, suspension, leave and ownership transfer",
+      "dependencies": "010, 011",
+      "acceptance": "Workspace admin is not silently a reader of every private project; last owner protected; removed/suspended users lose future reads/writes; assignee cleanup and transfer audited",
+      "size": "L"
+    },
+    {
+      "order": 13,
+      "id": "SaaS-013",
+      "work": "Add versioned structured business audit and restricted security events",
+      "dependencies": "010, 012, 004",
+      "acceptance": "Changes capture safe field deltas and correlation; login/recovery/membership/admin events have subject/outcome; rollback produces no success audit; legacy events identified explicitly",
+      "size": "L"
+    },
+    {
+      "order": 14,
+      "id": "SaaS-014",
+      "work": "Add company audit console, filters, deleted-resource review and bounded export jobs",
+      "dependencies": "013",
+      "acceptance": "Search by actor/action/entity/date/outcome; authorization/redaction preserves private project boundaries; project deletion remains auditable; export access rechecked at download",
+      "size": "L"
+    },
+    {
+      "order": 15,
+      "id": "SaaS-015",
+      "work": "Add Project/Task expected-version conflicts and conflict-resolution UI",
+      "dependencies": "010, 003",
+      "acceptance": "Two tabs editing a stale entity cannot silently overwrite; 409 preserves draft and offers reload/compare; invalid cross-company access is checked first",
+      "size": "M"
+    },
+    {
+      "order": 16,
+      "id": "SaaS-016",
+      "work": "Add tenancy regression suite, pilot quotas and privacy/retention settings",
+      "dependencies": "011-015, 007",
+      "acceptance": "Two companies, one shared user, guest, outsider, suspended user and support operator tested; quota enforcement is atomic; isolation/load/migration reports accepted",
+      "size": "L"
+    },
+    {
+      "order": 17,
+      "id": "SaaS-017",
+      "work": "Add outbox, delivery records, worker leasing/retry/dead-letter support",
+      "dependencies": "013, 016",
+      "acceptance": "Business transaction and event enqueue commit together; restart/replay and competing workers tested; no exactly-once external-delivery claim",
+      "size": "L"
+    },
+    {
+      "order": 18,
+      "id": "SaaS-018",
+      "work": "Add email abstraction, templates, local mail capture and staging delivery",
+      "dependencies": "017",
+      "acceptance": "Sender isolated from HTTP latency; retry-safe message IDs, bounce/failure visibility, private secrets and per-company sending limits; no real email from tests",
+      "size": "M"
+    },
+    {
+      "order": 19,
+      "id": "SaaS-019",
+      "work": "Add email verification, password recovery/change and reauthentication flows",
+      "dependencies": "018",
+      "acceptance": "Framework tokens expire/are bounded, reset replay fails, generic recovery response resists enumeration, session revocation follows password change; accessibility/error handling pass",
+      "size": "L"
+    },
+    {
+      "order": 20,
+      "id": "SaaS-020",
+      "work": "Add tenant/project-scoped invitation API and lifecycle",
+      "dependencies": "012, 019",
+      "acceptance": "Pending/accepted/revoked/expired states, hashed single-use token, correct verified email, seat reservation, safe resend, duplicate/race/revocation checks",
+      "size": "L"
+    },
+    {
+      "order": 21,
+      "id": "SaaS-021",
+      "work": "Add invite/accept/manage-team UI for new and existing accounts",
+      "dependencies": "020, 011",
+      "acceptance": "Clear company/role/project preview; intended return path after signup/login; expired/wrong-account links recover safely; no access until accept commits",
+      "size": "M"
+    },
+    {
+      "order": 22,
+      "id": "SaaS-022",
+      "work": "Add optional MFA/recovery-code management and privileged-action policy",
+      "dependencies": "019",
+      "acceptance": "Enroll/verify/disable/recover tested; secret/recovery codes excluded from audit/logs; company-admin MFA requirement can be enforced with safe recovery",
+      "size": "L"
+    },
+    {
+      "order": 23,
+      "id": "SaaS-023",
+      "work": "Verify onboarding delivery, abuse controls and tenant acceptance",
+      "dependencies": "017-022, 005",
+      "acceptance": "Replay, resend throttling, revoked inviter, wrong tenant, expired token and mail outage tested; real staging delivery and support runbook complete",
+      "size": "M"
+    },
+    {
+      "order": 24,
+      "id": "SaaS-024",
+      "work": "Add in-app notification materialization/read/unread API",
+      "dependencies": "017, 012",
+      "acceptance": "Unique recipient/event delivery key; membership checked when producing and reading; count/list consistent; no revoked-company title disclosure",
+      "size": "M"
+    },
+    {
+      "order": 25,
+      "id": "SaaS-025",
+      "work": "Add inbox UI and per-user/per-company channel/event preferences",
+      "dependencies": "024, 018",
+      "acceptance": "Read/unread, bulk mark-read, accessible deep links and preference controls; self-action noise suppressed; disabled channels honored",
+      "size": "M"
+    },
+    {
+      "order": 26,
+      "id": "SaaS-026",
+      "work": "Add due reminders, digest scheduling and delivery status",
+      "dependencies": "025",
+      "acceptance": "UTC scheduling with user timezone/DST tests; rescheduled/completed/deleted tasks suppress stale reminders; leases/retry prevent duplicate inbox rows",
+      "size": "L"
+    },
+    {
+      "order": 27,
+      "id": "SaaS-027",
+      "work": "Add comments and safe mention parsing/resolution",
+      "dependencies": "013, 024",
+      "acceptance": "Text sanitized/escaped; edit/deletion history policy defined; only visible same-project recipients resolvable; no member enumeration across companies",
+      "size": "L"
+    },
+    {
+      "order": 28,
+      "id": "SaaS-028",
+      "work": "Add watchers and notification grouping/noise control",
+      "dependencies": "027, 025",
+      "acceptance": "Subscribe/unsubscribe affects future delivery; grouped events remain traceable; quiet/digest preference and recipient limits respected",
+      "size": "M"
+    },
+    {
+      "order": 29,
+      "id": "SaaS-029",
+      "work": "Test revocation races and delivery reliability under load",
+      "dependencies": "024-028",
+      "acceptance": "Removal before send suppresses queued private content; worker crash/provider timeout/replay tested; backlog/error/dead-letter alerts actionable",
+      "size": "M"
+    },
+    {
+      "order": 30,
+      "id": "SaaS-030",
+      "work": "Add board read model with status counts and per-column pagination",
+      "dependencies": "015, 016",
+      "acceptance": "ToDo/InProgress/Done remain canonical; more than 100 tasks load without silently omitting cards; list and board share access predicates",
+      "size": "M"
+    },
+    {
+      "order": 31,
+      "id": "SaaS-031",
+      "work": "Add server-owned rank and atomic move/reorder API",
+      "dependencies": "030",
+      "acceptance": "Status/rank/version/audit/outbox commit together; concurrent moves conflict/reconcile; bounded rebalance; unknown neighbor IDs and foreign-company cards rejected",
+      "size": "L"
+    },
+    {
+      "order": 32,
+      "id": "SaaS-032",
+      "work": "Add responsive board UI, keyboard moves and non-drag controls",
+      "dependencies": "031, 006",
+      "acceptance": "Drag, keyboard and click-to-move work; optimistic error rollback; progress/counts update after commit; focus announcements and mobile overflow pass",
+      "size": "L"
+    },
+    {
+      "order": 33,
+      "id": "SaaS-033",
+      "work": "Add tenant-scoped My work, due/overdue queues and authorized search",
+      "dependencies": "009, 015",
+      "acceptance": "One query across authorized projects, deterministic paging, unassigned semantics and inclusive date rules; no client-side cross-project fetch fan-out",
+      "size": "M"
+    },
+    {
+      "order": 34,
+      "id": "SaaS-034",
+      "work": "Add saved views and persisted list/board/filter preferences",
+      "dependencies": "033, 032",
+      "acceptance": "Personal vs company-shared visibility explicit; saved filters reauthorize on use; deleted fields/projects handled safely; share links preserve context",
+      "size": "M"
+    },
+    {
+      "order": 35,
+      "id": "SaaS-035",
+      "work": "Verify board scale, conflicts, accessibility and adoption",
+      "dependencies": "030-034",
+      "acceptance": "Representative large-company fixture, stale-move races, keyboard/pointer alternatives and common browser checks pass; baseline WIP indicators are advisory",
+      "size": "M"
+    },
+    {
+      "order": 36,
+      "id": "SaaS-036",
+      "work": "Add labels/checklists/subtasks with scoped filters",
+      "dependencies": "016, 034",
+      "acceptance": "Parent/project/company consistency, soft-delete behavior and progress semantics tested; no accidental double counting in current dashboard",
+      "size": "M"
+    },
+    {
+      "order": 37,
+      "id": "SaaS-037",
+      "work": "Add blocked-by/related task dependencies",
+      "dependencies": "036",
+      "acceptance": "Self/cyclic/cross-company edges rejected; deletion/restore and concurrent edits handled; accessible dependency explanation",
+      "size": "M"
+    },
+    {
+      "order": 38,
+      "id": "SaaS-038",
+      "work": "Add milestones/calendar/recurrence in small increments",
+      "dependencies": "026, 036",
+      "acceptance": "Due-date semantics preserved; repeat instances have stable dedup keys and timezone/DST coverage; progress/history remain explainable",
+      "size": "L"
+    },
+    {
+      "order": 39,
+      "id": "SaaS-039",
+      "work": "Add private storage, upload grants, quarantine/scanning and lifecycle jobs",
+      "dependencies": "017, 016; storage/scanner decision",
+      "acceptance": "Type/size/signature limits, randomized keys and tenant scope; unscanned files unavailable; failure/quota/cleanup paths tested",
+      "size": "L"
+    },
+    {
+      "order": 40,
+      "id": "SaaS-040",
+      "work": "Add attachment UI and authorized downloads",
+      "dependencies": "039",
+      "acceptance": "Filename escaping, revoked-access denial, expiring downloads, progress/error/cancel states, and comment/task lifecycle integration",
+      "size": "M"
+    },
+    {
+      "order": 41,
+      "id": "SaaS-041",
+      "work": "Rehearse content recovery, retention and planning/storage load",
+      "dependencies": "036-040",
+      "acceptance": "DB/object consistency, failed scan, orphan cleanup, restore and project removal tested; cost/usage metrics available",
+      "size": "M"
+    },
+    {
+      "order": 42,
+      "id": "SaaS-042",
+      "work": "Add versioned entitlements, seat/guest rules and atomic usage accounting",
+      "dependencies": "016, 020",
+      "acceptance": "Disabled feature cannot be enabled through direct API; duplicate invite/accept races cannot exceed seats; pilot limits migrate cleanly",
+      "size": "L"
+    },
+    {
+      "order": 43,
+      "id": "SaaS-043",
+      "work": "Integrate chosen billing provider and signed/idempotent webhook processing",
+      "dependencies": "042, 017; provider decision",
+      "acceptance": "Verify provider signature, amount/currency/customer mapping and event deduplication; out-of-order/retry/reconciliation tested in sandbox",
+      "size": "L"
+    },
+    {
+      "order": 44,
+      "id": "SaaS-044",
+      "work": "Add plan/seat portal, renewal failure and cancellation/downgrade behavior",
+      "dependencies": "043",
+      "acceptance": "Billing owner permissions explicit; grace/read-only/export policy documented; customer data not silently deleted on failed payment",
+      "size": "M"
+    },
+    {
+      "order": 45,
+      "id": "SaaS-045",
+      "work": "Add customer export, workspace closure and governed purge",
+      "dependencies": "014, 041, 044",
+      "acceptance": "Authenticated export/status/download; grace/retention policy honored; shared global user accounts and other companies unaffected",
+      "size": "L"
+    },
+    {
+      "order": 46,
+      "id": "SaaS-046",
+      "work": "Add support diagnostics, fleet observability and multi-replica readiness",
+      "dependencies": "007, 029, 044",
+      "acceptance": "Tenant context safe in support tools; shared keys/limiter/job leasing verified; approved support access is attributable; recovery rehearsal current",
+      "size": "L"
+    },
+    {
+      "order": 47,
+      "id": "SaaS-047",
+      "work": "Add scoped API credentials and signed outbound webhooks",
+      "dependencies": "017, 042",
+      "acceptance": "Least-privilege/revocable credentials, redacted logs, destination/SSRF controls, delivery retries and per-company limits",
+      "size": "L"
+    },
+    {
+      "order": 48,
+      "id": "SaaS-048",
+      "work": "Add enterprise OIDC/SAML through an identity integration strategy",
+      "dependencies": "022, 046; customer demand",
+      "acceptance": "Issuer/subject mapping, tenant binding, account linking, logout and enforced sign-in policy tested; no automatic cross-company joining by email domain",
+      "size": "L"
+    },
+    {
+      "order": 49,
+      "id": "SaaS-049",
+      "work": "Add SCIM lifecycle and enterprise audit/archive policies",
+      "dependencies": "048, 014",
+      "acceptance": "Provision/deprovision respects company membership/private projects; immutable external archive and access/retention evidence tested",
+      "size": "L"
+    },
+    {
+      "order": 50,
+      "id": "SaaS-050",
+      "work": "Address customer-specific residency/dedicated deployment/retention needs",
+      "dependencies": "049; explicit customer requirements",
+      "acceptance": "Architectural and operational evidence meets named requirements; do not claim jurisdictional compliance from generic feature presence",
+      "size": "L"
+    },
+    {
+      "order": 51,
+      "id": "SaaS-051",
+      "work": "Complete independent review and enterprise acceptance pack",
+      "dependencies": "048-050",
+      "acceptance": "Applicable security-control traceability, remediation/retest, recovery and privileged-access demonstration accepted",
+      "size": "L"
+    }
+  ],
+  "sources": [
+    {
+      "title": "Microsoft multitenant identity",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/identity"
+    },
+    {
+      "title": "EF Core optimistic concurrency",
+      "url": "https://learn.microsoft.com/en-us/ef/core/saving/concurrency"
+    },
+    {
+      "title": "AWS transactional outbox",
+      "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html"
+    },
+    {
+      "title": "OWASP logging",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
+    },
+    {
+      "title": "OWASP password recovery",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html"
+    },
+    {
+      "title": "OWASP upload security",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html"
+    },
+    {
+      "title": "W3C dragging alternatives",
+      "url": "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements"
+    },
+    {
+      "title": "OWASP ASVS",
+      "url": "https://asvs.owasp.org/"
+    },
+    {
+      "title": "Linear notifications",
+      "url": "https://linear.app/docs/notifications"
+    },
+    {
+      "title": "Linear custom views",
+      "url": "https://linear.app/docs/custom-views"
+    },
+    {
+      "title": "Asana people management",
+      "url": "https://help.asana.com/s/article/managing-people-in-organizations"
+    },
+    {
+      "title": "Asana security audit events",
+      "url": "https://developers.asana.com/docs/audit-log-events"
+    },
+    {
+      "title": "Jira board tutorials",
+      "url": "https://www.atlassian.com/software/jira/guides/boards/tutorials"
+    }
+  ],
+  "changedRuntime": false,
+  "publishedReleases": false
+}

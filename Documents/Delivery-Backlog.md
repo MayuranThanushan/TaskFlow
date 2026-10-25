@@ -1,5 +1,7 @@
 # TaskFlow ordered delivery backlog
 
+Post-MVP direction (25 October 2026): the confirmed product target is multi-company SaaS. Continue with the separate [gap assessment](Product-Gap-Assessment.md), [feature release roadmap](Feature-Release-Roadmap.md) and [proposed SaaS architecture](../docs/saas-architecture.md). New task IDs are SaaS-001 onward; the historical MVP tasks below are not renumbered.
+
 Prepared: 18 October 2026. Implementation steps 01-08 and 10-21 are complete. Steps 09 and 22 portable preparation/local production and recovery rehearsals are complete; Docker/hosted CI and selected-host verification remain pending release gates. Step 23 documentation/demo handoff is complete: [developer/demo guide and acceptance matrix](../docs/handoff.md), [accepted architecture/ERD](../docs/architecture.md), [OpenAPI snapshot](../docs/contracts/README.md) and [current README](../README.md). No remote issues, hosted runs or public deployments have been created.
 
 Read [Architecture-Plan.md](Architecture-Plan.md) first. The sequence below refines the existing implementation plan into small, reviewable steps. Existing TF identifiers are retained as traceability references, not renumbered issues. Work from top to bottom; complete the relevant frontend, API, database, and tests together.

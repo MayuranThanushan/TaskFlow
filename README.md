@@ -192,3 +192,7 @@ Recorded local results: 122 backend passes with live MySQL and zero skips, 95 fr
 [Architecture/ERD](docs/architecture.md), [decisions](docs/decisions/README.md), [API contracts/OpenAPI](docs/contracts/README.md), [demo/acceptance handoff](docs/handoff.md), [delivery backlog](Documents/Delivery-Backlog.md), [deployment](docs/deployment.md), [release runbook](docs/release-runbook.md), [backup/recovery](docs/backup-recovery.md).
 
 The implemented MVP is locally verified. Container execution, hosted CI and selected-host verification remain release gates; nothing has been publicly deployed. Keep private settings, credentials, keys, databases and generated output outside Git.
+
+## Next product releases
+
+The target for future releases is multi-company SaaS. The [gap assessment](Documents/Product-Gap-Assessment.md) documents 25 findings; the [feature roadmap](Documents/Feature-Release-Roadmap.md) sequences 51 tasks for workspaces, audit, invitations, notifications, Kanban and later commercial/enterprise capabilities. Read the [architecture proposal](docs/saas-architecture.md) before implementation. These are planned changes, not shipped features.
