@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:22.15.0-bookworm-slim AS frontend
+FROM node:22.23.4-bookworm-slim AS frontend
 WORKDIR /src
 COPY TaskFlow-FE/package*.json ./
 RUN npm install --global npm@11.3.0 && npm ci

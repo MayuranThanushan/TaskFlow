@@ -72,7 +72,7 @@ public class PersistenceTests(MySqlFixture fixture)
     {
         await using var context = Context();
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
-        Assert.Single(await context.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(context.Database.GetMigrations().Order(), (await context.Database.GetAppliedMigrationsAsync()).Order());
         var script = context.Database.GenerateCreateScript();
         Assert.Contains("CK_Tasks_Status", script);
         Assert.Contains("CK_Tasks_Priority", script);

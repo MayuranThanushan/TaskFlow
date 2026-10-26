@@ -1,0 +1,204 @@
+{
+  "task": "SaaS-008",
+  "date": "2026-10-26",
+  "sourceBaseRevision": "d28939c5453f044e2c0be69038c2b9fdc72fa07a",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local workspace schema expansion, offline legacy mapping, transactional reconciliation and populated backup/restore rehearsal. No company runtime, production DB migration, hosted rollout or mandatory scope enforcement claimed.",
+  "verifiedSourceSha256NormalizedLf": {
+    "TaskFlow-BE/TaskFlow.Api/Program.cs": "053c739e16016392f2219828a11a1b93b253d6d8b4543e1b692a05595b817c88",
+    "TaskFlow-BE/TaskFlow.Api/Operations/WorkspaceMigrationCommand.cs": "f57fe42e066c1fcdcf58844edd1ba2db0aa6aa2342149e6e4213d374f872fca3",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Entities.cs": "ae0df62019f9e24a410d11072e8dc1edc060d43c43794f9585feb051d3e081bc",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Workspace.cs": "7076512de24ee667d397e486aa1e46083d10b3d6af205854929faa91b4e8eb2c",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "a1b8a0e06f6f8bf30b0e97b799dd1a8a212d44f57bfda1fb5532d05e1dac082c",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/EntityConfigurations.cs": "162fd4a42f0fa972b02a7c48bc87860528c96202efdd8e21a45f153f0059caa4",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/WorkspaceConfigurations.cs": "8828731e98bcbe0c537c8cd11febbd7e124031b67205e9306b9c11a4b9a0d082",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261026153432_WorkspaceExpansion.cs": "9307bfd57b6ecb09aff5548397eb35fe326144a29b5f9d5eb037d9dd867fc50b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "a1b78818322642edfe0ee7fba354839409cd367228441abeb79b6e851b0d42e0",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceBackfill.cs": "3d39c93f995de6c34ce80fb1fa4a9bdbce58eb5e203629ad9adfeba34eb90904",
+    "TaskFlow-BE/TaskFlow.Tests/WorkspaceBackfillTests.cs": "85492c1fa18e84c3e3f2ff023f703c60ad21e166a76c7d9a140e54061df6afcf",
+    "TaskFlow-BE/TaskFlow.Tests/PersistenceTests.cs": "0b21b2541835e91734b592fd64dbcedb048a7cc5ddbd54f00bcc1b0cec595754",
+    "TaskFlow-BE/TaskFlow.Tests/packages.lock.json": "04800d1aeb075e888ea503cc467e068f8564d27cdec99361e7b063c1f44a89aa",
+    "TaskFlow-FE/.nvmrc": "0c4bf84f9bedd485b2c4eac05f59e35addc86ce7dbf0d90435528e04384c6314",
+    "TaskFlow-FE/package.json": "e996bc408e731dbbb4e4370d92007f95c03366c01fad36b7577e463f2cae466c",
+    "TaskFlow-FE/package-lock.json": "f8320629ae234204605350e168a44e42588bac1417f9a0d51f344ff645c04777",
+    "deploy/Dockerfile": "ae6bd827cbe2576b0a0c9b883d2bdd2a238f2ef73268c831b2671de6943836cf"
+  },
+  "migration": {
+    "expanded": "20261026153432_WorkspaceExpansion",
+    "preserved": "20261018085115_InitialCreate",
+    "workspaceReferenceColumns": "Nullable on Projects, ProjectMembers, Tasks and ActivityLogs during compatibility stage",
+    "constraintsNow": [
+      "Unique legacy owner mapping",
+      "Restrictive workspace/user foreign keys",
+      "Workspace-first project/task/member/activity indexes",
+      "Workspace role/state check constraints"
+    ],
+    "enforceStagePending": [
+      "Non-null tenant scope",
+      "Composite parent references",
+      "Tenant-aware read/write authorization and v2 cutover"
+    ]
+  },
+  "checks": {
+    "backend": {
+      "passed": 157,
+      "failed": 0,
+      "skipped": 0,
+      "newMySqlCases": 9,
+      "trx": "TestResults/saas008-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 95,
+      "failed": 0,
+      "source": "Isolated exact source copy using locked jsdom 30.1.3, Node 22.23.4 and npm 11.3.0",
+      "junit": ".local/build/saas008-frontend/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 29
+    },
+    "releaseBuildWarningsAsErrors": "Passed, zero warnings/errors",
+    "migrationModelDrift": "Passed",
+    "lockedSolutionRestore": "Passed after refreshing stale Tests transitive lock",
+    "frontendLintTypecheckBuild": "Passed",
+    "generatedContractDrift": "Passed; four backend OpenAPI contract cases included in backend total",
+    "dependencyAudit": [
+      {
+        "source": "nuget",
+        "passed": true,
+        "blockingFindings": []
+      },
+      {
+        "source": "frontend",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "browser-tools",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "contract-tools",
+        "passed": true,
+        "blockingFindings": {}
+      }
+    ],
+    "actionlint": "Passed (1.7.12, shellcheck unavailable and disabled)",
+    "publishedAccessibility": {
+      "scans": 30,
+      "violations": 0,
+      "overflow": 0,
+      "incompleteNeedsHumanReview": 4
+    },
+    "rehearsal": {
+      "legacyResult": {
+        "MappingSha256": "d139667621f4d7051810a2ac9052e05a8c0561899fc85e68a9498ade22200eb5",
+        "Workspaces": 3,
+        "Memberships": 5,
+        "Projects": 7,
+        "Tasks": 120,
+        "Activities": 369,
+        "AccessSha256": "d9375b8874a0895788eed2854123a8b9ba171856d928fa7746e81f5b8b423e3e",
+        "FullyScoped": true
+      },
+      "finalResult": {
+        "MappingSha256": "ce044b1a98be535adc35c30a9fae78dd4e2dc0f032e891d2e4d790d3f95d557c",
+        "Workspaces": 5,
+        "Memberships": 7,
+        "Projects": 35,
+        "Tasks": 245,
+        "Activities": 614,
+        "AccessSha256": "2e88a1a8693d8375623f96c59d9392a098de0d4904f5fdb9cb124721a1373d04",
+        "FullyScoped": true
+      },
+      "originalBackupTableCounts": {
+        "__efmigrationshistory": 1,
+        "activitylogs": 369,
+        "aspnetroleclaims": 0,
+        "aspnetroles": 0,
+        "aspnetuserclaims": 0,
+        "aspnetuserlogins": 0,
+        "aspnetuserroles": 0,
+        "aspnetusers": 6,
+        "aspnetusertokens": 0,
+        "projectmembers": 4,
+        "projects": 7,
+        "tasks": 120
+      },
+      "expandedBackupTableCounts": {
+        "__efmigrationshistory": 2,
+        "activitylogs": 614,
+        "aspnetroleclaims": 0,
+        "aspnetroles": 0,
+        "aspnetuserclaims": 0,
+        "aspnetuserlogins": 0,
+        "aspnetuserroles": 0,
+        "aspnetusers": 11,
+        "aspnetusertokens": 0,
+        "projectmembers": 4,
+        "projects": 35,
+        "tasks": 245,
+        "workspacememberships": 7,
+        "workspaces": 5
+      },
+      "legacyRestoreBeforeMigration": true,
+      "expandedRestoreVerification": true,
+      "oldManifestRejectedAfterV1Writes": true,
+      "allScopeColumnsReconciled": true,
+      "browserJourneys": [
+        {
+          "script": "authentication.cjs",
+          "passed": true,
+          "durationMs": 6565
+        },
+        {
+          "script": "journeys.cjs",
+          "passed": true,
+          "durationMs": 28167
+        },
+        {
+          "script": "profile.cjs",
+          "passed": true,
+          "durationMs": 64514
+        },
+        {
+          "script": "review.cjs",
+          "passed": true,
+          "durationMs": 23647
+        }
+      ],
+      "finalPublishedCli": {
+        "verifiedAfterExpandedRestore": true,
+        "extraOptionsRejected": true,
+        "missingMaintenanceRejected": true,
+        "idempotentApply": true,
+        "apiPayloadSha256": "70a7a5984a6a782e567f6a1763e325e47eaaacb1e05e5a8223b3e9cf4ab538d7"
+      }
+    }
+  },
+  "artifactScope": {
+    "browserApp": "Fresh published API with expansion/backfill and unchanged frontend payload. Final CLI option/migration guard subsequently tightened; final CLI separately published and verified against another fresh restored expanded backup.",
+    "finalCli": "Final executable verified for strict options, missing maintenance refusal, verification and idempotent apply; payload digest in rehearsal evidence.",
+    "migrationBundle": "Local Debug framework-dependent Windows bundle used to apply the same compiled migration set; not a signed release artifact."
+  },
+  "compatibilityFixes": {
+    "reason": "User merged OpenAPI 10.0.14 and jsdom 30.1.3 dependency updates before this task",
+    "nodeBaseline": "22.23.4 in .nvmrc and container build, compatible engine ranges in frontend manifest and lock",
+    "nodeArchiveSha256": "cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20",
+    "checksumSource": "https://nodejs.org/dist/v22.23.4/SHASUMS256.txt",
+    "testLock": "OpenAPI 10.0.14 / Microsoft.OpenApi 2.12.2 transitive lock aligned with merged API; obsolete hosting reference removed; RID-specific bundle restore changes excluded"
+  },
+  "cleanup": {
+    "allOwnedRehearsalSchemasRemoved": true,
+    "allTemporaryHttpHostsStopped": true,
+    "existingDevelopmentServices": "Frontend HTTP 200 and development API readiness HTTP 200 checked; their process lifecycles and databases were not changed",
+    "privateArtifacts": "Backups, keys, connection configuration and ID manifests remain in ignored operator-private local storage, never committed"
+  },
+  "remaining": [
+    "SaaS-009/010 mandatory tenant context, reads/writes and composite parent constraints",
+    "Coordinated v2 API/UI/role cutover before NOT NULL enforcement",
+    "SaaS-016 full adversarial company-isolation and quota acceptance",
+    "Selected-host migration, grants, backups and alert verification",
+    "Fresh hosted workflow/CodeQL and container execution; not inferred from local passes"
+  ]
+}

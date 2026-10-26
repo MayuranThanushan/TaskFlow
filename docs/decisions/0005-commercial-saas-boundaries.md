@@ -1,7 +1,7 @@
 # 0005: Commercial SaaS company boundaries
 
 Status: adopted design baseline for SaaS-001. Date: 25 October 2026.
-Implementation: not implemented. The current MVP continues under decisions 0001-0004 until the coordinated tenant cutover. This record supersedes their project-only permissions for the future v2 contract, not current runtime behavior.
+Implementation: SaaS-008 schema expansion and offline legacy mapping are implemented; tenant runtime and v2 cutover remain pending. The current MVP continues under decisions 0001-0004 until the coordinated tenant cutover. This record supersedes their project-only permissions for the future v2 contract, not current runtime behavior.
 
 ## Context and outcome
 

@@ -15,6 +15,7 @@ public abstract class AuditableEntity : IAuditable
 
 public sealed class Project : AuditableEntity
 {
+    public long? WorkspaceId { get; set; }
     public long OwnerId { get; set; }
     public string Name { get; set; } = "";
     public string? Description { get; set; }
@@ -23,6 +24,7 @@ public sealed class Project : AuditableEntity
 
 public sealed class ProjectMember
 {
+    public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
     public long UserId { get; set; }
     public MembershipRole Role { get; set; } = MembershipRole.Member;
@@ -32,6 +34,7 @@ public sealed class ProjectMember
 
 public sealed class TaskItem : AuditableEntity
 {
+    public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
     public Project Project { get; set; } = null!;
     public long? AssigneeId { get; set; }
@@ -45,6 +48,7 @@ public sealed class TaskItem : AuditableEntity
 
 public sealed class ActivityLog
 {
+    public long? WorkspaceId { get; set; }
     public long Id { get; set; }
     public long ProjectId { get; set; }
     public Project Project { get; set; } = null!;

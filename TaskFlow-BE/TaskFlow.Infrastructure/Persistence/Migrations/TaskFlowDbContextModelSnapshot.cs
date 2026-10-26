@@ -172,6 +172,9 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<long?>("TaskId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("WorkspaceId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ActorUserId");
@@ -179,6 +182,8 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.HasIndex("TaskId");
 
                     b.HasIndex("ProjectId", "CreatedAtUtc", "Id");
+
+                    b.HasIndex("WorkspaceId", "ProjectId", "CreatedAtUtc", "Id");
 
                     b.ToTable("ActivityLogs", null, t =>
                         {
@@ -212,9 +217,15 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<long?>("WorkspaceId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("WorkspaceId", "Id")
+                        .IsUnique();
 
                     b.ToTable("Projects", null, t =>
                         {
@@ -238,9 +249,14 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<long?>("WorkspaceId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ProjectId", "UserId");
 
                     b.HasIndex("UserId", "ProjectId");
+
+                    b.HasIndex("WorkspaceId", "UserId", "ProjectId");
 
                     b.ToTable("ProjectMembers", null, t =>
                         {
@@ -290,6 +306,9 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<long?>("WorkspaceId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AssigneeId");
@@ -298,6 +317,11 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProjectId", "Status");
 
+                    b.HasIndex("WorkspaceId", "ProjectId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "ProjectId", "Status");
+
                     b.ToTable("Tasks", null, t =>
                         {
                             t.HasCheckConstraint("CK_Tasks_Priority", "`Priority` IN ('Low','Medium','High')");
@@ -305,6 +329,70 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Tasks_Status", "`Status` IN ('ToDo','InProgress','Done')");
 
                             t.HasCheckConstraint("CK_Tasks_Title", "CHAR_LENGTH(TRIM(`Title`)) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.Workspace", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long?>("LegacyOwnerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LegacyOwnerId")
+                        .IsUnique();
+
+                    b.ToTable("Workspaces", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Workspaces_Name", "CHAR_LENGTH(TRIM(`Name`)) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceMembership", b =>
+                {
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("JoinedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("WorkspaceId", "UserId");
+
+                    b.HasIndex("UserId", "State", "WorkspaceId");
+
+                    b.ToTable("WorkspaceMemberships", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_WorkspaceMemberships_Role", "`Role` IN ('Owner','Admin','Member','Guest')");
+
+                            t.HasCheckConstraint("CK_WorkspaceMemberships_State", "`State` IN ('Active','Suspended')");
                         });
                 });
 
@@ -457,6 +545,11 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Project");
 
                     b.Navigation("Task");
@@ -469,6 +562,11 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entities.ProjectMember", b =>
@@ -484,6 +582,11 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Project");
                 });
@@ -501,7 +604,35 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.Workspace", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("LegacyOwnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceMembership", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

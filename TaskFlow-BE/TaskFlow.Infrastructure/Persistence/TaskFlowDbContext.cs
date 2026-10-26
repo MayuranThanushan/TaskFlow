@@ -9,6 +9,8 @@ namespace TaskFlow.Infrastructure.Persistence;
 public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock)
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
+    public DbSet<Workspace> Workspaces => Set<Workspace>();
+    public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
@@ -54,6 +56,14 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
 
             switch (entry.Entity)
             {
+                case Workspace workspace:
+                    workspace.Name = TextRules.Required(workspace.Name, 150, nameof(workspace.Name));
+                    break;
+                case WorkspaceMembership membership:
+                    if (!Enum.IsDefined(membership.Role) || !Enum.IsDefined(membership.State))
+                        throw new ArgumentException("Unsupported workspace membership.");
+                    if (entry.State == EntityState.Added) membership.JoinedAtUtc = now;
+                    break;
                 case Project project:
                     project.Name = TextRules.Required(project.Name, 150, nameof(project.Name));
                     project.Description = TextRules.Optional(project.Description, 10_000, nameof(project.Description));
