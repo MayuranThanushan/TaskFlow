@@ -1,0 +1,99 @@
+{
+  "task": "SaaS-004",
+  "date": "2026-10-26",
+  "dateBasis": "Client Asia/Colombo date",
+  "sourceBaseRevision": "188b14aa3a1c072254396c6a70ab469362207607",
+  "sourceWorkingChangesVerifiedBeforeCommit": true,
+  "scope": "Local Windows .NET tests, mandatory live MySQL integration tests and temporary real loopback OTLP HTTP/protobuf collectors. No hosted collector or deployment has been provisioned.",
+  "verifiedSourceSha256NormalizedLf": {
+    "TaskFlow-BE/TaskFlow.Api/Program.cs": "3b962707848b0c801ed9097fed187fa530ada7cb4a43116e60dc6f0eb76258ff",
+    "TaskFlow-BE/TaskFlow.Api/Health/DatabaseReadinessCheck.cs": "6f15be37067ed3e6fafec94677300efdc1d3478916f82dea4cf7d2c658caedf2",
+    "TaskFlow-BE/TaskFlow.Api/appsettings.json": "78382b9a0cc3f97b3b9c6a687dcdac119188a4c0329fbbdb43abdc3b833a88a8",
+    "docs/contracts/telemetry.json": "6a71fac45310e0aafe5338639fea00beb497d6f8df4606d6878add78f8651a96",
+    "TaskFlow-BE/TaskFlow.Api/Telemetry/ServiceTelemetry.cs": "ae5be5438ac3f53766f98ac08f72508c145fd333a5bd305ba70825281b1e4f45",
+    "TaskFlow-BE/TaskFlow.Api/Telemetry/ServiceTelemetryMiddleware.cs": "2a967b6ea896effb38a8cf4199c45d864e74f720838f6a87f7b8fd134ab9c324",
+    "TaskFlow-BE/TaskFlow.Api/Telemetry/TelemetryExportService.cs": "95d1d0072e6fafc936eeaab465f11877d175231eea3c2f6200dc620dd0927db6",
+    "TaskFlow-BE/TaskFlow.Api/Telemetry/TelemetryExtensions.cs": "a61d10925c31c2b944e18de7927ecbd9195ef80d2622ac13e7d0c3ee908e8429",
+    "TaskFlow-BE/TaskFlow.Api/Telemetry/TelemetrySettings.cs": "250f9dfccf843646c0ab6b78e4638c97269785b54a4c6b520d953b9b50913f04"
+  },
+  "implementation": {
+    "sdk": "OpenTelemetry.Exporter.OpenTelemetryProtocol 1.20.1",
+    "exportDefault": false,
+    "meterAndActivitySource": "TaskFlow.Api",
+    "implementedInstruments": 8,
+    "plannedWorkerInstruments": 5,
+    "securitySignalActions": 5,
+    "metricStreamCardinalityLimit": 512,
+    "histogramUnits": "seconds",
+    "newPublicTelemetryEndpoints": 0
+  },
+  "checks": {
+    "backend": {
+      "passed": 148,
+      "failed": 0,
+      "skipped": 0,
+      "telemetryCases": 22,
+      "liveMySqlRequired": true,
+      "report": "TestResults/saas004-backend/backend.trx"
+    },
+    "realOtlpReceiver": {
+      "traceAndMetricPayloadsReceived": true,
+      "responseCorrelationTraceIdFoundInTracePayload": true,
+      "privateQueryBodyCredentialPathBaggageTraceStateCanariesAbsent": true,
+      "injectedWorkspaceMetricDimensionDropped": true,
+      "collectorRejectionDidNotFailApiRequests": true,
+      "receiverTransport": "Temporary loopback HTTP, explicit opt-in; production collector TLS/storage not verified"
+    },
+    "configuration": {
+      "defaultDisabled": true,
+      "unsafeEndpointRejected": true,
+      "secretValuesWithheldFromValidationErrors": true,
+      "samplingAndTimingBoundsChecked": true,
+      "settingsDisplayRedactsSecrets": true
+    },
+    "instruments": {
+      "unknownReadinessAndProbeAge": true,
+      "cancellationPreservesLastCompletedState": true,
+      "requestMethodAndRouteDimensionsBounded": true,
+      "exceptionAndCancellationPropagate": true,
+      "registryMatchesPublishedMeterInstruments": true,
+      "noWorkerMetricsFalselyEmitted": true
+    },
+    "operationsTestsPassed": 23,
+    "openApiSnapshotTestsPassed": true,
+    "generatedFrontendTypesCheckPassed": true,
+    "workflowLintPassed": true,
+    "dependencyAudits": [
+      {
+        "source": "nuget",
+        "passed": true,
+        "blockingFindings": []
+      },
+      {
+        "source": "frontend",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "browser-tools",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "contract-tools",
+        "passed": true,
+        "blockingFindings": {}
+      }
+    ],
+    "stagedSecretScanFindings": 0
+  },
+  "notRerun": [
+    "Frontend component/browser suites: frontend code and API wire contract did not change."
+  ],
+  "remainingGates": [
+    "SaaS-002 hosted CI, Linux Docker/CodeQL evidence and repository protection",
+    "SaaS-005 selected-host deployment and approved collector TLS/authentication/ingestion verification",
+    "SaaS-007 production measurements, thresholds, responder/alert routing and retention ownership",
+    "Attributed durable security events remain SaaS-013; worker instrumentation remains SaaS-017"
+  ]
+}

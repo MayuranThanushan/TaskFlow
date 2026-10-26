@@ -1,3 +1,4 @@
+using TaskFlow.Api.Telemetry;
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Middleware;
 using TaskFlow.Infrastructure;
@@ -30,6 +31,7 @@ else
         options.IncludeScopes = false;
     });
 
+builder.Services.AddServiceTelemetry();
 builder.Services.AddApiFoundation();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSessionAuthentication(builder.Configuration, builder.Environment);
@@ -51,6 +53,7 @@ if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("TaskFlow"))
 var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
     !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local"));
 
+app.UseMiddleware<ServiceTelemetryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseExceptionHandler();
 app.UseStatusCodePages(async context =>

@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "1.0",
+  "meter": "TaskFlow.Api",
+  "source": "TaskFlow.Api",
+  "implemented": [
+    {
+      "name": "taskflow.http.requests",
+      "unit": "{request}",
+      "kind": "counter",
+      "dimensions": [
+        "http.request.method",
+        "http.route",
+        "http.response.status_code"
+      ],
+      "meaning": "Completed or aborted HTTP pipeline requests; status 0 denotes cancellation or unknown status."
+    },
+    {
+      "name": "taskflow.http.errors",
+      "unit": "{request}",
+      "kind": "counter",
+      "dimensions": [
+        "http.request.method",
+        "http.route",
+        "http.response.status_code",
+        "error.type"
+      ],
+      "meaning": "4xx client_error, 5xx server_error, or cancelled. Report 5xx separately from expected 4xx."
+    },
+    {
+      "name": "taskflow.http.request.duration",
+      "unit": "s",
+      "kind": "histogram",
+      "dimensions": [
+        "http.request.method",
+        "http.route",
+        "http.response.status_code"
+      ],
+      "meaning": "Elapsed application pipeline duration, including failures; not browser/render or full network latency."
+    },
+    {
+      "name": "taskflow.database.readiness.checks",
+      "unit": "{check}",
+      "kind": "counter",
+      "dimensions": [
+        "result"
+      ],
+      "meaning": "Executed readiness checks, with finite safe result codes."
+    },
+    {
+      "name": "taskflow.database.readiness.duration",
+      "unit": "s",
+      "kind": "histogram",
+      "dimensions": [
+        "result"
+      ],
+      "meaning": "Elapsed readiness probe duration, including failed/cancelled probes."
+    },
+    {
+      "name": "taskflow.database.readiness",
+      "unit": "{state}",
+      "kind": "gauge",
+      "dimensions": [],
+      "meaning": "Last completed probe: -1 unknown, 0 not ready, 1 ready. Cancellation leaves the previous completed state intact."
+    },
+    {
+      "name": "taskflow.database.readiness.age",
+      "unit": "s",
+      "kind": "gauge",
+      "dimensions": [],
+      "meaning": "Age of last completed probe; -1 before any completion. Not a continuous database health assertion."
+    },
+    {
+      "name": "taskflow.security.signals",
+      "unit": "{signal}",
+      "kind": "counter",
+      "dimensions": [
+        "event.action",
+        "event.outcome"
+      ],
+      "meaning": "Bounded operational outcomes; no actor identity, incident verdict or durable audit guarantees."
+    }
+  ],
+  "durationBucketsSeconds": [
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.25,
+    0.5,
+    1,
+    2,
+    5,
+    10,
+    30
+  ],
+  "maximumPointsPerMetricStream": 512,
+  "securityVocabulary": {
+    "actions": [
+      "authentication.login",
+      "identity.registration",
+      "authentication.logout",
+      "authentication.session_rejected",
+      "authorization.denied"
+    ],
+    "outcomes": [
+      "success",
+      "rejected",
+      "conflict",
+      "rate_limited",
+      "error"
+    ],
+    "version": "1.0",
+    "scope": "Observed HTTP outcomes only. Full attributed security event envelope and restricted storage remain SaaS-013."
+  },
+  "readinessResults": [
+    "ready",
+    "database.unreachable",
+    "database.schema_mismatch",
+    "database.configuration_missing",
+    "database.check_failed",
+    "cancelled"
+  ],
+  "reservedWorkerMetrics": [
+    {
+      "name": "taskflow.worker.ready",
+      "unit": "{state}",
+      "status": "planned",
+      "meaning": "-1 unknown, 0 not processing, 1 processing; producer/lease health defined in SaaS-017."
+    },
+    {
+      "name": "taskflow.worker.outbox.pending",
+      "unit": "{message}",
+      "status": "planned",
+      "meaning": "Committed undelivered eligible outbox records, excluding terminal rows; no per-workspace dimension."
+    },
+    {
+      "name": "taskflow.worker.outbox.oldest.age",
+      "unit": "s",
+      "status": "planned",
+      "meaning": "Age of oldest eligible pending record. Distinguish no backlog from unavailable measurement."
+    },
+    {
+      "name": "taskflow.worker.delivery.attempts",
+      "unit": "{attempt}",
+      "status": "planned",
+      "meaning": "Bounded channel/outcome values; retries are attempts, not unique notifications."
+    },
+    {
+      "name": "taskflow.worker.outbox.dead_letter",
+      "unit": "{message}",
+      "status": "planned",
+      "meaning": "Unresolved terminal records requiring operator review; replay remains audited."
+    }
+  ]
+}
