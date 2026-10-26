@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { asApiError } from '../../api/client'
-import type { ApiClient, ApiError } from '../../api/client'
-import { useAuth } from '../auth/auth-context'
+import { asApiError } from '../api/client'
+import type { ApiClient, ApiError } from '../api/client'
+import { useAuth } from '../features/auth/auth-context'
 
 type Resource<T> = { key: string; status: 'loading' } | { key: string; status: 'ready'; data: T }
   | { key: string; status: 'error'; error: ApiError }
 
-export function useProjectResource<T>(client: ApiClient, path: string) {
+export function useApiResource<T>(client: ApiClient, path: string) {
   const { session } = useAuth()
   const identity = session.user?.id ?? ''
   const key = identity + ':' + path

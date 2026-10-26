@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow.Application.Features.Auth;
 namespace TaskFlow.Api.Controllers;
 
+[Authorize]
 [ApiController, Route("api/v1/users/me")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class UsersController(IAccountService accounts) : ControllerBase

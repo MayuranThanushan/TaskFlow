@@ -1,3 +1,4 @@
+import { FieldError } from '../../components/Feedback'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -68,7 +69,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       aria-invalid={!!fields[name]?.length}
       aria-describedby={fields[name]?.length ? `${name}-error` : name === 'password' && registering ? 'password-hint' : undefined}
       onChange={event => { setValues(previous => ({ ...previous, [name]: event.target.value })); setFields(previous => ({ ...previous, [name]: [] })) }} />{name === 'password' && <button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide' : 'Show'}</button>}</div>
-    {!!fields[name]?.length && <p className="field-error" id={`${name}-error`}>{fields[name].join(' ')}</p>}
+    <FieldError id={`${name}-error`} errors={fields[name]} />
   </div>
 
   return <div className="auth-grid">

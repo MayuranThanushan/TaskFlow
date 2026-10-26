@@ -11,6 +11,31 @@ from verify_codeql import verify
 
 
 class AuditGateTests(unittest.TestCase):
+    def test_query_pack_extension_rules_are_resolved_without_weakening_the_gate(self):
+        rule = {"id": "pack/security", "properties": {"security-severity": "8.1"}}
+        run = {"tool": {"driver": {"rules": []}, "extensions": [
+            {"name": "codeql/python-queries", "rules": [rule]}, {"rules": []}]}, "results": []}
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "result.sarif"
+            def check(value):
+                path.write_text(json.dumps({"version": "2.1.0", "runs": [value]}), encoding="utf-8")
+                verify(folder)
+            check(run)
+            result = {"ruleId": rule["id"], "rule": {"id": rule["id"], "index": 0, "toolComponent": {"index": 0}}}
+            run["results"] = [result]
+            with self.assertRaisesRegex(ValueError, "High/critical"): check(run)
+            rule["properties"]["security-severity"] = "6.1"
+            check(run)
+            for component, index, rule_id in [(99, 0, rule["id"]), (0, 99, rule["id"]), (0, -1, rule["id"]), (0, 0, "wrong")]:
+                broken = copy.deepcopy(run)
+                broken["results"][0]["rule"] = {"id": rule_id, "index": index, "toolComponent": {"index": component}}
+                with self.subTest(component=component, index=index, rule_id=rule_id), self.assertRaises(ValueError): check(broken)
+            for invalid in ["NaN", "Infinity", "-1", "11", "bad", True]:
+                rule["properties"]["security-severity"] = invalid
+                with self.subTest(severity=invalid), self.assertRaises(ValueError): check(run)
+            rule["properties"] = {"tags": ["security"]}
+            with self.assertRaisesRegex(ValueError, "no severity"): check(run)
+
     def test_nuget_requires_all_projects_and_rejects_source_errors(self):
         clean = {"version": 1, "projects": [{"path": "src/Api.csproj"}]}
         self.assertEqual(nuget_findings(clean, ["Api.csproj"]), [])

@@ -1,3 +1,4 @@
+import { RetryError } from '../../components/Feedback'
 import type { components } from '../../api/generated'
 import { useState } from 'react'
 import { Badge, Icon } from '../../components/Workspace'
@@ -6,18 +7,18 @@ import type { TaskPage } from '../tasks/types'
 import { Link } from 'react-router-dom'
 import type { ApiClient } from '../../api/client'
 import { useAuth } from '../auth/auth-context'
-import { useProjectResource } from '../projects/use-project-resource'
+import { useApiResource } from '../../hooks/use-api-resource'
 
 export type DashboardTotals = components['schemas']['DashboardDto']
 export function DashboardPage({ client }: { client: ApiClient }) {
   const { session } = useAuth()
-  const { result, retry } = useProjectResource<DashboardTotals>(client, '/dashboard')
+  const { result, retry } = useApiResource<DashboardTotals>(client, '/dashboard')
   return <section className="dashboard">
     <div className="overview-heading"><div><p className="eyebrow">Workspace overview</p><h1>Welcome back{session.user ? `, ${session.user.displayName}` : ''}.</h1>
     <p className="intro">Everything you need to keep work moving.</p></div><Link className="button primary" to="/projects/new"><Icon name="plus" />New project</Link></div><p className="account-reference">Your account ID: {session.user?.id}</p>
     <div className="form-actions dashboard-actions"><Link className="button primary" to="/projects">Browse projects</Link><button className="button subtle" disabled={result.status === 'loading'} onClick={retry}>Refresh overview</button></div>
     {result.status === 'loading' && <p className="project-state" role="status">Loading your overview...</p>}
-    {result.status === 'error' && <div className="error-summary" role="alert"><p>{result.error.message}</p><button className="button subtle" onClick={retry}>Try again</button></div>}
+    {result.status === 'error' && <RetryError message={result.error.message} retry={retry} />}
     {result.status === 'ready' && <>
       <section aria-labelledby="workspace-totals"><h2 id="workspace-totals">Workspace totals</h2><dl className="dashboard-stats">
         <div><dt>Projects</dt><dd>{result.data.totalProjects}</dd></div><div><dt>Tasks</dt><dd>{result.data.totalTasks}</dd></div><div><dt>Assigned to me</dt><dd>{result.data.assignedToMe}</dd></div><div><dt>Overdue tasks</dt><dd>{result.data.overdueTasks}</dd></div>
@@ -31,7 +32,7 @@ export function DashboardPage({ client }: { client: ApiClient }) {
 }
 
 function RecentWork({ client }: { client: ApiClient }) {
-  const projects = useProjectResource<ProjectPage>(client, '/projects?pageSize=4&sortBy=updatedAtUtc&sortDirection=desc')
+  const projects = useApiResource<ProjectPage>(client, '/projects?pageSize=4&sortBy=updatedAtUtc&sortDirection=desc')
   const [selected, setSelected] = useState('')
   const items = projects.result.status === 'ready' ? projects.result.data.items : []
   const current = items.some(project => project.id === selected) ? selected : items[0]?.id
@@ -43,7 +44,7 @@ function RecentWork({ client }: { client: ApiClient }) {
   </section>
 }
 function TaskPreview({ client, projectId }: { client: ApiClient; projectId: string }) {
-  const { result, retry } = useProjectResource<TaskPage>(client, '/projects/' + projectId + '/tasks?pageSize=5&sortBy=createdAtUtc')
+  const { result, retry } = useApiResource<TaskPage>(client, '/projects/' + projectId + '/tasks?pageSize=5&sortBy=createdAtUtc')
   return <section className="task-preview"><div className="section-title"><h3>Latest tasks</h3><Link className="text-link" to={'/projects/' + projectId + '/tasks'}>View task list</Link></div>
     {result.status === 'loading' && <p role="status">Loading latest tasks...</p>}
     {result.status === 'error' && <button className="button subtle" onClick={retry}>Reload latest tasks</button>}

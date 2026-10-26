@@ -1,3 +1,4 @@
+import { Confirmation, FieldError, RetryError, Pagination } from '../../components/Feedback'
 import type { ProjectWrite } from './types'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -8,7 +9,7 @@ import type { ApiClient } from '../../api/client'
 import type { FieldErrors } from '../../api/types'
 import { useAuth } from '../auth/auth-context'
 import { ProjectMembers } from './ProjectMembers'
-import { useProjectResource } from './use-project-resource'
+import { useApiResource } from '../../hooks/use-api-resource'
 import type { Project, ProjectDetails, ProjectPage } from './types'
 
 function date(value: string) { return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) }
@@ -37,14 +38,14 @@ export function ProjectsPage({ client }: { client: ApiClient }) {
   const { session } = useAuth()
   const [params, setParams] = useSearchParams()
   const query = params.toString()
-  const { result, retry } = useProjectResource<ProjectPage>(client, '/projects' + (query ? '?' + query : ''))
+  const { result, retry } = useApiResource<ProjectPage>(client, '/projects' + (query ? '?' + query : ''))
   const changePage = (page: number) => { const next = new URLSearchParams(params); next.set('page', String(page)); setParams(next) }
   return <section className="projects-page">
     <div className="page-heading"><div><p className="eyebrow">Your workspace</p><h1>Projects</h1><p className="muted">Projects you own or work on.</p></div><Link className="button primary" to="/projects/new">New project</Link></div>
     {location.state?.deleted && <p role="status" className="notice">Project deleted.</p>}
     <QueryForm key={query} params={params} apply={setParams} />
     {result.status === 'loading' && <p role="status" className="project-state">Loading projects...</p>}
-    {result.status === 'error' && <div className="error-summary" role="alert"><p>{result.error.message}</p><button className="button subtle" onClick={retry}>Try again</button></div>}
+    {result.status === 'error' && <RetryError message={result.error.message} retry={retry} />}
     {result.status === 'ready' && <>
       <p className="result-count" role="status">{result.data.totalCount} {result.data.totalCount === 1 ? 'project' : 'projects'}</p>
       {result.data.items.length === 0 ? <div className="empty-workspace"><h2>{result.data.totalCount > 0 ? 'No projects on this page.' : params.get('search')?.trim() ? 'No projects match your search.' : 'Your first project starts here.'}</h2>
@@ -55,8 +56,7 @@ export function ProjectsPage({ client }: { client: ApiClient }) {
         <p className="project-excerpt">{project.description || 'No description added.'}</p>
         <p className="project-date">Updated <time dateTime={project.updatedAtUtc}>{date(project.updatedAtUtc)}</time></p><div className="card-links"><Link to={'/projects/' + project.id + '/tasks'}><Icon name="tasks" size={15} />Tasks</Link><Link to={'/projects/' + project.id + '/activity'}><Icon name="activity" size={15} />Activity</Link>{project.ownerId === session.user?.id && <Link to={'/projects/' + project.id + '/edit'}>Edit</Link>}</div>
       </li>)}</ul>}
-      {result.data.totalPages > 1 && <nav className="pagination" aria-label="Project pages"><button className="button subtle" disabled={result.data.page <= 1} onClick={() => changePage(result.data.page - 1)}>Previous</button>
-        <span>Page {result.data.page} of {result.data.totalPages}</span><button className="button subtle" disabled={result.data.page >= result.data.totalPages} onClick={() => changePage(result.data.page + 1)}>Next</button></nav>}
+      <Pagination label="Project pages" page={result.data.page} totalPages={result.data.totalPages} onPage={changePage} />
     </>}
   </section>
 }
@@ -66,7 +66,7 @@ export function NewProjectPage({ client }: { client: ApiClient }) { return <Proj
 export function EditProjectPage({ client }: { client: ApiClient }) {
   const { projectId = '' } = useParams()
   const { session } = useAuth()
-  const { result, retry } = useProjectResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(projectId))
+  const { result, retry } = useApiResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(projectId))
   return result.status === 'loading' ? <p role="status">Loading project...</p>
     : result.status === 'error' ? <section><h1>Project not available.</h1><p role="alert">{result.error.message}</p><Link to="/projects">Back to projects</Link>{result.error.status !== 404 && <button onClick={retry}>Try again</button>}</section>
     : session.user?.id !== result.data.ownerId ? <section><h1>Only the owner can edit this project.</h1><Link to={'/projects/' + encodeURIComponent(projectId)}>Back to project</Link></section>
@@ -108,9 +108,9 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
     <div className="project-form-card">{error && <div ref={summary} tabIndex={-1} className="error-summary" role="alert">{error}</div>}
       <p className="form-intro">{initial ? 'Keep the project brief clear and current. Changes are recorded in activity.' : 'Start with a clear name and a short brief. Add tasks and teammates once your project is ready.'}</p><form noValidate aria-busy={pending} onSubmit={submit}><fieldset disabled={pending}>
         <div className="form-field"><label htmlFor="project-name">Project name</label><input id="project-name" name="name" value={name} maxLength={150} aria-invalid={!!fields.name?.length} aria-describedby={fields.name?.length ? 'name-error' : undefined} onChange={event => { setName(event.target.value); setFields(previous => ({ ...previous, name: [] })) }} />
-          {!!fields.name?.length && <p className="field-error" id="name-error">{fields.name.join(' ')}</p>}</div>
+          <FieldError id="name-error" errors={fields.name} /></div>
         <div className="form-field"><label htmlFor="project-description">Description <span className="optional">(optional)</span></label><textarea id="project-description" name="description" rows={7} maxLength={10_000} value={description} aria-invalid={!!fields.description?.length} aria-describedby={fields.description?.length ? 'description-error' : 'description-hint'} onChange={event => { setDescription(event.target.value); setFields(previous => ({ ...previous, description: [] })) }} />
-          {!!fields.description?.length && <p className="field-error" id="description-error">{fields.description.join(' ')}</p>}<p id="description-hint" className="field-hint">Up to 10,000 characters. You can leave this blank.</p></div>
+          <FieldError id="description-error" errors={fields.description} /><p id="description-hint" className="field-hint">Up to 10,000 characters. You can leave this blank.</p></div>
         <div className="form-actions"><button className="button primary" type="submit">{pending ? 'Saving project...' : initial ? 'Save changes' : 'Create project'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects')}>Cancel</button></div>
       </fieldset></form>
     </div>
@@ -121,7 +121,7 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
   const { projectId = '' } = useParams()
   const location = useLocation()
   const { session } = useAuth()
-  const { result, retry } = useProjectResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(projectId))
+  const { result, retry } = useApiResource<ProjectDetails>(client, '/projects/' + encodeURIComponent(projectId))
   const name = result.status === 'ready' ? result.data.name : null
   useEffect(() => { document.title = name ? name + ' | TaskFlow' : 'Project | TaskFlow' }, [name])
   return <section className="projects-page project-detail project-detail-page"><Link className="text-link" to="/projects">Back to projects</Link>
@@ -151,11 +151,9 @@ function ProjectActions({ client, project }: { client: ApiClient; project: Proje
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const trigger = useRef<HTMLButtonElement>(null)
-  const cancel = useRef<HTMLButtonElement>(null)
   const locked = useRef(false)
   const alive = useRef(true)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  useEffect(() => { if (confirming) cancel.current?.focus() }, [confirming])
   function dismiss() { if (locked.current) return; setConfirming(false); setError(''); window.setTimeout(() => trigger.current?.focus(), 0) }
   async function remove() {
     if (locked.current) return
@@ -168,10 +166,6 @@ function ProjectActions({ client, project }: { client: ApiClient; project: Proje
   }
   return <div className="project-actions">
     {!confirming ? <><Link className="button subtle" to={'/projects/' + encodeURIComponent(project.id) + '/edit'}>Edit project</Link><button ref={trigger} className="button danger" onClick={() => setConfirming(true)}>Delete project</button></>
-      : <section className="delete-confirmation" aria-labelledby="delete-heading" onKeyDown={event => { if (event.key === 'Escape') dismiss() }}>
-        <h2 id="delete-heading">Delete this project?</h2><p>Deleting <strong>{project.name}</strong> removes access to the project and its tasks. This cannot be undone here.</p>
-        {error && <p role="alert">{error}</p>}
-        <div className="form-actions"><button ref={cancel} className="button subtle" disabled={pending} onClick={dismiss}>Keep project</button><button className="button danger" disabled={pending} onClick={() => void remove()}>{pending ? 'Deleting project...' : 'Confirm deletion'}</button></div>
-      </section>}
+      : <Confirmation id="delete-heading" title="Delete this project?" pending={pending} cancelLabel="Keep project" confirmLabel="Confirm deletion" pendingLabel="Deleting project..." onCancel={dismiss} onConfirm={() => void remove()}><p>Deleting <strong>{project.name}</strong> removes access to the project and its tasks. This cannot be undone here.</p>{error && <p role="alert">{error}</p>}</Confirmation>}
   </div>
 }

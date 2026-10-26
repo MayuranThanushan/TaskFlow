@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Claims;
@@ -8,6 +9,7 @@ using TaskFlow.Application.Features.Tasks;
 using TaskFlow.Domain.Entities;
 namespace TaskFlow.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class TasksController(ITaskService tasks) : ControllerBase

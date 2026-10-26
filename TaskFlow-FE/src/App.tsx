@@ -11,7 +11,8 @@ import { TasksPage, NewTaskPage, TaskDetailPage, EditTaskPage } from './features
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { ActivityPage } from './features/activity/ActivityPage'
 import { ProfilePage } from './features/profile/ProfilePage'
-import { ActivityHub, Icon } from './components/Workspace'
+import { Icon } from './components/Workspace'
+import { ActivityHub } from './features/activity/ActivityHub'
 import './App.css'
 import './workspace.css'
 

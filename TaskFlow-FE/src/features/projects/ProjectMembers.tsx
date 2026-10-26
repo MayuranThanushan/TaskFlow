@@ -1,26 +1,25 @@
+import { Confirmation } from '../../components/Feedback'
 import type { components } from '../../api/generated'
 import type { ProjectMember, ProjectMemberList } from './types'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { ApiClient } from '../../api/client'
 import { asApiError } from '../../api/client'
-import { useProjectResource } from './use-project-resource'
+import { useApiResource } from '../../hooks/use-api-resource'
 
 type Member = ProjectMember
 export function ProjectMembers({ client, projectId, owner }: { client: ApiClient; projectId: string; owner: boolean }) {
   const path = '/projects/' + encodeURIComponent(projectId) + '/members'
-  const { result, retry } = useProjectResource<ProjectMemberList>(client, path)
+  const { result, retry } = useApiResource<ProjectMemberList>(client, path)
   const [userId, setUserId] = useState('')
   const [confirm, setConfirm] = useState<Member | null>(null)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const input = useRef<HTMLInputElement>(null)
-  const cancel = useRef<HTMLButtonElement>(null)
   const lock = useRef(false)
   const alive = useRef(true)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  useEffect(() => { if (confirm) cancel.current?.focus() }, [confirm])
   async function mutate(member?: Member) {
     if (lock.current) return
     if (!member && (!/^[0-9]+$/.test(userId) || BigInt(userId) < 1n || BigInt(userId) > 9223372036854775807n)) {
@@ -52,10 +51,7 @@ export function ProjectMembers({ client, projectId, owner }: { client: ApiClient
       {owner && member.role === 'Member' && <button className="button subtle" disabled={pending || !!confirm} onClick={() => { setError(''); setConfirm(member) }}>Remove {member.displayName}</button>}
     </li>)}</ul>}
     {owner && <>
-      {confirm && <section className="delete-confirmation" aria-labelledby="remove-member-heading" onKeyDown={event => { if (event.key === 'Escape') dismiss() }}>
-        <h3 id="remove-member-heading">Remove {confirm.displayName}?</h3><p>They will lose project access. Their active tasks will become unassigned.</p>
-        <div className="form-actions"><button ref={cancel} className="button subtle" disabled={pending} onClick={dismiss}>Keep member</button><button className="button danger" disabled={pending} onClick={() => void mutate(confirm)}>{pending ? 'Removing member...' : 'Confirm removal'}</button></div>
-      </section>}
+      {confirm && <Confirmation key={confirm.userId} id="remove-member-heading" headingLevel={3} title={<>Remove {confirm.displayName}?</>} pending={pending} cancelLabel="Keep member" confirmLabel="Confirm removal" pendingLabel="Removing member..." onCancel={dismiss} onConfirm={() => void mutate(confirm)}><p>They will lose project access. Their active tasks will become unassigned.</p></Confirmation>}
       <form className="member-add" onSubmit={(event: FormEvent) => { event.preventDefault(); void mutate() }}>
         <label htmlFor="member-user-id">Existing user ID</label><p id="member-id-hint" className="field-hint">Ask your teammate for their account ID. New members can view this project and work on its tasks.</p>
         <input ref={input} id="member-user-id" inputMode="numeric" maxLength={19} aria-describedby="member-id-hint" value={userId} disabled={pending || !!confirm} onChange={event => setUserId(event.target.value)} />
