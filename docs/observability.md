@@ -81,3 +81,5 @@ The automated integration suite starts a temporary real loopback HTTP/protobuf r
 Useful dashboard definitions: request rate; 5xx ratio with a nonzero request denominator; 4xx/cancellation separately; p50/p95 histogram latency; readiness state plus probe age; authentication rejection/rate-limit counts. Establish thresholds, traffic exclusions, alert owner/escalation, retention and production capacity in SaaS-005/007. Do not present local timings as an SLA. Before declaring production monitoring operational, attach selected-host evidence, collector delivery/absence alerts and a named responder to the release record.
 
 Primary references: [OpenTelemetry .NET exporters](https://opentelemetry.io/docs/languages/dotnet/exporters/), [Microsoft metric instrumentation](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-instrumentation), [OTLP exporter configuration](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/).
+
+Pilot sizing, SLI eligibility, proposed alert thresholds and operations ownership are recorded in the [SaaS-007 pilot operating plan](pilot-operations.md). Local load evidence does not approve a hosted SLO.

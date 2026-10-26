@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "status": "proposed-sizing-and-objectives-not-a-service-guarantee",
+  "audience": "Multiple companies using TaskFlow as SaaS",
+  "sizingApproval": "Pending customer estimates",
+  "proposedPilot": {
+    "companies": 10,
+    "activeUsersPerCompanyIncludingGuests": 25,
+    "simultaneouslyActiveUsersFleet": 25,
+    "activeProjectsPerCompany": 20,
+    "activeTasksPerCompany": 2000,
+    "activeTasksPerProject": 500,
+    "enforcement": "Not implemented; tenant-aware atomic quotas planned in SaaS-016"
+  },
+  "proposedServiceObjectives": {
+    "measurementWindowDays": 28,
+    "availabilityGoodRequestFraction": 0.999,
+    "readLatencyGoodRequestFraction": 0.95,
+    "readLatencyMilliseconds": 750,
+    "writeLatencyGoodRequestFraction": 0.95,
+    "writeLatencyMilliseconds": 1000,
+    "rpoHours": 24,
+    "rtoMinutes": 60,
+    "status": "Pending selected-host instrumentation, load, recovery rehearsal and operator approval"
+  },
+  "operations": {
+    "accountableTeam": "Designated developer or operations team (selected by user on 2026-10-26)",
+    "primaryResponder": null,
+    "backupResponder": null,
+    "alertDestination": null,
+    "host": null,
+    "launchGate": "Name primary and backup responders, verify alert delivery and escalation, and rehearse recovery before accepting companies"
+  }
+}
