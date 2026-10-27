@@ -36,7 +36,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             if (type == typeof(CreateTaskRequest) && name == "priority") property.Default = JsonValue.Create("Medium");
             if (name == "email") property.Format = "email";
             if (schema.Required?.Contains(name) == true && property.Type == JsonSchemaType.String && property.MinLength is null or 0) property.MinLength = 1;
-            if (name is "id" or "projectId" or "ownerId" or "userId" or "assigneeId" or "actorUserId" or "taskId")
+            if (name is "id" or "projectId" or "ownerId" or "userId" or "assigneeId" or "actorUserId" or "taskId" or "workspaceId")
             {
                 property.Pattern = IdPattern;
                 property.Description = "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number.";
@@ -50,7 +50,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             if (type == typeof(TaskStatusRequest) && name == "status") { property.Type = JsonSchemaType.String; SetEnum(property, ["ToDo", "InProgress", "Done"]); }
             if (response && name == "status" && type.Name.StartsWith("Task")) SetEnum(property, ["ToDo", "InProgress", "Done"]);
             if (response && name == "priority") SetEnum(property, ["Low", "Medium", "High"]);
-            if (response && name == "role") SetEnum(property, ["Owner", "Member"]);
+            if (response && name == "role") SetEnum(property, type.Name == "WorkspaceDto" ? ["Owner", "Admin", "Member", "Guest"] : ["Owner", "Member"]);
             if (type == typeof(HealthResponse) && name == "status") SetEnum(property, ["Healthy", "Unhealthy", "Degraded"]);
         }
         return Task.CompletedTask;

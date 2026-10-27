@@ -58,7 +58,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             if (name is "page" or "pageSize") schema.Default = JsonValue.Create(name == "page" ? 1 : 20);
             if (name == "sortBy")
             {
-                ContractSchemaTransformer.SetEnum(schema, controller == typeof(ProjectsController) ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc"]);
+                ContractSchemaTransformer.SetEnum(schema, (controller == typeof(ProjectsController) || controller == typeof(WorkspaceReadsController) && action.ActionName == "Projects") ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc"]);
                 schema.Default = JsonValue.Create("createdAtUtc");
             }
             if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create("desc"); }
@@ -71,6 +71,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)
                 ? "Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. " : "") +
+            (controller == typeof(WorkspaceReadsController) ? "Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; no v2 writes or production cutover yet. " : "") +
             (write ? "Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. " : "") +
             (health ? "Readiness 503 uses the health DTO, not Problem Details." : "Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.");
         var failures = new HashSet<int> { 500 };
@@ -79,7 +80,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             failures.Add(400);
             if (!anonymous || action.ActionName == "Login") failures.Add(401);
             if (controller == typeof(ProjectsController) && action.ActionName is "Get" or "Update" or "Delete"
-                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController)) failures.Add(404);
+                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController) || controller == typeof(WorkspaceReadsController)) failures.Add(404);
             if (controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
                 || controller == typeof(TasksController) && action.ActionName == "Delete"
                 || controller == typeof(ProjectMembersController) && action.ActionName != "List") failures.Add(403);

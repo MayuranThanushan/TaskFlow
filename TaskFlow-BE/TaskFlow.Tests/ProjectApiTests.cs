@@ -325,13 +325,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         private readonly WebApplicationFactory<Program> factory;
         public List<ApplicationUser> Users { get; } = [];
         public FixedClock Clock { get; } = new();
-        public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors)
+        public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors) : this(fixture, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -390,6 +391,9 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await database.Tasks.IgnoreQueryFilters().Where(task => projects.Contains(task.ProjectId)).ExecuteDeleteAsync();
             await database.ProjectMembers.IgnoreQueryFilters().Where(member => projects.Contains(member.ProjectId)).ExecuteDeleteAsync();
             await database.Projects.IgnoreQueryFilters().Where(project => projects.Contains(project.Id)).ExecuteDeleteAsync();
+            var workspaces = await database.Workspaces.Where(w => w.LegacyOwnerId != null && ids.Contains(w.LegacyOwnerId.Value)).Select(w => w.Id).ToArrayAsync();
+            await database.WorkspaceMemberships.Where(m => workspaces.Contains(m.WorkspaceId)).ExecuteDeleteAsync();
+            await database.Workspaces.Where(w => workspaces.Contains(w.Id)).ExecuteDeleteAsync();
             await database.Users.Where(user => ids.Contains(user.Id)).ExecuteDeleteAsync(); await transaction.CommitAsync();
         }
     }

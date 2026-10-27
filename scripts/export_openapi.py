@@ -7,6 +7,15 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks": {"get"},
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/activity": {"get"},
+    "/api/v2/workspaces/{workspaceId}/activity": {"get"},
+    "/api/v2/workspaces/{workspaceId}/dashboard": {"get"},
     "/api/v1/auth/csrf": {"get"},
     "/api/v1/auth/register": {"post"}, "/api/v1/auth/login": {"post"},
     "/api/v1/auth/me": {"get"}, "/api/v1/auth/logout": {"post"},

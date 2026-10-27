@@ -98,6 +98,6 @@ public sealed class ProjectService(TaskFlowDbContext database, IProjectTransacti
 
     private static long RequireActor(long? actorId) => actorId is > 0 ? actorId.Value
         : throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);
-    private static ProjectDto Map(Project project) => new(project.Id.ToString(CultureInfo.InvariantCulture), project.Name,
+    internal static ProjectDto Map(Project project) => new(project.Id.ToString(CultureInfo.InvariantCulture), project.Name,
         project.Description, project.OwnerId.ToString(CultureInfo.InvariantCulture), project.CreatedAtUtc, project.UpdatedAtUtc);
 }

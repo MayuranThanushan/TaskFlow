@@ -1,4 +1,4 @@
-import type { components } from './generated'
+import type { components, operations, paths } from './generated'
 import type { Profile } from './types'
 import type { TaskItem, TaskPatch, TaskStatusUpdate } from '../features/tasks/types'
 
@@ -17,4 +17,8 @@ export type ContractChecks = [
   Assert<Equal<TaskStatusUpdate['status'], 'ToDo' | 'InProgress' | 'Done'>>,
   Assert<Equal<components['schemas']['DashboardDto']['totalTasks'], number>>,
   Assert<Equal<components['schemas']['ApiProblem']['traceId'], string>>,
+  Assert<Equal<components['schemas']['WorkspaceDto']['id'], string>>,
+  Assert<Equal<components['schemas']['WorkspaceDto']['role'], 'Owner' | 'Admin' | 'Member' | 'Guest'>>,
+  Assert<Equal<operations['WorkspaceReads_Projects']['parameters']['path']['workspaceId'], string>>,
+  Assert<Equal<paths['/api/v2/workspaces/{workspaceId}/projects']['post'], undefined>>,
 ]

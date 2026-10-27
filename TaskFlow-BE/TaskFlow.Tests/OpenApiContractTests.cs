@@ -83,10 +83,10 @@ public class OpenApiContractTests
     {
         var live = await Live();
         var paths = live["paths"]!.AsObject();
-        Assert.Equal(17, paths.Count);
+        Assert.Equal(26, paths.Count);
         var operations = paths.SelectMany(p => p.Value!.AsObject().Where(o => new[] { "get", "post", "put", "patch", "delete" }.Contains(o.Key)).Select(o => (Path: p.Key, Method: o.Key, Operation: o.Value!))).ToList();
-        Assert.Equal(24, operations.Count);
-        Assert.Equal(24, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
+        Assert.Equal(33, operations.Count);
+        Assert.Equal(33, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
         foreach (var (path, method, operation) in operations)
         {
             var success = operation["responses"]!.AsObject().Where(r => r.Key.StartsWith('2')).ToList();

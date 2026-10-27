@@ -45,7 +45,7 @@ public sealed class ActivityService(TaskFlowDbContext database) : IActivityServi
         return id is not null && id.All(char.IsAsciiDigit) && long.TryParse(id, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) && parsed > 0 ? "user " + Id(parsed) : "a user";
     }
     private static string? Status(string? value) => value switch { "ToDo" => "To Do", "InProgress" => "In Progress", "Done" => "Completed", _ => null };
-    private static string Summary(ActivityLog activity) => activity.ActionType switch
+    internal static string Summary(ActivityLog activity) => activity.ActionType switch
     {
         ActivityAction.ProjectCreated => "Project created.", ActivityAction.ProjectUpdated => "Project updated.", ActivityAction.ProjectDeleted => "Project deleted.",
         ActivityAction.MemberAdded => "Added " + User(activity) + " to the project.", ActivityAction.MemberRemoved => "Removed " + User(activity) + " from the project.",

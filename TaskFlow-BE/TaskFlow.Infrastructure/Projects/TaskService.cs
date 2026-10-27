@@ -79,6 +79,6 @@ public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions
         return database.Tasks.AsNoTracking().Where(t => projects.Any(p => p.Id == t.ProjectId));
     }
     private static long Actor(long? actor) => actor is > 0 ? actor.Value : throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);
-    private static TaskDto Map(TaskItem t) => new(t.Id.ToString(CultureInfo.InvariantCulture), t.ProjectId.ToString(CultureInfo.InvariantCulture), t.Title, t.Description,
+    internal static TaskDto Map(TaskItem t) => new(t.Id.ToString(CultureInfo.InvariantCulture), t.ProjectId.ToString(CultureInfo.InvariantCulture), t.Title, t.Description,
         t.Status.ToString(), t.Priority.ToString(), t.AssigneeId?.ToString(CultureInfo.InvariantCulture), t.DueDateUtc, t.CreatedAtUtc, t.UpdatedAtUtc);
 }

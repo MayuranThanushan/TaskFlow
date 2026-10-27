@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<TaskFlow.Application.Features.Tasks.ITaskService, TaskService>();
         services.AddScoped<TaskFlow.Application.Features.Dashboard.IDashboardService, DashboardService>();
         services.AddScoped<TaskFlow.Application.Features.Activity.IActivityService, ActivityService>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceReads, TaskFlow.Infrastructure.Workspaces.WorkspaceReads>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();
