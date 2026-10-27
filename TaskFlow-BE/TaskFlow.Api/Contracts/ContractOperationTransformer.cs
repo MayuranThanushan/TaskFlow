@@ -38,9 +38,10 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             operation.Parameters.Add(new OpenApiParameter { Name = "X-CSRF-TOKEN", In = ParameterLocation.Header, Required = true,
                 Description = "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.", Schema = new OpenApiSchema { Type = JsonSchemaType.String, MinLength = 1 } });
         }
-        if (controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus")
+        if (controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus"
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateTask" or "Status")
         {
-            var bodyType = action.ActionName == "Update" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
+            var bodyType = action.ActionName is "Update" or "UpdateTask" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
             var schema = await context.GetOrCreateSchemaAsync(bodyType, null, cancellationToken);
             if (context.Document!.Components?.Schemas?.ContainsKey(bodyType.Name) != true) context.Document.AddComponent(bodyType.Name, schema);
             operation.RequestBody = new OpenApiRequestBody { Required = true, Content = new Dictionary<string, OpenApiMediaType>
@@ -71,7 +72,8 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)
                 ? "Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. " : "") +
-            (controller == typeof(WorkspaceReadsController) ? "Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; no v2 writes or production cutover yet. " : "") +
+            (controller == typeof(WorkspaceReadsController) ? "Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. " : "") +
+            (controller == typeof(WorkspaceWritesController) ? "Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. " : "") +
             (write ? "Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. " : "") +
             (health ? "Readiness 503 uses the health DTO, not Problem Details." : "Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.");
         var failures = new HashSet<int> { 500 };
@@ -80,10 +82,11 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             failures.Add(400);
             if (!anonymous || action.ActionName == "Login") failures.Add(401);
             if (controller == typeof(ProjectsController) && action.ActionName is "Get" or "Update" or "Delete"
-                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController) || controller == typeof(WorkspaceReadsController)) failures.Add(404);
+                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController) || controller == typeof(WorkspaceReadsController) || controller == typeof(WorkspaceWritesController)) failures.Add(404);
             if (controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
                 || controller == typeof(TasksController) && action.ActionName == "Delete"
                 || controller == typeof(ProjectMembersController) && action.ActionName != "List") failures.Add(403);
+            if (controller == typeof(WorkspaceWritesController)) { failures.Add(403); if (action.ActionName is "AddMember" or "RemoveMember") failures.Add(409); }
             if (controller == typeof(UsersController) || controller == typeof(AuthController) && action.ActionName == "Register"
                 || controller == typeof(ProjectMembersController) && action.ActionName != "List") failures.Add(409);
             if (controller == typeof(AuthController) && action.ActionName is "Login" or "Register") failures.Add(429);

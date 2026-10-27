@@ -117,6 +117,8 @@ public sealed class WorkspaceBackfillTests(MySqlFixture fixture)
         var backfill = new WorkspaceBackfill(database); var plan = await backfill.PlanAsync("snapshot");
         var unrelated = new Workspace { Name = "Separate company" };
         database.Workspaces.Add(unrelated); await database.SaveChangesAsync();
+        database.WorkspaceMemberships.Add(new WorkspaceMembership { WorkspaceId = unrelated.Id, UserId = owner.Id, Role = WorkspaceRole.Owner });
+        await database.SaveChangesAsync();
         project.WorkspaceId = unrelated.Id; await database.SaveChangesAsync();
         await Assert.ThrowsAsync<InvalidOperationException>(() => backfill.ApplyAsync(plan, true));
         Assert.Equal(unrelated.Id, (await database.Projects.AsNoTracking().SingleAsync(p => p.Id == project.Id)).WorkspaceId);

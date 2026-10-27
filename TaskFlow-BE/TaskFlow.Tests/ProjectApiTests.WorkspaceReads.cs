@@ -20,6 +20,7 @@ public sealed partial class ProjectApiTests
             new WorkspaceMembership { WorkspaceId = a.Id, UserId = host.Users[2].Id, Role = WorkspaceRole.Admin },
             new WorkspaceMembership { WorkspaceId = b.Id, UserId = host.Users[1].Id, Role = WorkspaceRole.Owner },
             new WorkspaceMembership { WorkspaceId = b.Id, UserId = host.Users[0].Id, Role = WorkspaceRole.Guest });
+        await db.SaveChangesAsync();
         var a1 = new Project { Name = "A first", OwnerId = host.Users[0].Id, WorkspaceId = a.Id };
         var a2 = new Project { Name = "A second", OwnerId = host.Users[0].Id, WorkspaceId = a.Id };
         var b1 = new Project { Name = "B shared", OwnerId = host.Users[1].Id, WorkspaceId = b.Id };
@@ -103,6 +104,8 @@ public sealed partial class ProjectApiTests
             await Problem(await shared.GetAsync(W(c.B) + suffix), HttpStatusCode.NotFound);
         Assert.Equal(1, (await Body(await shared.GetAsync("/api/v2/workspaces"))).GetProperty("totalCount").GetInt32());
         Assert.Equal(2, (await Body(await shared.GetAsync(W(c.A) + "/projects"))).GetProperty("totalCount").GetInt32());
+        db.ProjectMembers.Remove(await db.ProjectMembers.SingleAsync(m => m.ProjectId == c.B1.Id && m.UserId == host.Users[0].Id));
+        foreach (var task in await db.Tasks.Where(t => t.WorkspaceId == c.B.Id && t.AssigneeId == host.Users[0].Id).ToArrayAsync()) task.AssigneeId = null;
         db.WorkspaceMemberships.Remove(membership); await db.SaveChangesAsync();
         await Problem(await shared.GetAsync(W(c.B) + "/projects"), HttpStatusCode.NotFound);
     }
@@ -112,13 +115,11 @@ public sealed partial class ProjectApiTests
     {
         await using var host = new ProjectHost(fixture, true); await host.InitializeAsync(); var c = await SeedCompanies(host);
         using var user = await host.LoginAsync(0); await using var db = fixture.CreateContext();
-        var corruptTask = new TaskItem { ProjectId = c.A1.Id, WorkspaceId = c.B.Id, Title = "Wrong workspace canary" };
         var unscopedTask = new TaskItem { ProjectId = c.A1.Id, Title = "Unscoped canary" };
-        db.Tasks.AddRange(corruptTask, unscopedTask, new TaskItem { ProjectId = c.A1.Id, WorkspaceId = c.A.Id, Title = "Foreign assignee canary", AssigneeId = host.Users[1].Id });
-        db.ProjectMembers.Add(new ProjectMember { ProjectId = c.A1.Id, WorkspaceId = c.B.Id, UserId = host.Users[1].Id });
+        db.Tasks.AddRange(unscopedTask, new TaskItem { ProjectId = c.A1.Id, WorkspaceId = c.A.Id, Title = "Foreign assignee canary", AssigneeId = host.Users[1].Id });
+        db.ProjectMembers.Add(new ProjectMember { ProjectId = c.A1.Id, UserId = host.Users[1].Id });
         await db.SaveChangesAsync();
-        db.ActivityLogs.AddRange(new ActivityLog { ProjectId = c.A1.Id, WorkspaceId = c.B.Id, ActorUserId = host.Users[0].Id, ActionType = ActivityAction.TaskCreated },
-            new ActivityLog { ProjectId = c.A1.Id, WorkspaceId = c.A.Id, TaskId = c.TaskB.Id, ActorUserId = host.Users[0].Id, ActionType = ActivityAction.TaskCreated });
+        db.ActivityLogs.Add(new ActivityLog { ProjectId = c.A1.Id, ActorUserId = host.Users[0].Id, ActionType = ActivityAction.TaskCreated });
         await db.SaveChangesAsync();
         var tasks = await Body(await user.GetAsync(W(c.A) + "/projects/" + c.A1.Id + "/tasks"));
         Assert.Equal(1, tasks.GetProperty("totalCount").GetInt32()); Assert.DoesNotContain("canary", tasks.ToString());
@@ -126,24 +127,19 @@ public sealed partial class ProjectApiTests
         Assert.Equal(2, (await Body(await user.GetAsync(W(c.A) + "/dashboard"))).GetProperty("totalTasks").GetInt32());
         Assert.Equal(1, (await Body(await user.GetAsync(W(c.A) + "/projects/" + c.A1.Id + "/members"))).GetProperty("items").GetArrayLength());
         Assert.Equal(1, (await Body(await user.GetAsync(W(c.A) + "/activity"))).GetProperty("totalCount").GetInt32());
-        await Problem(await user.GetAsync(W(c.A) + "/tasks/" + corruptTask.Id), HttpStatusCode.NotFound);
         await Problem(await user.GetAsync(W(c.A) + "/tasks/" + unscopedTask.Id), HttpStatusCode.NotFound);
     }
 
     [MySqlFact]
-    public async Task CompanyOwnerCannotReadAnotherOwnersPrivateProjectAndUnmappedOwnerRowsFailClosed()
+    public async Task CompanyOwnerCannotReadAnotherOwnersPrivateProjectAndUnscopedRowsFailClosed()
     {
         await using var host = new ProjectHost(fixture, true); await host.InitializeAsync(); var c = await SeedCompanies(host);
         using var companyOwner = await host.LoginAsync(0); using var projectOwner = await host.LoginAsync(2);
         await using var db = fixture.CreateContext();
         var privateProject = new Project { WorkspaceId = c.A.Id, OwnerId = host.Users[2].Id, Name = "Admin-owned private canary" };
-        var inconsistentOwner = new Project { WorkspaceId = c.A.Id, OwnerId = host.Users[1].Id, Name = "Foreign owner canary" };
         var unscoped = new Project { OwnerId = host.Users[0].Id, Name = "Legacy unscoped canary" };
-        db.Projects.AddRange(privateProject, inconsistentOwner, unscoped); await db.SaveChangesAsync();
-        db.ProjectMembers.Add(new ProjectMember { WorkspaceId = c.A.Id, ProjectId = inconsistentOwner.Id, UserId = host.Users[0].Id });
-        await db.SaveChangesAsync();
+        db.Projects.AddRange(privateProject, unscoped); await db.SaveChangesAsync();
         await Problem(await companyOwner.GetAsync(W(c.A) + "/projects/" + privateProject.Id), HttpStatusCode.NotFound);
-        await Problem(await companyOwner.GetAsync(W(c.A) + "/projects/" + inconsistentOwner.Id), HttpStatusCode.NotFound);
         await Problem(await companyOwner.GetAsync(W(c.A) + "/projects/" + unscoped.Id), HttpStatusCode.NotFound);
         Assert.Equal(HttpStatusCode.OK, (await projectOwner.GetAsync(W(c.A) + "/projects/" + privateProject.Id)).StatusCode);
         var visible = await Body(await companyOwner.GetAsync(W(c.A) + "/projects"));
@@ -200,6 +196,6 @@ public sealed partial class ProjectApiTests
         Assert.Equal(0, (await Body(await user.GetAsync(W(c.B) + "/projects"))).GetProperty("totalCount").GetInt32());
         Assert.Equal(0, (await Body(await user.GetAsync(W(c.B) + "/activity"))).GetProperty("totalCount").GetInt32());
         Assert.Equal(0, (await Body(await user.GetAsync(W(c.B) + "/dashboard"))).GetProperty("totalTasks").GetInt32());
-        Assert.Equal(HttpStatusCode.MethodNotAllowed, (await host.MemberWriteAsync(user, HttpMethod.Post, W(c.B) + "/projects", new { name = "Cannot create in read-only preview" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await host.MemberWriteAsync(user, HttpMethod.Post, W(c.B) + "/projects", new { name = "Cannot create in read-only preview" })).StatusCode);
     }
 }

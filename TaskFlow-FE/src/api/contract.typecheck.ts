@@ -17,8 +17,9 @@ export type ContractChecks = [
   Assert<Equal<TaskStatusUpdate['status'], 'ToDo' | 'InProgress' | 'Done'>>,
   Assert<Equal<components['schemas']['DashboardDto']['totalTasks'], number>>,
   Assert<Equal<components['schemas']['ApiProblem']['traceId'], string>>,
+  Assert<Equal<keyof components['schemas']['ProjectWriteRequest'], 'name' | 'description'>>,
   Assert<Equal<components['schemas']['WorkspaceDto']['id'], string>>,
   Assert<Equal<components['schemas']['WorkspaceDto']['role'], 'Owner' | 'Admin' | 'Member' | 'Guest'>>,
   Assert<Equal<operations['WorkspaceReads_Projects']['parameters']['path']['workspaceId'], string>>,
-  Assert<Equal<paths['/api/v2/workspaces/{workspaceId}/projects']['post'], undefined>>,
+  Assert<Equal<paths['/api/v2/workspaces/{workspaceId}/projects']['post'], operations['WorkspaceWrites_CreateProject']>>,
 ]

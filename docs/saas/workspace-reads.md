@@ -1,6 +1,6 @@
 # Workspace-scoped read preview
 
-SaaS-009, 27 October 2026. Nine read-only v2 operations are implemented behind `WorkspaceReads:Enabled`, **false by default**. Current v1 behavior and frontend navigation remain unchanged. This is a staged backend preview, not the coordinated company-isolation rollout. Tenant writes, relational enforcement, company switching and lifecycle/role cutover remain pending.
+SaaS-009, 27 October 2026. Nine read-only v2 operations are implemented behind `WorkspaceReads:Enabled`, **false by default**. Current v1 behavior and frontend navigation remain unchanged. This is a staged backend preview, not the coordinated company-isolation rollout. SaaS-010 adds separately gated scoped writes and composite references; company switching, lifecycle/roles, mandatory scope and cutover remain pending.
 
 ## Routes and rollout
 
@@ -24,9 +24,9 @@ $env:WorkspaceReads__Enabled = 'true'
 dotnet ./TaskFlow.Api.dll
 ```
 
-Authentication/CSRF/global profile routes retain their current v1 contract and cookie transport settings. Anonymous preview requests require login (401). Authenticated requests to disabled preview routes receive 404 with no-store Problem Details. No v2 writes are exposed. The existing frontend continues to use v1 and has no company switcher yet.
+Authentication/CSRF/global profile routes retain their current v1 contract and cookie transport settings. Anonymous preview requests require login (401). Authenticated requests to disabled preview routes receive 404 with no-store Problem Details. SaaS-010 write routes require the additional default-off WorkspaceWrites flag. The existing frontend continues to use v1 and has no company switcher yet.
 
-The flag is a rollout control, not a substitute for authorization. **Do not enable a customer company pilot at this stage:** v1 project routes still use the legacy project policy and do not enforce workspace suspension. SaaS-010 through the matching UI/role cutover must close those paths and retire v1 data endpoints before claiming company isolation. No automatic v1-to-v2 redirect or default-company adapter is added.
+The flag is a rollout control, not a substitute for authorization. **Do not enable a customer company pilot at this stage:** v1 project routes still use the legacy project policy and do not enforce workspace suspension. The matching write/UI/role cutover must close those paths and retire v1 data endpoints before claiming company isolation. No automatic v1-to-v2 redirect or default-company adapter is added.
 
 ## Access and consistency rules
 
@@ -52,4 +52,4 @@ Nine live-MySQL HTTP cases exercise default-off/anonymous behavior, one identity
 
 The published HTTPS rehearsal runs current real-browser journeys with the flag off, backfills that disposable snapshot, enables the preview, then checks real-session workspace discovery and every reader plus outsider/invalid-filter denials. See [evidence](../evidence/saas009-reads.json). These are local results, not hosted production evidence or the full future SaaS-016 isolation acceptance matrix.
 
-Next: SaaS-010 tenant-aware writes and composite references. Keep the [coordinated cutover checklist](migration-cutover.md), role lifecycle, frontend account/company switching, final backfill reconciliation and hosted release gates open.
+SaaS-010 now provides [scoped writes and composite references](workspace-writes.md). Next: company navigation and resource keys under SaaS-011. Keep the [coordinated cutover checklist](migration-cutover.md), role lifecycle, frontend account/company switching, final backfill reconciliation and hosted release gates open.

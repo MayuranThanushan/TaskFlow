@@ -69,3 +69,5 @@ Nine MySQL cases cover role/access/deleted-history preservation, orphan/historic
 The separate published-app rehearsal restores a populated original-schema backup, applies expansion, runs offline plan/apply/verify/retry, exercises real browser mutations, proves that subsequent v1 writes invalidate the old plan, reconciles again, and backs up/restores the expanded result. Only disposable local schemas are used. See [evidence](../evidence/saas008-workspaces.json) for measured outcomes and remaining gates.
 
 SaaS-009 now provides a [default-off scoped read preview](workspace-reads.md). Scope enforcement for writes, composite references and the coordinated customer cutover remains pending; the expansion stage is still nullable.
+
+SaaS-010 adds [scoped writes and six composite FK constraints](workspace-writes.md). The SQL constraints enforce non-null reference tuples, while nullable legacy compatibility remains. Mandatory scope, v1 retirement and matching UI/role cutover remain pending.

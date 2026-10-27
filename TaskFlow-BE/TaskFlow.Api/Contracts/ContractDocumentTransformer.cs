@@ -8,8 +8,8 @@ public sealed class ContractDocumentTransformer : IOpenApiDocumentTransformer
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
         document.Info.Title = "TaskFlow API";
-        document.Info.Version = "v1+v2-read-preview";
-        document.Info.Description = "Implemented v1 project-based MVP plus opt-in read-only workspace v2 preview (WorkspaceReads:Enabled, default false). Workspace writes, UI cutover and expectedVersion remain pending. Session cookies are HttpOnly; CSRF requires cookie plus header. Local versus Strict security alternatives describe deployment modes, not interchangeable cookies accepted by one deployment. Transport:RequireHttps selects cookie names; public HTTPS is the hosted default. Unknown/repeated collection query parameters are rejected case-insensitively; Enums and dynamic task PATCH field names are case-sensitive; typed body binding accepts name casing variants.";
+        document.Info.Version = "v1+v2-preview";
+        document.Info.Description = "Implemented v1 project-based MVP plus opt-in workspace v2 read/write preview (WorkspaceReads:Enabled and WorkspaceWrites:Enabled, both default false). UI cutover, lifecycle roles and expectedVersion remain pending. Session cookies are HttpOnly; CSRF requires cookie plus header. Local versus Strict security alternatives describe deployment modes, not interchangeable cookies accepted by one deployment. Transport:RequireHttps selects cookie names; public HTTPS is the hosted default. Unknown/repeated collection query parameters are rejected case-insensitively; Enums and dynamic task PATCH field names are case-sensitive; typed body binding accepts name casing variants.";
         document.Servers = [new OpenApiServer { Url = "/" }];
         document.Components ??= new OpenApiComponents();
         document.Components.Schemas?.Remove(nameof(System.Text.Json.JsonElement));

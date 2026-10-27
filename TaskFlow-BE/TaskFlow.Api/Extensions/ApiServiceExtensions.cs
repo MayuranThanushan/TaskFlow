@@ -12,6 +12,7 @@ public static class ApiServiceExtensions
     public static IServiceCollection AddApiFoundation(this IServiceCollection services)
     {
         services.AddScoped<WorkspaceReadFilter>();
+        services.AddScoped<WorkspaceWriteFilter>();
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
             ProblemResponses.Enrich(context.HttpContext, context.ProblemDetails));
         services.AddExceptionHandler<GlobalExceptionHandler>();

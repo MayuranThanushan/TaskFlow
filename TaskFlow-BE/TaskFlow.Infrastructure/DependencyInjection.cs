@@ -42,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();
         services.AddScoped<IProjectTransactions, ProjectTransactions>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceTransactions, ProjectTransactions>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceWrites, TaskFlow.Infrastructure.Workspaces.WorkspaceWrites>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddSingleton<UnknownUserPasswordCheck>();
         return services;

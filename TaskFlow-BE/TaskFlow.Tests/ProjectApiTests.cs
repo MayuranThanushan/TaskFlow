@@ -326,13 +326,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         public List<ApplicationUser> Users { get; } = [];
         public FixedClock Clock { get; } = new();
         public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors) : this(fixture, false, interceptors) { }
-        public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors)
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors) : this(fixture, workspaceReads, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString() }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));

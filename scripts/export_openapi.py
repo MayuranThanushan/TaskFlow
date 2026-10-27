@@ -8,11 +8,13 @@ from urllib.request import urlopen
 
 EXPECTED = {
     "/api/v2/workspaces": {"get"},
-    "/api/v2/workspaces/{workspaceId}/projects": {"get"},
-    "/api/v2/workspaces/{workspaceId}/projects/{projectId}": {"get"},
-    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks": {"get"},
-    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}": {"get"},
-    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members": {"get"},
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/status": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}": {"delete"},
+    "/api/v2/workspaces/{workspaceId}/projects": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}": {"get", "put", "delete"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}": {"get", "patch", "delete"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members": {"get", "post"},
     "/api/v2/workspaces/{workspaceId}/projects/{projectId}/activity": {"get"},
     "/api/v2/workspaces/{workspaceId}/activity": {"get"},
     "/api/v2/workspaces/{workspaceId}/dashboard": {"get"},
