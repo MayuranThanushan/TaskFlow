@@ -35,7 +35,7 @@ public sealed class MemberConfiguration : IEntityTypeConfiguration<ProjectMember
 {
     public void Configure(EntityTypeBuilder<ProjectMember> builder)
     {
-        builder.ToTable("ProjectMembers", table => table.HasCheckConstraint("CK_ProjectMembers_Role", "`Role` = 'Member'"));
+        builder.ToTable("ProjectMembers", table => table.HasCheckConstraint("CK_ProjectMembers_Role", "`Role` IN ('Member','Editor','Viewer')"));
         builder.HasKey(member => new { member.ProjectId, member.UserId });
         builder.HasOne<Workspace>().WithMany().HasForeignKey(member => member.WorkspaceId);
         builder.HasIndex(member => new { member.UserId, member.ProjectId });
@@ -78,7 +78,7 @@ public sealed class ActivityConfiguration : IEntityTypeConfiguration<ActivityLog
     public void Configure(EntityTypeBuilder<ActivityLog> builder)
     {
         builder.ToTable("ActivityLogs", table => table.HasCheckConstraint("CK_ActivityLogs_ActionType",
-            "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted')"));
+            "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred')"));
         builder.HasKey(activity => activity.Id);
         builder.HasOne<Workspace>().WithMany().HasForeignKey(activity => activity.WorkspaceId);
         builder.Property(activity => activity.ActionType).HasConversion<string>().HasMaxLength(50);

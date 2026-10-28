@@ -34,14 +34,14 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
         && database.WorkspaceMemberships.Any(m => m.WorkspaceId == context.WorkspaceId && m.UserId == context.ActorId && m.State == WorkspaceMembershipState.Active)
         && database.WorkspaceMemberships.Any(m => m.WorkspaceId == context.WorkspaceId && m.UserId == p.OwnerId)
         && (p.OwnerId == context.ActorId || database.ProjectMembers.Any(m => m.WorkspaceId == context.WorkspaceId
-            && m.ProjectId == p.Id && m.UserId == context.ActorId && m.Role == MembershipRole.Member)));
+            && m.ProjectId == p.Id && m.UserId == context.ActorId && m.RevokedAtUtc == null)));
     private IQueryable<TaskItem> Tasks(WorkspaceReadContext context)
     {
         var projects = Projects(context);
         return database.Tasks.AsNoTracking().Where(t => t.WorkspaceId == context.WorkspaceId && t.DeletedAtUtc == null
             && t.Project.DeletedAtUtc == null && projects.Any(p => p.Id == t.ProjectId)
             && (t.AssigneeId == null || database.WorkspaceMemberships.Any(m => m.WorkspaceId == context.WorkspaceId && m.UserId == t.AssigneeId)
-                && (t.Project.OwnerId == t.AssigneeId || database.ProjectMembers.Any(m => m.WorkspaceId == context.WorkspaceId && m.ProjectId == t.ProjectId && m.UserId == t.AssigneeId))));
+                && (t.Project.OwnerId == t.AssigneeId || database.ProjectMembers.Any(m => m.WorkspaceId == context.WorkspaceId && m.ProjectId == t.ProjectId && m.UserId == t.AssigneeId && m.RevokedAtUtc == null && m.Role != MembershipRole.Viewer))));
     }
     private async Task<T> Read<T>(WorkspaceReadContext context, Func<Task<T>> query, CancellationToken token)
     {
@@ -130,11 +130,11 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
         var rows = await (from m in database.WorkspaceMemberships.AsNoTracking()
                           join u in database.Users.AsNoTracking() on m.UserId equals u.Id
                           where m.WorkspaceId == context.WorkspaceId && m.State == WorkspaceMembershipState.Active
-                              && (u.Id == project.OwnerId || database.ProjectMembers.Any(pm => pm.WorkspaceId == context.WorkspaceId && pm.ProjectId == projectId && pm.UserId == u.Id))
+                              && (u.Id == project.OwnerId || database.ProjectMembers.Any(pm => pm.WorkspaceId == context.WorkspaceId && pm.ProjectId == projectId && pm.UserId == u.Id && pm.RevokedAtUtc == null))
                           orderby u.Id
-                          select new { u.Id, u.DisplayName, JoinedAtUtc = u.Id == project.OwnerId ? project.CreatedAtUtc : database.ProjectMembers.Where(pm => pm.WorkspaceId == context.WorkspaceId && pm.ProjectId == projectId && pm.UserId == u.Id).Select(pm => pm.JoinedAtUtc).First() }).ToArrayAsync(token);
+                          select new { u.Id, u.DisplayName, Role = database.ProjectMembers.Where(pm => pm.WorkspaceId == context.WorkspaceId && pm.ProjectId == projectId && pm.UserId == u.Id).Select(pm => pm.Role).FirstOrDefault(), JoinedAtUtc = u.Id == project.OwnerId ? project.CreatedAtUtc : database.ProjectMembers.Where(pm => pm.WorkspaceId == context.WorkspaceId && pm.ProjectId == projectId && pm.UserId == u.Id && pm.RevokedAtUtc == null).Select(pm => pm.JoinedAtUtc).First() }).ToArrayAsync(token);
         return new ProjectMemberList(rows.OrderBy(r => r.Id == project.OwnerId ? 0 : 1).Select(r => new ProjectMemberDto(Id(r.Id), r.DisplayName,
-            r.Id == project.OwnerId ? "Owner" : "Member", r.Id == project.OwnerId ? project.CreatedAtUtc : r.JoinedAtUtc)).ToArray());
+            r.Id == project.OwnerId ? "Owner" : r.Role.ToString(), r.Id == project.OwnerId ? project.CreatedAtUtc : r.JoinedAtUtc)).ToArray());
     }, token);
     public Task<ActivityPage> ActivityAsync(WorkspaceReadContext context, long? projectId, ActivityOptions options, CancellationToken token = default) => Read(context, async () =>
     {

@@ -7,10 +7,17 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces/{workspaceId}/members": {"get"},
+    "/api/v2/workspaces/{workspaceId}/audit": {"get"},
+    "/api/v2/workspaces/{workspaceId}/members/{userId}/role": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/members/{userId}/state": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/leave": {"post"},
+    "/api/v2/workspaces/{workspaceId}/ownership": {"post"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/ownership": {"post"},
     "/api/v2/workspaces/{workspaceId}": {"get"},
     "/api/v2/workspaces": {"get", "post"},
     "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/status": {"patch"},
-    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}": {"delete"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}": {"delete", "put"},
     "/api/v2/workspaces/{workspaceId}/projects": {"get", "post"},
     "/api/v2/workspaces/{workspaceId}/projects/{projectId}": {"get", "put", "delete"},
     "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks": {"get", "post"},

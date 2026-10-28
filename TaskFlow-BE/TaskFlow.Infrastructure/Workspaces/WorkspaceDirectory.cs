@@ -22,6 +22,8 @@ public sealed class WorkspaceDirectory(TaskFlowDbContext database) : IWorkspaceD
             Role = WorkspaceRole.Owner, State = WorkspaceMembershipState.Active
         });
         await database.SaveChangesAsync(token);
+        database.WorkspaceAuditLogs.Add(new WorkspaceAuditLog { WorkspaceId = workspace.Id, ActorUserId = actorId, TargetUserId = actorId, Action = "CompanyCreated", ToRole = "Owner" });
+        await database.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
         return new(workspace.Id.ToString(CultureInfo.InvariantCulture), workspace.Name, WorkspaceRole.Owner.ToString());
     }

@@ -327,13 +327,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         public FixedClock Clock { get; } = new();
         public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors) : this(fixture, false, interceptors) { }
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors) : this(fixture, workspaceReads, false, interceptors) { }
-        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, params IInterceptor[] interceptors)
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, params IInterceptor[] interceptors) : this(fixture, workspaceReads, workspaceWrites, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString() }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -388,11 +389,13 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await factory.DisposeAsync(); await using var database = fixture.CreateContext(); var ids = Users.Select(user => user.Id).ToArray();
             var projects = await database.Projects.IgnoreQueryFilters().Where(project => ids.Contains(project.OwnerId)).Select(project => project.Id).ToArrayAsync();
             await using var transaction = await database.Database.BeginTransactionAsync();
+            await database.WorkspaceAuditLogs.Where(a => ids.Contains(a.ActorUserId) || ids.Contains(a.TargetUserId)).ExecuteDeleteAsync();
             await database.ActivityLogs.IgnoreQueryFilters().Where(activity => projects.Contains(activity.ProjectId)).ExecuteDeleteAsync();
             await database.Tasks.IgnoreQueryFilters().Where(task => projects.Contains(task.ProjectId)).ExecuteDeleteAsync();
             await database.ProjectMembers.IgnoreQueryFilters().Where(member => projects.Contains(member.ProjectId)).ExecuteDeleteAsync();
             await database.Projects.IgnoreQueryFilters().Where(project => projects.Contains(project.Id)).ExecuteDeleteAsync();
             var workspaces = await database.Workspaces.Where(w => (w.LegacyOwnerId != null && ids.Contains(w.LegacyOwnerId.Value)) || database.WorkspaceMemberships.Any(m => m.WorkspaceId == w.Id && ids.Contains(m.UserId) && m.Role == WorkspaceRole.Owner)).Select(w => w.Id).ToArrayAsync();
+            await database.WorkspaceAuditLogs.Where(a => workspaces.Contains(a.WorkspaceId)).ExecuteDeleteAsync();
             await database.WorkspaceMemberships.Where(m => workspaces.Contains(m.WorkspaceId)).ExecuteDeleteAsync();
             await database.Workspaces.Where(w => workspaces.Contains(w.Id)).ExecuteDeleteAsync();
             await database.Users.Where(user => ids.Contains(user.Id)).ExecuteDeleteAsync(); await transaction.CommitAsync();

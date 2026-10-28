@@ -9,6 +9,7 @@ namespace TaskFlow.Infrastructure.Persistence;
 public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock)
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
+    public DbSet<WorkspaceAuditLog> WorkspaceAuditLogs => Set<WorkspaceAuditLog>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
     public DbSet<Project> Projects => Set<Project>();
@@ -48,12 +49,13 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         var now = clock.GetUtcNow().UtcDateTime;
         foreach (var entry in ChangeTracker.Entries().ToList())
         {
-            if (entry.Entity is ActivityLog && entry.State is EntityState.Modified or EntityState.Deleted)
+            if (entry.Entity is (ActivityLog or WorkspaceAuditLog) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)
                 throw new InvalidOperationException("Projects and tasks require explicit soft deletion.");
             if (entry.State is not (EntityState.Added or EntityState.Modified)) continue;
 
+            if (entry.Entity is WorkspaceAuditLog audit && entry.State == EntityState.Added) audit.CreatedAtUtc = now;
             switch (entry.Entity)
             {
                 case Workspace workspace:

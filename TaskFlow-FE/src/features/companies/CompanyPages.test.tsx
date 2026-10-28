@@ -15,7 +15,7 @@ function Location() {
 function setup(path: string, enabled = true) {
   const auth = server(true)
   const state = { calls: [] as InternalAxiosRequestConfig[], listWait: null as Promise<void> | null, csrfWait: null as Promise<void> | null, unavailable: false }
-  const companies = [{ id: '1', name: 'Alpha', role: 'Owner' }, { id: '2', name: 'Beta', role: 'Guest' }]
+  const companies = [{ id: '1', name: 'Alpha', role: 'Owner' }, { id: '2', name: 'Beta', role: 'Member' }]
   const client = createApiClient(async c => {
     state.calls.push(c)
     if (c.url === '/auth/csrf') { await state.csrfWait; return auth.adapter(c) }

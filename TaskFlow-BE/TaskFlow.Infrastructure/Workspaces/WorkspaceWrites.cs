@@ -26,10 +26,14 @@ public sealed class WorkspaceWrites(IWorkspaceTransactions transactions, TimePro
         await transactions.ExecuteAsync(context, projectId, ProjectOperation.ManageProject, (scope, _) =>
         { scope.Project.DeletedAtUtc = clock.GetUtcNow().UtcDateTime; scope.Record(ActivityAction.ProjectDeleted); return Task.FromResult(true); }, token);
 
-    public async Task<ProjectMemberDto> AddMemberAsync(WorkspaceWriteContext context, long projectId, long userId, CancellationToken token = default)
+    public async Task<ProjectMemberDto> AddMemberAsync(WorkspaceWriteContext context, long projectId, long userId, MembershipRole role, CancellationToken token = default)
     {
-        var result = await transactions.ExecuteAsync(context, projectId, ProjectOperation.ManageMembers, (scope, ct) => scope.AddMemberAsync(userId, ct), token);
-        return new(result.Member.UserId.ToString(CultureInfo.InvariantCulture), result.DisplayName, "Member", result.Member.JoinedAtUtc);
+        var result = await transactions.ExecuteAsync(context, projectId, ProjectOperation.ManageMembers, async (scope, ct) =>
+        {
+            if (!Enum.IsDefined(role)) throw new ArgumentException("Invalid project role.");
+            var added = await scope.AddMemberAsync(userId, ct); added.Member.Role = role; return added;
+        }, token);
+        return new(result.Member.UserId.ToString(CultureInfo.InvariantCulture), result.DisplayName, result.Member.Role.ToString(), result.Member.JoinedAtUtc);
     }
     public async Task RemoveMemberAsync(WorkspaceWriteContext context, long projectId, long userId, CancellationToken token = default) =>
         await transactions.ExecuteAsync(context, projectId, ProjectOperation.ManageMembers, async (scope, ct) => { await scope.RemoveMemberAsync(userId, ct); return true; }, token);

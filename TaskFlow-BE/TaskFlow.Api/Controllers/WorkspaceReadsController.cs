@@ -119,8 +119,12 @@ public sealed class WorkspaceReadsController(IWorkspaceReads reads) : Controller
     }
 }
 
-public sealed class WorkspaceListQuery
+public sealed class WorkspaceListQuery : IValidatableObject
 {
     [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
     [Range(1, 100)] public int PageSize { get; set; } = 20;
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if ((long)(Page - 1) * PageSize > int.MaxValue) yield return new ValidationResult("Page offset is too large.", [nameof(Page)]);
+    }
 }

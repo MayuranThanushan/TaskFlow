@@ -14,7 +14,7 @@ namespace TaskFlow.Api.Controllers;
 [Authorize, ApiController, Route("api/v2/workspaces/{workspaceId}")]
 [ServiceFilter(typeof(WorkspaceWriteFilter), Order = 500)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspaceDirectory directory) : ControllerBase
+public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspaceDirectory directory, IConfiguration config) : ControllerBase
 {
     private static long Id(string? value) => WorkspaceReadFilter.TryId(value, out var id) ? id : throw new ProjectAccessException(ProjectAccessDecision.NotFound);
     private WorkspaceWriteContext Scope(string workspaceId) => new(Id(User.FindFirstValue(ClaimTypes.NameIdentifier)), Id(workspaceId));
@@ -37,11 +37,16 @@ public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspac
     public async Task<IActionResult> DeleteProject(string workspaceId, string projectId, CancellationToken token)
     { await writes.DeleteProjectAsync(Scope(workspaceId), Id(projectId), token); return NoContent(); }
     [HttpPost("projects/{projectId}/members"), ProducesResponseType<ProjectMemberDto>(201)]
-    public async Task<IActionResult> AddMember(string workspaceId, string projectId, AddProjectMemberRequest request, CancellationToken token)
+    public async Task<IActionResult> AddMember(string workspaceId, string projectId, WorkspaceProjectMemberRequest request, CancellationToken token)
     {
         if (!WorkspaceReadFilter.TryId(request.UserId, out var user)) ModelState.AddModelError("userId", "Supply a positive decimal string ID.");
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
-        var member = await writes.AddMemberAsync(Scope(workspaceId), Id(projectId), user, token);
+        if (!Enum.TryParse<TaskFlow.Domain.Entities.MembershipRole>(request.Role, false, out var role) || !Enum.IsDefined(role) || role.ToString() != request.Role)
+            ModelState.AddModelError("role", "Choose Editor or Viewer.");
+        if (role != TaskFlow.Domain.Entities.MembershipRole.Member && !config.GetValue("WorkspaceLifecycle:Enabled", false))
+            ModelState.AddModelError("role", "Project roles require the lifecycle preview.");
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        var member = await writes.AddMemberAsync(Scope(workspaceId), Id(projectId), user, role, token);
         return Created("/api/v2/workspaces/" + Id(workspaceId) + "/projects/" + Id(projectId) + "/members", member);
     }
     [HttpDelete("projects/{projectId}/members/{userId}"), ProducesResponseType(204)]
@@ -80,4 +85,10 @@ public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspac
 public sealed class WorkspaceCreateRequest
 {
     [Required, StringLength(150)] public string Name { get; set; } = "";
+}
+
+public sealed class WorkspaceProjectMemberRequest
+{
+    [Required] public string UserId { get; set; } = "";
+    public string Role { get; set; } = "Member";
 }

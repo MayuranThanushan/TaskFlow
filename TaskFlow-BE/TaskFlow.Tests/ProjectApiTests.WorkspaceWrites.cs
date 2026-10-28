@@ -111,7 +111,7 @@ public sealed partial class ProjectApiTests
             Assert.Equal(removalFirst ? HttpStatusCode.NoContent : HttpStatusCode.OK, result.First.StatusCode);
             Assert.Equal(removalFirst ? HttpStatusCode.BadRequest : HttpStatusCode.NoContent, result.Second.StatusCode);
             await using var check = fixture.CreateContext(); Assert.Null((await check.Tasks.SingleAsync(t => t.Id == c.TaskB.Id)).AssigneeId);
-            Assert.False(await check.ProjectMembers.AnyAsync(m => m.ProjectId == c.B1.Id && m.UserId == host.Users[0].Id));
+            Assert.False(await check.ProjectMembers.AnyAsync(m => m.ProjectId == c.B1.Id && m.UserId == host.Users[0].Id && m.RevokedAtUtc == null));
             await Problem(await host.MemberWriteAsync(member, HttpMethod.Post, project + "/tasks", new { title = "Removed member" }), HttpStatusCode.NotFound);
         }
     }
@@ -126,7 +126,7 @@ public sealed partial class ProjectApiTests
             () => host.MemberWriteAsync(writer, HttpMethod.Patch, task, new { title = "After rollback" }));
         await Problem(result.First, HttpStatusCode.InternalServerError); Assert.Equal(HttpStatusCode.OK, result.Second.StatusCode);
         await using var db = fixture.CreateContext(); Assert.Equal(host.Users[0].Id, (await db.Tasks.SingleAsync(t => t.Id == c.TaskB.Id)).AssigneeId);
-        Assert.True(await db.ProjectMembers.AnyAsync(m => m.ProjectId == c.B1.Id && m.UserId == host.Users[0].Id));
+        Assert.True(await db.ProjectMembers.AnyAsync(m => m.ProjectId == c.B1.Id && m.UserId == host.Users[0].Id && m.RevokedAtUtc == null));
         Assert.False(await db.ActivityLogs.AnyAsync(a => a.ProjectId == c.B1.Id && (a.ActionType == ActivityAction.MemberRemoved || a.ActionType == ActivityAction.TaskUnassigned)));
     }
 

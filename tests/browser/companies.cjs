@@ -56,7 +56,7 @@ const { launch, origin, artifact, submitLogin } = require('./support.cjs');
     await page.goto(projectUrl); await page.getByRole('heading', { name: 'Alpha project', exact: true }).waitFor();
     await page.getByRole('link', { name: 'Switch company', exact: true }).click();
     await page.getByRole('link', { name: 'Open Browser Beta', exact: true }).click();
-    await page.getByRole('link', { name: 'Projects', exact: true }).click();
+    await page.getByRole('link', { name: 'Projects', exact: true }).first().click();
     await page.getByText('0 projects', { exact: true }).waitFor();
     assert.equal(await page.getByText('Alpha project', { exact: true }).count(), 0);
     await scan('empty-projects');

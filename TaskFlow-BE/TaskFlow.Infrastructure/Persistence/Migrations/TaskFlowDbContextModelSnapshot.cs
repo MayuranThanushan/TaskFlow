@@ -187,7 +187,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("ActivityLogs", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ActivityLogs_ActionType", "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted')");
+                            t.HasCheckConstraint("CK_ActivityLogs_ActionType", "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred')");
                         });
                 });
 
@@ -244,6 +244,9 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("JoinedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -260,7 +263,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("ProjectMembers", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ProjectMembers_Role", "`Role` = 'Member'");
+                            t.HasCheckConstraint("CK_ProjectMembers_Role", "`Role` IN ('Member','Editor','Viewer')");
                         });
                 });
 
@@ -363,6 +366,51 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceAuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<long>("ActorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("FromRole")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<long?>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TargetUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ToRole")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.HasIndex("WorkspaceId", "CreatedAtUtc", "Id");
+
+                    b.ToTable("WorkspaceAuditLogs", (string)null);
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceMembership", b =>
                 {
                     b.Property<long>("WorkspaceId")
@@ -392,7 +440,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_WorkspaceMemberships_Role", "`Role` IN ('Owner','Admin','Member','Guest')");
 
-                            t.HasCheckConstraint("CK_WorkspaceMemberships_State", "`State` IN ('Active','Suspended')");
+                            t.HasCheckConstraint("CK_WorkspaceMemberships_State", "`State` IN ('Active','Suspended','Removed')");
                         });
                 });
 
@@ -618,6 +666,27 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("LegacyOwnerId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceAuditLog", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceMembership", b =>

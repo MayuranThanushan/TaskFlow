@@ -1,3 +1,5 @@
+import { GovernanceAction } from '../companies/GovernanceAction'
+import { useCompany } from '../companies/company-context'
 import { Confirmation } from '../../components/Feedback'
 import type { components } from '../../api/generated'
 import type { ProjectMember, ProjectMemberList } from './types'
@@ -8,7 +10,10 @@ import { asApiError } from '../../api/client'
 import { useApiResource } from '../../hooks/use-api-resource'
 
 type Member = ProjectMember
-export function ProjectMembers({ client, projectId, owner }: { client: ApiClient; projectId: string; owner: boolean }) {
+export function ProjectMembers({ client, projectId, owner, onAccessChanged }: { client: ApiClient; projectId: string; owner: boolean; onAccessChanged?: () => void }) {
+  const { lifecycleEnabled } = useCompany()
+  const [role, setRole] = useState<'Editor' | 'Viewer'>('Editor')
+  const [newOwner, setNewOwner] = useState('')
   const path = '/projects/' + encodeURIComponent(projectId) + '/members'
   const { result, retry } = useApiResource<ProjectMemberList>(client, path)
   const [userId, setUserId] = useState('')
@@ -27,7 +32,7 @@ export function ProjectMembers({ client, projectId, owner }: { client: ApiClient
     }
     lock.current = true; setPending(true); setError(''); setNotice('')
     try {
-      await client.request({ url: member ? path + '/' + encodeURIComponent(member.userId) : path, method: member ? 'delete' : 'post', ...(member ? {} : { data: { userId } satisfies components['schemas']['AddProjectMemberRequest'] }) })
+      await client.request({ url: member ? path + '/' + encodeURIComponent(member.userId) : path, method: member ? 'delete' : 'post', ...(member ? {} : { data: { userId, ...(lifecycleEnabled ? { role } : {}) } satisfies components['schemas']['WorkspaceProjectMemberRequest'] }) })
       if (!alive.current) return
       setConfirm(null); if (!member) setUserId('')
       setNotice(member ? 'Member removed. Their active tasks are now unassigned.' : 'Member added.')
@@ -46,17 +51,25 @@ export function ProjectMembers({ client, projectId, owner }: { client: ApiClient
     {error && <p role="alert" className="error-summary">{error}</p>}
     {result.status === 'loading' && <p role="status">Loading members...</p>}
     {result.status === 'error' && <div><p role="alert">{result.error.message}</p><button className="button subtle" onClick={retry}>Refresh members</button></div>}
-    {result.status === 'ready' && <ul className="member-list">{result.data.items.map(member => <li key={member.userId}>
-      <div><strong>{member.displayName}</strong><span>{member.role} | User ID: {member.userId}</span><span>Joined {new Date(member.joinedAtUtc).toLocaleDateString()}</span></div>
-      {owner && member.role === 'Member' && <button className="button subtle" disabled={pending || !!confirm} onClick={() => { setError(''); setConfirm(member) }}>Remove {member.displayName}</button>}
+    {result.status === 'ready' && <ul className="member-list">{result.data.items.map(member => <li className={lifecycleEnabled ? "governance-member" : undefined} key={member.userId}>
+      <div><strong>{member.displayName}</strong><span>{lifecycleEnabled && member.role === 'Member' ? 'Editor' : member.role} | User ID: {member.userId}</span><span>Joined {new Date(member.joinedAtUtc).toLocaleDateString()}</span></div>
+      {owner && member.role !== 'Owner' && <button className="button subtle" disabled={pending || !!confirm} onClick={() => { setError(''); setConfirm(member) }}>Remove {member.displayName}</button>}
+      {owner && lifecycleEnabled && member.role !== 'Owner' && <ProjectRoleControl client={client} path={path + '/' + member.userId} member={member} refresh={retry} />}
     </li>)}</ul>}
     {owner && <>
       {confirm && <Confirmation key={confirm.userId} id="remove-member-heading" headingLevel={3} title={<>Remove {confirm.displayName}?</>} pending={pending} cancelLabel="Keep member" confirmLabel="Confirm removal" pendingLabel="Removing member..." onCancel={dismiss} onConfirm={() => void mutate(confirm)}><p>They will lose project access. Their active tasks will become unassigned.</p></Confirmation>}
       <form className="member-add" onSubmit={(event: FormEvent) => { event.preventDefault(); void mutate() }}>
         <label htmlFor="member-user-id">Existing user ID</label><p id="member-id-hint" className="field-hint">Ask your teammate for their account ID. New members can view this project and work on its tasks.</p>
         <input ref={input} id="member-user-id" inputMode="numeric" maxLength={19} aria-describedby="member-id-hint" value={userId} disabled={pending || !!confirm} onChange={event => setUserId(event.target.value)} />
+        {lifecycleEnabled && <div><label htmlFor="member-project-role">Project access</label><select id="member-project-role" value={role} onChange={e => setRole(e.target.value as typeof role)}><option>Editor</option><option>Viewer</option></select></div>}
         <button className="button primary" disabled={pending || !!confirm} type="submit">{pending && !confirm ? 'Adding member...' : 'Add member'}</button>
       </form>
+      {lifecycleEnabled && <GovernanceAction client={client} path={'/projects/' + projectId + '/ownership'} method="post" title="Transfer project ownership" data={{ userId: newOwner }} passwordRequired description="The selected active non-Guest company member becomes project Owner. You remain an Editor. Company administration alone never grants private-project access." onSuccess={() => { retry(); onAccessChanged?.() }}><label>New project owner ID<input required inputMode="numeric" pattern="[1-9][0-9]*" maxLength={19} value={newOwner} onChange={e => setNewOwner(e.target.value)} /></label></GovernanceAction>}
     </>}
   </section>
+}
+
+function ProjectRoleControl({ client, path, member, refresh }: { client: ApiClient; path: string; member: Member; refresh: () => void }) {
+  const [role, setRole] = useState(member.role === 'Viewer' ? 'Viewer' : 'Editor')
+  return <GovernanceAction client={client} path={path} method="put" title={'Change project access for ' + member.displayName} data={{ role }} description={'Change access to ' + role + '. Viewers can read but cannot edit tasks or receive assignments. Downgrading clears active assignments.'} onSuccess={refresh}><label>Project role<select value={role} onChange={e => setRole(e.target.value)}><option>Editor</option><option>Viewer</option></select></label></GovernanceAction>
 }

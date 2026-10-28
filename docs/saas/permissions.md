@@ -1,6 +1,6 @@
 # Company and private-project permission contract
 
-Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); future implementation, not current authorization behavior.
+Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); implemented for the default-off scoped lifecycle preview in [SaaS-012](workspace-lifecycle.md). The matrix remains the target capability contract. Company settings, custody recovery, billing/closure, invitations and MFA/SSO remain future work. Legacy routes are closed when lifecycle is enabled.
 
 All permissions require an authenticated global account and active membership in the addressed workspace. Suspension takes precedence over any project role. Missing membership means no company access. Roles in different companies never combine. No endpoint accepts a client-supplied effective role.
 

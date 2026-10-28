@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003, 25 October 2026. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 read/write preview: 29 paths / 44 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003, 25 October 2026. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 read/write preview: 36 paths / 52 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -36,7 +36,7 @@ npm run check --prefix tools/api-contracts
 npm run typecheck --prefix TaskFlow-FE
 ```
 
-Four backend contract tests compare the complete live document with the checked-in snapshot (object key order ignored), verify 44 uniquely named operations and security/error metadata, and check key schema invariants. Semantic route/type/status/query/security changes fail. Frontend CI installs the isolated locked tool and checks generated output before typechecking consumers. Compile-time assertions reject numeric IDs, changed status unions and incorrect PATCH nullability. Backend CI runs contract tests alongside mandatory live-MySQL tests. Intentional negative probes confirmed that the actual snapshot test rejects an ID changed to integer and the generator's --check rejects stale output; see [verification evidence](../evidence/saas003-contracts.json).
+Four backend contract tests compare the complete live document with the checked-in snapshot (object key order ignored), verify 52 uniquely named operations and security/error metadata, and check key schema invariants. Semantic route/type/status/query/security changes fail. Frontend CI installs the isolated locked tool and checks generated output before typechecking consumers. Compile-time assertions reject numeric IDs, changed status unions and incorrect PATCH nullability. Backend CI runs contract tests alongside mandatory live-MySQL tests. Intentional negative probes confirmed that the actual snapshot test rejects an ID changed to integer and the generator's --check rejects stale output; see [verification evidence](../evidence/saas003-contracts.json).
 
 For a freshly rebuilt Development server, the optional HTTP exporter still works and supports a read-only drift check:
 
@@ -51,3 +51,5 @@ SaaS-009 adds nine read-only v2 operations under an explicit default-off rollout
 SaaS-010 adds nine separately gated v2 writes with the existing session/CSRF and presence-aware PATCH contracts. Scope/owner/parent IDs are never writable body properties. Both preview flags default off; no expectedVersion or coordinated v1 retirement is implied. See [scoped write semantics](../saas/workspace-writes.md).
 
 SaaS-011 adds atomic company creation and current-company metadata reads, with existing session/CSRF and preview flags. Only name is writable for creation; see [company navigation](../saas/company-navigation.md).
+
+SaaS-012 adds eight lifecycle operations, explicit project roles, Removed membership state and governance audit DTOs. All three backend flags are required; lifecycle mode closes legacy resource routes. See [lifecycle semantics](../saas/workspace-lifecycle.md).

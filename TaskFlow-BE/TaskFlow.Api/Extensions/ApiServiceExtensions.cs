@@ -12,6 +12,8 @@ public static class ApiServiceExtensions
     public static IServiceCollection AddApiFoundation(this IServiceCollection services)
     {
         services.AddScoped<WorkspaceReadFilter>();
+        services.AddScoped<WorkspaceLifecycleFilter>();
+        services.AddScoped<LegacyResourceFilter>();
         services.AddScoped<WorkspaceWriteFilter>();
         services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
             ProblemResponses.Enrich(context.HttpContext, context.ProblemDetails));
@@ -20,6 +22,7 @@ public static class ApiServiceExtensions
             {
                 // The filter-factory order must be explicit so protected writes authenticate before CSRF validation.
                 options.Filters.Add<AntiforgeryProblemFilter>(1000);
+                options.Filters.Add<LegacyResourceFilter>(400);
                 options.Filters.Add(new AuthorizeFilter());
                 options.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider());
             })

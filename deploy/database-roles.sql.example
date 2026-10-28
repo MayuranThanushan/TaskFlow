@@ -10,8 +10,23 @@ CREATE USER 'taskflow_backup'@'%' IDENTIFIED BY '<generated-backup-password>';
 GRANT SELECT, SHOW VIEW ON taskflow.* TO 'taskflow_backup'@'%';
 
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow'@'%';
-GRANT SELECT, INSERT, UPDATE ON taskflow.* TO 'taskflow'@'%';
--- Membership removal physically deletes the join row; other business entities remain retained.
+-- Explicit table grants keep both history tables append-only and migration history read-only.
+GRANT SELECT ON taskflow.* TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUsers TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetRoles TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserClaims TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetRoleClaims TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserRoles TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserLogins TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserTokens TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Workspaces TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.WorkspaceMemberships TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Projects TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.ProjectMembers TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Tasks TO 'taskflow'@'%';
+GRANT INSERT ON taskflow.ActivityLogs TO 'taskflow'@'%';
+GRANT INSERT ON taskflow.WorkspaceAuditLogs TO 'taskflow'@'%';
+-- Legacy membership removal physically deletes join rows; lifecycle writes retain revoked grants.
 -- Apply this grant only after migrations created the table.
 GRANT DELETE ON taskflow.ProjectMembers TO 'taskflow'@'%';
 -- Verify SHOW GRANTS before rollout. Never give the app the migration or backup credentials.

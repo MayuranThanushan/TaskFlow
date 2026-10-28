@@ -76,6 +76,8 @@ public class OpenApiContractTests
         Assert.Equal("createdAtUtc", query["sortBy"]!["schema"]!["default"]!.GetValue<string>());
         Assert.Equal(new[] { "name", "createdAtUtc", "updatedAtUtc" }, query["sortBy"]!["schema"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
         Assert.Null(schemas["JsonElement"]);
+        Assert.Contains(schemas["WorkspaceMemberDto"]!["properties"]!["role"]!["enum"]!.AsArray(), value => value is null);
+        Assert.Contains(schemas["WorkspaceMemberDto"]!["properties"]!["state"]!["enum"]!.AsArray(), value => value is null);
     }
 
     [Fact]
@@ -83,10 +85,10 @@ public class OpenApiContractTests
     {
         var live = await Live();
         var paths = live["paths"]!.AsObject();
-        Assert.Equal(29, paths.Count);
+        Assert.Equal(36, paths.Count);
         var operations = paths.SelectMany(p => p.Value!.AsObject().Where(o => new[] { "get", "post", "put", "patch", "delete" }.Contains(o.Key)).Select(o => (Path: p.Key, Method: o.Key, Operation: o.Value!))).ToList();
-        Assert.Equal(44, operations.Count);
-        Assert.Equal(44, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
+        Assert.Equal(52, operations.Count);
+        Assert.Equal(52, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
         foreach (var (path, method, operation) in operations)
         {
             var success = operation["responses"]!.AsObject().Where(r => r.Key.StartsWith('2')).ToList();

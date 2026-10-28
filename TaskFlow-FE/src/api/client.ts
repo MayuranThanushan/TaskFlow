@@ -94,7 +94,7 @@ export class ApiClient {
 
   async request<T>(config: AxiosRequestConfig, notifyUnauthorized = true): Promise<T> {
     if (this.workspaceId) {
-      if (!/^\/(projects|tasks|dashboard|activity)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
+      if (!/^\/(projects|tasks|dashboard|activity|members|audit|ownership|leave)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
       const signal = config.signal ? AbortSignal.any([config.signal as AbortSignal, this.controller.signal]) : this.controller.signal
       return this.sessionClient!.dispatch<T>({ ...config, signal }, notifyUnauthorized, '/api/v2/workspaces/' + this.workspaceId)
     }

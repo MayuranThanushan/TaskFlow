@@ -29,6 +29,7 @@ public sealed class ProjectMember
     public long UserId { get; set; }
     public MembershipRole Role { get; set; } = MembershipRole.Member;
     public DateTime JoinedAtUtc { get; set; }
+    public DateTime? RevokedAtUtc { get; set; }
     public Project Project { get; set; } = null!;
 }
 
@@ -62,9 +63,10 @@ public sealed class ActivityLog
 
 public enum TaskState { ToDo, InProgress, Done }
 public enum TaskPriority { Low, Medium, High }
-public enum MembershipRole { Member }
+public enum MembershipRole { Member, Editor, Viewer }
 public enum ActivityAction
 {
     ProjectCreated, ProjectUpdated, ProjectDeleted, MemberAdded, MemberRemoved,
-    TaskCreated, TaskUpdated, TaskAssigned, TaskUnassigned, TaskStatusChanged, TaskDeleted
+    TaskCreated, TaskUpdated, TaskAssigned, TaskUnassigned, TaskStatusChanged, TaskDeleted,
+    MemberRoleChanged, ProjectOwnershipTransferred
 }

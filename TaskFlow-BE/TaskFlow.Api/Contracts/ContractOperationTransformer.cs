@@ -76,10 +76,13 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             (controller == typeof(WorkspaceWritesController) && action.ActionName == "CreateWorkspace" ? "Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. " : controller == typeof(WorkspaceWritesController) ? "Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. " : "") +
             (write ? "Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. " : "") +
             (health ? "Readiness 503 uses the health DTO, not Problem Details." : "Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.");
+        if (controller == typeof(WorkspaceLifecycleController)) operation.Description += " Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content.";
         var failures = new HashSet<int> { 500 };
         if (!health)
         {
             failures.Add(400);
+            if (action.EndpointMetadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any()) failures.Add(429);
+            if (controller == typeof(WorkspaceLifecycleController)) { failures.Add(403); failures.Add(404); failures.Add(409); }
             if (!anonymous || action.ActionName == "Login") failures.Add(401);
             if (controller == typeof(ProjectsController) && action.ActionName is "Get" or "Update" or "Delete"
                 || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController) || controller == typeof(WorkspaceReadsController) || controller == typeof(WorkspaceWritesController)) failures.Add(404);

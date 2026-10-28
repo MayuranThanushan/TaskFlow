@@ -1,3 +1,4 @@
+import { useCompany } from '../companies/company-context'
 import { RetryError } from '../../components/Feedback'
 import type { components } from '../../api/generated'
 import { useState } from 'react'
@@ -11,11 +12,12 @@ import { useApiResource } from '../../hooks/use-api-resource'
 
 export type DashboardTotals = components['schemas']['DashboardDto']
 export function DashboardPage({ client }: { client: ApiClient }) {
+  const { role } = useCompany()
   const { session } = useAuth()
   const { result, retry } = useApiResource<DashboardTotals>(client, '/dashboard')
   return <section className="dashboard">
     <div className="overview-heading"><div><p className="eyebrow">Workspace overview</p><h1>Welcome back{session.user ? `, ${session.user.displayName}` : ''}.</h1>
-    <p className="intro">Everything you need to keep work moving.</p></div><Link className="button primary" to="/projects/new"><Icon name="plus" />New project</Link></div><p className="account-reference">Your account ID: {session.user?.id}</p>
+    <p className="intro">Everything you need to keep work moving.</p></div>{role !== "Guest" && <Link className="button primary" to="/projects/new"><Icon name="plus" />New project</Link>}</div><p className="account-reference">Your account ID: {session.user?.id}</p>
     <div className="form-actions dashboard-actions"><Link className="button primary" to="/projects">Browse projects</Link><button className="button subtle" disabled={result.status === 'loading'} onClick={retry}>Refresh overview</button></div>
     {result.status === 'loading' && <p className="project-state" role="status">Loading your overview...</p>}
     {result.status === 'error' && <RetryError message={result.error.message} retry={retry} />}

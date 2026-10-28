@@ -1,3 +1,4 @@
+import { useCompany } from '../companies/company-context'
 import { Confirmation, FieldError, RetryError, Pagination } from '../../components/Feedback'
 import type { ProjectWrite } from './types'
 import { useEffect, useRef, useState } from 'react'
@@ -34,6 +35,7 @@ function QueryForm({ params, apply }: { params: URLSearchParams; apply: (params:
 }
 
 export function ProjectsPage({ client }: { client: ApiClient }) {
+  const { role } = useCompany()
   const location = useLocation()
   const { session } = useAuth()
   const [params, setParams] = useSearchParams()
@@ -41,7 +43,7 @@ export function ProjectsPage({ client }: { client: ApiClient }) {
   const { result, retry } = useApiResource<ProjectPage>(client, '/projects' + (query ? '?' + query : ''))
   const changePage = (page: number) => { const next = new URLSearchParams(params); next.set('page', String(page)); setParams(next) }
   return <section className="projects-page">
-    <div className="page-heading"><div><p className="eyebrow">Your workspace</p><h1>Projects</h1><p className="muted">Projects you own or work on.</p></div><Link className="button primary" to="/projects/new">New project</Link></div>
+    <div className="page-heading"><div><p className="eyebrow">Your workspace</p><h1>Projects</h1><p className="muted">Projects you own or work on.</p></div>{role !== "Guest" && <Link className="button primary" to="/projects/new">New project</Link>}</div>
     {location.state?.deleted && <p role="status" className="notice">Project deleted.</p>}
     <QueryForm key={query} params={params} apply={setParams} />
     {result.status === 'loading' && <p role="status" className="project-state">Loading projects...</p>}
@@ -137,7 +139,7 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
       <section className="project-about" aria-labelledby="project-about"><h2 id="project-about">About this project</h2><p className="project-description">{result.data.description || 'No description added.'}</p></section>
       <section className="project-about"><h2>Tasks</h2><p>Plan the next steps and track your project work.</p><Link className="button primary" to={'/projects/' + encodeURIComponent(projectId) + '/tasks'}>View tasks</Link></section>
       <section className="project-about"><h2>Project history</h2><p>See changes to this project, its tasks and membership.</p><Link className="button subtle" to={'/projects/' + encodeURIComponent(projectId) + '/activity'}>View activity</Link></section>
-      <ProjectMembers key={'members:' + projectId} client={client} projectId={projectId} owner={session.user?.id === result.data.ownerId} />
+      <ProjectMembers onAccessChanged={retry} key={'members:' + projectId} client={client} projectId={projectId} owner={session.user?.id === result.data.ownerId} />
       <section className="project-progress" aria-labelledby="progress-heading"><h2 id="progress-heading">Project progress</h2><dl><div><dt>Total tasks</dt><dd>{result.data.totalTasks}</dd></div><div><dt>Completed tasks</dt><dd>{result.data.completedTasks}</dd></div><div><dt>Progress</dt><dd>{result.data.progressPercentage}%</dd></div></dl>
         <progress aria-label="Project progress" value={result.data.progressPercentage} max={100}>{result.data.progressPercentage}%</progress>
       </section>

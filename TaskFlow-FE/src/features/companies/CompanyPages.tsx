@@ -10,6 +10,8 @@ import { TasksPage, NewTaskPage, TaskDetailPage, EditTaskPage } from '../tasks/T
 import { DashboardPage } from '../dashboard/DashboardPage'
 import { ActivityPage } from '../activity/ActivityPage'
 import { ActivityHub } from '../activity/ActivityHub'
+import { CompanyContext } from './company-context'
+import { CompanyTeamPage, CompanyAuditPage } from './LifecyclePages'
 import { Pagination, RetryError } from '../../components/Feedback'
 
 export type Company = components['schemas']['WorkspaceDto']
@@ -63,14 +65,14 @@ export function CompaniesPage({ client }: { client: ApiClient }) {
   </section>
 }
 
-export function CompanyArea({ client }: { client: ApiClient }) {
+export function CompanyArea({ client, lifecycleEnabled = false }: { client: ApiClient; lifecycleEnabled?: boolean }) {
   const { workspaceId = '' } = useParams()
   const { session } = useAuth()
   if (!/^[1-9][0-9]*$/.test(workspaceId) || BigInt(workspaceId) > 9223372036854775807n) return <section><h1>Company not available.</h1><Link to="/companies">Choose a company</Link></section>
-  return <CompanyContent key={session.user?.id + ':' + workspaceId} client={client} workspaceId={workspaceId} />
+  return <CompanyContent key={session.user?.id + ':' + workspaceId} client={client} workspaceId={workspaceId} lifecycleEnabled={lifecycleEnabled} />
 }
 
-function CompanyContent({ client, workspaceId }: { client: ApiClient; workspaceId: string }) {
+function CompanyContent({ client, workspaceId, lifecycleEnabled }: { client: ApiClient; workspaceId: string; lifecycleEnabled: boolean }) {
   const [company, setCompany] = useState<Company>()
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
@@ -85,10 +87,12 @@ function CompanyContent({ client, workspaceId }: { client: ApiClient; workspaceI
   useEffect(() => () => scoped.cancelRequests(), [scoped])
   if (error) return <section><h1>Company not available.</h1><RetryError message={error} retry={() => { setError(''); setAttempt(a => a + 1) }} /><Link to="/companies">Choose a company</Link></section>
   if (!company) return <p role="status">Opening company...</p>
-  return <><div className="company-switchbar"><strong>{company.name}</strong><span>{company.role}</span> <Link to="/companies">Switch company</Link><span>Open forms are cleared when switching.</span></div><Routes>
+  return <CompanyContext value={{ lifecycleEnabled, role: company.role }}><div className="company-switchbar"><strong>{company.name}</strong><span>{company.role}</span> <Link to="/companies">Switch company</Link><span>Open forms are cleared when switching.</span></div>
+    {lifecycleEnabled && <nav className="company-tabs" aria-label="Company navigation"><Link to={'/companies/' + workspaceId + '/dashboard'}>Overview</Link><Link to={'/companies/' + workspaceId + '/projects'}>Projects</Link><Link to={'/companies/' + workspaceId + '/team'}>Team & access</Link>{(company.role === 'Owner' || company.role === 'Admin') && <Link to={'/companies/' + workspaceId + '/audit'}>Company audit</Link>}</nav>}<Routes>
+    {lifecycleEnabled && <><Route path="team" element={<CompanyTeamPage client={scoped} company={company} refreshCompany={() => setAttempt(a => a + 1)} />} /><Route path="audit" element={<CompanyAuditPage client={scoped} />} /></>}
     <Route path="dashboard" element={<DashboardPage client={scoped} />} />
     <Route path="projects" element={<ProjectsPage client={scoped} />} />
-    <Route path="projects/new" element={<NewProjectPage client={scoped} />} />
+    <Route path="projects/new" element={company.role === "Guest" ? <section><h1>Guests cannot create projects.</h1><Link to={"/companies/" + workspaceId + "/projects"}>Back to projects</Link></section> : <NewProjectPage client={scoped} />} />
     <Route path="projects/:projectId" element={<ProjectDetailPage client={scoped} />} />
     <Route path="projects/:projectId/edit" element={<EditProjectPage client={scoped} />} />
     <Route path="projects/:projectId/tasks" element={<TasksPage client={scoped} />} />
@@ -98,5 +102,5 @@ function CompanyContent({ client, workspaceId }: { client: ApiClient; workspaceI
     <Route path="tasks/:taskId/edit" element={<EditTaskPage client={scoped} />} />
     <Route path="activity" element={<ActivityHub client={scoped} />} />
     <Route path="*" element={<section><h1>That company page is not here.</h1><Link to={'/companies/' + workspaceId + '/dashboard'}>Company overview</Link></section>} />
-  </Routes></>
+  </Routes></CompanyContext>
 }
