@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,16 @@ namespace TaskFlow.Api.Controllers;
 [Authorize, ApiController, Route("api/v2/workspaces/{workspaceId}")]
 [ServiceFilter(typeof(WorkspaceWriteFilter), Order = 500)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class WorkspaceWritesController(IWorkspaceWrites writes) : ControllerBase
+public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspaceDirectory directory) : ControllerBase
 {
     private static long Id(string? value) => WorkspaceReadFilter.TryId(value, out var id) ? id : throw new ProjectAccessException(ProjectAccessDecision.NotFound);
     private WorkspaceWriteContext Scope(string workspaceId) => new(Id(User.FindFirstValue(ClaimTypes.NameIdentifier)), Id(workspaceId));
+    [HttpPost("/api/v2/workspaces"), ProducesResponseType<WorkspaceDto>(201)]
+    public async Task<IActionResult> CreateWorkspace(WorkspaceCreateRequest request, CancellationToken token)
+    {
+        var workspace = await directory.CreateAsync(Id(User.FindFirstValue(ClaimTypes.NameIdentifier)), request.Name, token);
+        return Created("/api/v2/workspaces/" + workspace.Id, workspace);
+    }
     [HttpPost("projects"), ProducesResponseType<ProjectDto>(201)]
     public async Task<IActionResult> CreateProject(string workspaceId, ProjectWriteRequest request, CancellationToken token)
     {
@@ -68,4 +75,9 @@ public sealed class WorkspaceWritesController(IWorkspaceWrites writes) : Control
     [HttpDelete("tasks/{taskId}"), ProducesResponseType(204)]
     public async Task<IActionResult> DeleteTask(string workspaceId, string taskId, CancellationToken token)
     { await writes.DeleteTaskAsync(Scope(workspaceId), Id(taskId), token); return NoContent(); }
+}
+
+public sealed class WorkspaceCreateRequest
+{
+    [Required, StringLength(150)] public string Name { get; set; } = "";
 }

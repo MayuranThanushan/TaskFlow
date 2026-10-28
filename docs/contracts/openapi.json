@@ -4283,6 +4283,384 @@
             "SessionStrict": []
           }
         ]
+      },
+      "post": {
+        "tags": [
+          "WorkspaceWrites"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "WorkspaceWrites_CreateWorkspace",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCreateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCreateRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Location": {
+                "description": "Relative resource URL; registration requires subsequent sign-in.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v2/workspaces/{workspaceId}": {
+      "get": {
+        "tags": [
+          "WorkspaceReads"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "operationId": "WorkspaceReads_Workspace",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
       }
     },
     "/api/v2/workspaces/{workspaceId}/projects": {
@@ -8643,6 +9021,20 @@
               "InProgress",
               "Done"
             ],
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WorkspaceCreateRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 150,
+            "minLength": 1,
             "type": "string"
           }
         },

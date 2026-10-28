@@ -42,3 +42,7 @@ node tests/browser/workspace.cjs
 ```
 
 This separate review intercepts every /api/v1 request with synthetic in-memory fixtures. It does not create real accounts or modify the development database. It accepts only localhost/127.0.0.1 origins (optional TASKFLOW_UI_ORIGIN), uses installed Edge, and generates screenshots plus TestResults/workspace-ui/review.json. It covers 42 route/viewport scans at 320/390/768/1440, axe WCAG A/AA checks, page overflow, owner/member controls, task/project CRUD UI, inline status, keyboard confirmation cancellation/table scrolling, profile, password visibility, form focus and current-page audit JSON download. This validates UI interactions, not backend authorization, database transactions, production CSP or deployed-host behavior; use the published-app suite above for those.
+
+## Company preview journey
+
+With a disposable HTTPS instance whose frontend was built with VITE_WORKSPACES_ENABLED=true and both backend WorkspaceReads/WorkspaceWrites flags enabled, use the same synthetic owner settings and run `node tests/browser/companies.cjs`. This creates two companies and scoped projects/tasks, checks switching/deep links/foreign-company denials and performs eight desktop/mobile accessibility/overflow scans. It writes companies.json and screenshots under the selected output directory. It is an explicit preview check, separate from the default v1 runner; caller cleanup still owns the entire disposable database and temporary host.

@@ -2,7 +2,7 @@ import { RetryError, Pagination } from '../../components/Feedback'
 import type { components } from '../../api/generated'
 import { Badge } from '../../components/Workspace'
 import { useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from '../companies/navigation'
 import type { ApiClient } from '../../api/client'
 import { useApiResource } from '../../hooks/use-api-resource'
 export type ActivityItem = components['schemas']['ActivityDto']

@@ -19,9 +19,12 @@ public sealed class WorkspaceWriteFilter(IConfiguration configuration, IWorkspac
         }
         if (!WorkspaceReadFilter.TryId(context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out var actor))
         { context.Result = new UnauthorizedResult(); return; }
-        if (!WorkspaceReadFilter.TryId(Convert.ToString(context.RouteData.Values["workspaceId"]), out var workspace))
-        { await ProblemResponses.WriteAsync(context.HttpContext, ProblemResponses.Create(context.HttpContext, 404)); context.Result = new EmptyResult(); return; }
-        await reads.AuthorizeAsync(new(actor, workspace), context.HttpContext.RequestAborted);
+        if (context.RouteData.Values.ContainsKey("workspaceId"))
+        {
+            if (!WorkspaceReadFilter.TryId(Convert.ToString(context.RouteData.Values["workspaceId"]), out var workspace))
+            { await ProblemResponses.WriteAsync(context.HttpContext, ProblemResponses.Create(context.HttpContext, 404)); context.Result = new EmptyResult(); return; }
+            await reads.AuthorizeAsync(new(actor, workspace), context.HttpContext.RequestAborted);
+        }
         if (context.HttpContext.Request.Query.Count != 0)
         {
             context.HttpContext.Response.Headers.CacheControl = "no-store";

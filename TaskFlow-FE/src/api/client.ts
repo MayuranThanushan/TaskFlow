@@ -43,7 +43,28 @@ export class ApiClient {
   private identityVersion = 0
   private readonly unauthorized = new Set<() => void>()
 
-  constructor(transport: AxiosInstance) { this.transport = transport }
+  private controller = new AbortController()
+  readonly resourceKey: string
+  private readonly workspaceId?: string
+  private readonly sessionClient?: ApiClient
+  constructor(transport: AxiosInstance, workspaceId?: string, sessionClient?: ApiClient) {
+    this.transport = transport
+    this.workspaceId = workspaceId
+    this.sessionClient = sessionClient
+    this.resourceKey = workspaceId ? 'workspace:' + workspaceId : 'legacy'
+  }
+
+  forWorkspace(id: string) {
+    if (!/^[1-9][0-9]*$/.test(id) || BigInt(id) > 9223372036854775807n) throw new ApiError('Invalid company.')
+    return new ApiClient(this.transport, id, this.sessionClient ?? this)
+  }
+
+  cancelRequests() { this.controller.abort(); this.controller = new AbortController() }
+
+  directory<T>(config: AxiosRequestConfig): Promise<T> {
+    if (!/^\/workspaces(?:\?|$|\/[1-9][0-9]*$)/.test(config.url ?? '')) throw new ApiError('Invalid company request.')
+    return (this.sessionClient ?? this).dispatch<T>(config, true, '/api/v2')
+  }
 
   onUnauthorized(listener: () => void) {
     this.unauthorized.add(listener)
@@ -72,9 +93,19 @@ export class ApiClient {
   }
 
   async request<T>(config: AxiosRequestConfig, notifyUnauthorized = true): Promise<T> {
+    if (this.workspaceId) {
+      if (!/^\/(projects|tasks|dashboard|activity)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
+      const signal = config.signal ? AbortSignal.any([config.signal as AbortSignal, this.controller.signal]) : this.controller.signal
+      return this.sessionClient!.dispatch<T>({ ...config, signal }, notifyUnauthorized, '/api/v2/workspaces/' + this.workspaceId)
+    }
+    return this.dispatch<T>(config, notifyUnauthorized, '/api/v1')
+  }
+
+  private async dispatch<T>(config: AxiosRequestConfig, notifyUnauthorized: boolean, baseURL: string): Promise<T> {
     // Relative API paths only: never attach cookies/CSRF tokens to a caller-supplied origin.
     if (!config.url?.startsWith('/') || config.url.startsWith('//') || config.url.includes('\\'))
       throw new ApiError('Invalid API request.')
+    if (config.signal?.aborted) throw new ApiError('The company changed. Please try again.')
     const identity = this.identityVersion
     const unsafe = !['get', 'head', 'options'].includes((config.method ?? 'get').toLowerCase())
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -82,8 +113,9 @@ export class ApiClient {
         const headers = AxiosHeaders.from(config.headers as RawAxiosHeaders | undefined)
         if (unsafe) headers.set('X-CSRF-TOKEN', await this.csrf())
         // A draft must not be sent under an identity that changed during token acquisition.
+        if (config.signal?.aborted) throw new ApiError('The company changed. Please try again.')
         if (identity !== this.identityVersion) throw new ApiError('Your account changed. Please try again.')
-        return (await this.transport.request<T>({ ...config, baseURL: "/api/v1", withCredentials: true, headers })).data
+        return (await this.transport.request<T>({ ...config, baseURL, withCredentials: true, headers })).data
       } catch (error) {
         const failure = asApiError(error)
         // Retry only an explicit CSRF rejection, never a network/server failure or an arbitrary write.

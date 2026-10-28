@@ -1,0 +1,185 @@
+{
+  "task": "SaaS-011",
+  "date": "2026-10-28",
+  "sourceBaseRevision": "ffca1349e5036b4223880c7ca32a2e3780f9c2f8",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local default-off company creation/navigation preview. No customer/live development DB migration, hosted CI run, container execution or coordinated tenant cutover claimed.",
+  "verifiedSourceSha256NormalizedLf": {
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "a39418507dcda5ed2ad861ec788d987511fdec9b7c28ef91f0476ec1b50e0c1f",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/WorkspaceReadsController.cs": "696f42ea059dbf653e34b500875a39feca0c423f813bf3a928d278291b7274a6",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/WorkspaceWritesController.cs": "7f86e03fb9970152b0e01409e4a719991c083b912c12bddc044833260c50f4f5",
+    "TaskFlow-BE/TaskFlow.Api/Filters/WorkspaceWriteFilter.cs": "f44640ac5b61b2b2f8490c07e882bbcc95ec21dfb186b747fb243a333d83810f",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceDirectory.cs": "abbe907e3e1791c15860dc27736d80fa1c7ba145bbb8c6a0dccfbc845f6ef161",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceReads.cs": "5f7d404a155a4bf915bbc36628675618df81b85b36994361412d995dcdf7995c",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "cc90e441a7075e0e44aae02c61da6f6e36ed4739e03f42d6d5694fe4823c2649",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceDirectory.cs": "570d227edb753744209808872a1f74474f4fda3b86722368e39596131e7c59fe",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceReads.cs": "c58716517c0ca2eb0bf045ff4bcc3efa34a67a10774b00f000ef677b6fd8a163",
+    "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs": "59e375f217d439f612e665053afe58bdc2d36c882eb3c974f13a56121f0de495",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.CompanyDirectory.cs": "d3e8346896f94a0a5b2c0ccbabfa19067f25d6860be5d5038ef1c05e635e999f",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "2a1ae90fa16ffcb816e17d404c576959e4673d7b8590cd67bf0aa5045ba6f87c",
+    "TaskFlow-FE/src/App.tsx": "f8a506e699b3636b530f9830ef6f59712236d1a3822dced0cce3bcf0a4c4238a",
+    "TaskFlow-FE/src/api/client.ts": "aa75fbea0e5f4698e4572ba5e02a262d546e9b9fba951ef63a2812f6659e01b1",
+    "TaskFlow-FE/src/api/contract.typecheck.ts": "6024621f975e439171385e4203da4f3afa408913b8e5f31cf3514c1a51e7a64d",
+    "TaskFlow-FE/src/api/generated.d.ts": "1d79b45b30a60d8a0634e30c9ef87f819a7fdc22635f516055ce51154378e1d3",
+    "TaskFlow-FE/src/api/workspace-client.test.ts": "53695a818c27cfec1775de520be972fe7b262c551eba10021318c535b74ab3f7",
+    "TaskFlow-FE/src/features/activity/ActivityHub.tsx": "f3ce2612bd66f5998e7f295e76d29d07271bd34b791b976914956b10edeab291",
+    "TaskFlow-FE/src/features/activity/ActivityPage.tsx": "ec1351a5a5f7a9796d664dae4713b560add1819949e5bd7c2c9b61f30bc91104",
+    "TaskFlow-FE/src/features/companies/CompanyLink.tsx": "caddf5e8a5ff0a4b22cbb1d7b27a594ef86935fce8199d756236b71dfa8b38fd",
+    "TaskFlow-FE/src/features/companies/CompanyPages.test.tsx": "9576014c3539476977a217779e94755f99dee6036b37086c5ba18e85924ba99a",
+    "TaskFlow-FE/src/features/companies/CompanyPages.tsx": "157e08d56f6ef6e7fd00572c9a58a841853e026089588ccae793c6c23c26e17b",
+    "TaskFlow-FE/src/features/companies/company-path.ts": "1a7cd8b87aaf122c6e7228cae03bfeefec87ce7d52c072de2551935dedda72aa",
+    "TaskFlow-FE/src/features/companies/navigation.ts": "9406a045328f87641ec62752a3dd790436ba9ea631629912485cb1e5afa1456a",
+    "TaskFlow-FE/src/features/dashboard/DashboardPage.tsx": "2076448244076f8c63c7591bec6499e8ae4f669dab88a192de8e811cd674c9e5",
+    "TaskFlow-FE/src/features/projects/ProjectPages.tsx": "9584f71238a02d44d67886e219dfdc461378b8f6995412c39021709df87e60d9",
+    "TaskFlow-FE/src/features/tasks/TaskPages.tsx": "96f593217aa64d7956cb2031b69cd06ea4cf9f9fc0a79817617ce709d5dd00fb",
+    "TaskFlow-FE/src/hooks/use-api-resource.ts": "b22dba481744f74bbb030f52eb59c364c23d534f1040980f0224e213ee9cd8c6",
+    "TaskFlow-FE/src/workspace.css": "481ac202ee90f1da6f7205a6d7bc815944fa83db578fb01e1f4518ccab2ca23c",
+    "deploy/Dockerfile": "ce761495f572728fe819826e2055ca55bfa865abbf77100bded9aee61ec38c1a",
+    "scripts/export_openapi.py": "2405a6bc47bf3a08c97e10181f6a61611f8ae54674749e95b3d9c91eda97a21a",
+    "tests/browser/companies.cjs": "bcf50f02cfbfd06548ece49ab6aba68ab77896afe0917892d8fe74b5983347ef"
+  },
+  "implementation": {
+    "creation": "Session + CSRF; name only; company and active Owner membership atomic; no legacy mapping; canonical metadata Location",
+    "directory": "Paginated active memberships and scoped company metadata; inaccessible/suspended membership returns 404",
+    "urls": "/companies/{workspaceId}/projects, tasks, activity and dashboard; global identity/profile remain v1",
+    "lifetime": "Identity/company keyed subtree and resource keys; immutable scoped clients; shared root identity/CSRF; abort waiting writes; suppress late completions; already-sent writes may commit in original company",
+    "flags": {
+      "WorkspaceReads:Enabled": false,
+      "WorkspaceWrites:Enabled": false,
+      "VITE_WORKSPACES_ENABLED": false
+    },
+    "migrations": "No new migration; existing three migrations exercised on disposable schemas"
+  },
+  "checks": {
+    "backend": {
+      "passed": 178,
+      "failed": 0,
+      "skipped": 0,
+      "trx": "TestResults/saas011-backend/backend.trx",
+      "newMySqlHttpCases": 3
+    },
+    "finalCanonicalLocationAndContracts": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "trx": "TestResults/saas011-focused/backend.trx"
+    },
+    "frontend": {
+      "passed": 107,
+      "failed": 0,
+      "skipped": 0,
+      "newClientAndUiCases": 12,
+      "junit": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 29
+    },
+    "frontendLintTypecheckBuild": "Passed, default-off and explicit preview builds",
+    "generatedContractDrift": "Passed",
+    "openapi": {
+      "paths": 29,
+      "operations": 44
+    },
+    "warningsAsErrorsBuild": "Passed; zero warnings/errors",
+    "workflowActionlint": "Passed; shellcheck unavailable",
+    "publishedHttpsSmoke": "Readiness, assets, deep links, cache/JSON routing, CSRF, secure session, logout/replay rejection passed",
+    "legacyBrowserJourneys": [
+      {
+        "script": "authentication.cjs",
+        "passed": true,
+        "durationMs": 4723
+      },
+      {
+        "script": "journeys.cjs",
+        "passed": true,
+        "durationMs": 92825
+      },
+      {
+        "script": "profile.cjs",
+        "passed": true,
+        "durationMs": 3353
+      },
+      {
+        "script": "review.cjs",
+        "passed": true,
+        "durationMs": 26702
+      }
+    ],
+    "companyBrowser": {
+      "checks": [
+        "protected company return URL",
+        "atomic create with Owner role",
+        "two company switching",
+        "scoped project/task CRUD links",
+        "reload deep link",
+        "empty company isolation",
+        "mixed-company resource denied"
+      ],
+      "accessibility": [
+        {
+          "name": "directory",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "directory",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "overview",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "overview",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "task",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "task",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "empty-projects",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "empty-projects",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "errors": []
+    },
+    "legacyAccessibility": {
+      "scans": 30,
+      "violations": 0,
+      "overflow": 0
+    }
+  },
+  "publishedApiSha256": "8f88af0c51728037ce6262329b00e8ba58883af67d1dcf759040565aa4aa439a",
+  "cleanup": "All owned temporary HTTPS processes stopped and unique synthetic schemas removed. Existing user services/databases untouched. Private credentials, cookies, keys and logs excluded.",
+  "remaining": [
+    "SaaS-012 roles/suspension/leave/ownership lifecycle and company audit",
+    "Company quotas and invitation/approval policies",
+    "Coordinated frontend/API cutover and legacy route retirement",
+    "Non-null workspace scope and full company acceptance",
+    "Fresh hosted CI/CodeQL and selected-host/container verification"
+  ]
+}

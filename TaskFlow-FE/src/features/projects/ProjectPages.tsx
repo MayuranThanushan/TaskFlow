@@ -2,7 +2,7 @@ import { Confirmation, FieldError, RetryError, Pagination } from '../../componen
 import type { ProjectWrite } from './types'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from '../companies/navigation'
 import { Badge, Icon } from '../../components/Workspace'
 import { asApiError } from '../../api/client'
 import type { ApiClient } from '../../api/client'

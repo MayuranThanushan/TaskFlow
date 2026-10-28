@@ -37,6 +37,12 @@ public sealed class WorkspaceReadsController(IWorkspaceReads reads) : Controller
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         return Ok(await reads.WorkspacesAsync(Actor(), query.Page, query.PageSize, token));
     }
+    [HttpGet("{workspaceId}"), ProducesResponseType<WorkspaceDto>(200)]
+    public async Task<IActionResult> Workspace(string workspaceId, CancellationToken token)
+    {
+        Query(); if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return Ok(await reads.WorkspaceAsync(Scope(workspaceId), token));
+    }
     [HttpGet("{workspaceId}/projects"), ProducesResponseType<ProjectPage>(200)]
     public async Task<IActionResult> Projects(string workspaceId, [FromQuery] ProjectListQuery query, CancellationToken token)
     {

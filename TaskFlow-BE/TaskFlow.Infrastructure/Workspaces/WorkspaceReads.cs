@@ -54,6 +54,13 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
     private async Task<Project> RequireProject(WorkspaceReadContext context, long projectId, CancellationToken token) =>
         await Projects(context).SingleOrDefaultAsync(p => p.Id == projectId, token) ?? throw Missing();
 
+    public Task<WorkspaceDto> WorkspaceAsync(WorkspaceReadContext context, CancellationToken token = default) => Read(context, async () =>
+    {
+        var workspace = await database.Workspaces.AsNoTracking().SingleAsync(w => w.Id == context.WorkspaceId, token);
+        var membership = await database.WorkspaceMemberships.AsNoTracking().SingleAsync(m => m.WorkspaceId == context.WorkspaceId && m.UserId == context.ActorId, token);
+        return new WorkspaceDto(Id(workspace.Id), workspace.Name, membership.Role.ToString());
+    }, token);
+
     public async Task<WorkspacePage> WorkspacesAsync(long actorId, int page, int pageSize, CancellationToken token = default)
     {
         if (actorId <= 0) throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);

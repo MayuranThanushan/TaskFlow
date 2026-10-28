@@ -1,5 +1,5 @@
 import { RetryError } from '../../components/Feedback'
-import { Link } from 'react-router-dom'
+import { Link } from '../companies/navigation'
 import type { ApiClient } from '../../api/client'
 import { Badge, Icon } from '../../components/Workspace'
 import { useApiResource } from '../../hooks/use-api-resource'

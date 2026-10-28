@@ -13,6 +13,7 @@ public interface IWorkspaceReads
 {
     Task AuthorizeAsync(WorkspaceReadContext context, CancellationToken token = default);
     Task<WorkspacePage> WorkspacesAsync(long actorId, int page, int pageSize, CancellationToken token = default);
+    Task<WorkspaceDto> WorkspaceAsync(WorkspaceReadContext context, CancellationToken token = default);
     Task<ProjectPage> ProjectsAsync(WorkspaceReadContext context, ProjectListOptions options, CancellationToken token = default);
     Task<ProjectDetailsDto> ProjectAsync(WorkspaceReadContext context, long projectId, CancellationToken token = default);
     Task<TaskPage> TasksAsync(WorkspaceReadContext context, long projectId, TaskListOptions options, CancellationToken token = default);

@@ -310,6 +310,24 @@ export interface paths {
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Workspaces"];
         put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        post: operations["WorkspaceWrites_CreateWorkspace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspaces/{workspaceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        get: operations["WorkspaceReads_Workspace"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -725,6 +743,9 @@ export interface components {
         TaskStatusRequest: {
             /** @enum {string} */
             status: "ToDo" | "InProgress" | "Done";
+        };
+        WorkspaceCreateRequest: {
+            name: string;
         };
         WorkspaceDto: {
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
@@ -2667,6 +2688,185 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkspacePage"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceWrites_CreateWorkspace: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["WorkspaceCreateRequest"];
+                "application/json": components["schemas"]["WorkspaceCreateRequest"];
+                "text/json": components["schemas"]["WorkspaceCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Relative resource URL; registration requires subsequent sign-in. */
+                    Location?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceReads_Workspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceDto"];
                 };
             };
             /** @description Bad Request */

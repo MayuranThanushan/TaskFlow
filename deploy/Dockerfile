@@ -4,7 +4,8 @@ WORKDIR /src
 COPY TaskFlow-FE/package*.json ./
 RUN npm install --global npm@11.3.0 && npm ci
 COPY TaskFlow-FE/ ./
-RUN npm run build
+ARG VITE_WORKSPACES_ENABLED=false
+RUN VITE_WORKSPACES_ENABLED=$VITE_WORKSPACES_ENABLED npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble AS backend
 WORKDIR /src

@@ -122,3 +122,10 @@ a { text-underline-offset:3px; }
 @media(max-width:900px) { .project-detail-page { grid-template-columns:minmax(0,1fr); }.project-detail-page > * { grid-column:1; } }
 
 .project-detail-page .page-heading > .project-actions { margin:0; }.project-detail-page .page-heading:has(.delete-confirmation) > .project-actions { flex-basis:100%; }.workspace-shell .app-header { overflow-y:auto; }.workspace-shell .user-name > span:last-child { min-width:0; overflow-wrap:anywhere; }
+
+.company-create { max-width: 640px; margin-top: 32px; }
+.company-create h2 { margin-top: 0; }
+.company-create p { line-height: 1.6; }
+.company-switchbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; margin-block: 16px 24px; border: 1px solid #c9d9d0; border-radius: 10px; background: #eef5ef; color: #254e40; }
+.company-switchbar strong { overflow-wrap: anywhere; min-width: 0; }
+.company-switchbar > span:last-child { flex-basis: 100%; font-size: 12px; }

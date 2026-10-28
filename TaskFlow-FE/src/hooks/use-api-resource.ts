@@ -9,7 +9,7 @@ type Resource<T> = { key: string; status: 'loading' } | { key: string; status: '
 export function useApiResource<T>(client: ApiClient, path: string) {
   const { session } = useAuth()
   const identity = session.user?.id ?? ''
-  const key = identity + ':' + path
+  const key = identity + ':' + client.resourceKey + ':' + path
   const [attempt, setAttempt] = useState(0)
   const [resource, setResource] = useState<Resource<T>>({ key, status: 'loading' })
   useEffect(() => {
