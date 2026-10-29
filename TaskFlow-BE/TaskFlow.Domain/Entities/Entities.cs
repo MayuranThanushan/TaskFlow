@@ -47,8 +47,15 @@ public sealed class TaskItem : AuditableEntity
     public DateTime? DeletedAtUtc { get; set; }
 }
 
-public sealed class ActivityLog
+public sealed class ActivityLog : IVersionedAudit
 {
+    public int SchemaVersion { get; set; }
+    public string? Outcome { get; set; }
+    public string? CorrelationId { get; set; }
+    public string? SubjectType { get; set; }
+    public string? SubjectId { get; set; }
+    public string? ChangesJson { get; set; }
+
     public long? WorkspaceId { get; set; }
     public long Id { get; set; }
     public long ProjectId { get; set; }

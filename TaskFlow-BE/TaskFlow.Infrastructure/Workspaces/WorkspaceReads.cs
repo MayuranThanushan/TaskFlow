@@ -155,7 +155,7 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
         var total = await query.CountAsync(token);
         var rows = await query.OrderByDescending(a => a.CreatedAtUtc).ThenByDescending(a => a.Id).Skip((options.Page - 1) * options.PageSize).Take(options.PageSize).ToArrayAsync(token);
         return new ActivityPage(rows.Select(a => new ActivityDto(Id(a.Id), Id(a.ProjectId), Id(a.ActorUserId), a.TaskId is { } task ? Id(task) : null,
-            a.ActionType.ToString(), ActivityService.Summary(a), a.CreatedAtUtc)).ToArray(), options.Page, options.PageSize, total, (int)Math.Ceiling(total / (double)options.PageSize));
+            a.ActionType.ToString(), ActivityService.Summary(a), a.CreatedAtUtc, TaskFlow.Application.Features.Activity.AuditMetadata.Map(a))).ToArray(), options.Page, options.PageSize, total, (int)Math.Ceiling(total / (double)options.PageSize));
     }, token);
     public Task<DashboardDto> DashboardAsync(WorkspaceReadContext context, CancellationToken token = default) => Read(context, async () =>
     {

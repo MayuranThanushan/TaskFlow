@@ -10338,7 +10338,8 @@
           "taskId",
           "actionType",
           "details",
-          "createdAtUtc"
+          "createdAtUtc",
+          "audit"
         ],
         "type": "object",
         "properties": {
@@ -10380,6 +10381,9 @@
             "minLength": 1,
             "type": "string",
             "format": "date-time"
+          },
+          "audit": {
+            "$ref": "#/components/schemas/AuditMetadataDto"
           }
         }
       },
@@ -10487,6 +10491,85 @@
               "items": {
                 "type": "string"
               }
+            }
+          }
+        }
+      },
+      "AuditChangeDto": {
+        "required": [
+          "field",
+          "before",
+          "after",
+          "redacted"
+        ],
+        "type": "object",
+        "properties": {
+          "field": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "before": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "after": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "redacted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AuditMetadataDto": {
+        "required": [
+          "schemaVersion",
+          "isLegacy",
+          "outcome",
+          "correlationId",
+          "subjectType",
+          "subjectId",
+          "changes"
+        ],
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isLegacy": {
+            "type": "boolean"
+          },
+          "outcome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "correlationId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subjectType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subjectId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditChangeDto"
             }
           }
         }
@@ -11151,7 +11234,8 @@
           "action",
           "fromRole",
           "toRole",
-          "createdAtUtc"
+          "createdAtUtc",
+          "audit"
         ],
         "type": "object",
         "properties": {
@@ -11201,6 +11285,9 @@
             "minLength": 1,
             "type": "string",
             "format": "date-time"
+          },
+          "audit": {
+            "$ref": "#/components/schemas/AuditMetadataDto"
           }
         }
       },

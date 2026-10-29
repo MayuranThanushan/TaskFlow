@@ -1,3 +1,4 @@
+import { AuditDetails } from '../../components/AuditDetails'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { ApiClient } from '../../api/client'
@@ -50,7 +51,7 @@ export function CompanyAuditPage({ client }: { client: ApiClient }) {
   const { result, retry } = useApiResource<components['schemas']['WorkspaceAuditPage']>(client, '/audit?page=' + encodeURIComponent(params.get('page') ?? '1'))
   return <section className="projects-page"><div className="page-heading"><div><p className="eyebrow">Governance history</p><h1>Company audit</h1><p className="muted">Stable actor, target and project IDs. Private project names and content are excluded.</p></div></div>
     {result.status === 'loading' ? <p role="status">Loading company audit...</p> : result.status === 'error' ? <RetryError message={result.error.message} retry={retry} /> : <>
-      <TableRegion label="Company audit table"><table className="task-table"><caption className="sr-only">Company governance events</caption><thead><tr><th scope="col">When</th><th scope="col">Action</th><th scope="col">Actor ID</th><th scope="col">Target ID</th><th scope="col">Project ID</th><th scope="col">Change</th></tr></thead><tbody>{result.data.items.map(event => <tr key={event.id}><td><time dateTime={event.createdAtUtc}>{new Date(event.createdAtUtc).toLocaleString()}</time></td><td>{event.action}</td><td>{event.actorUserId}</td><td>{event.targetUserId}</td><td>{event.projectId ?? '—'}</td><td>{event.fromRole ?? '—'} → {event.toRole ?? '—'}</td></tr>)}</tbody></table></TableRegion>
+      <TableRegion label="Company audit table"><table className="task-table"><caption className="sr-only">Company governance events</caption><thead><tr><th scope="col">When</th><th scope="col">Action</th><th scope="col">Actor ID</th><th scope="col">Target ID</th><th scope="col">Project ID</th><th scope="col">Change</th></tr></thead><tbody>{result.data.items.map(event => <tr key={event.id}><td><time dateTime={event.createdAtUtc}>{new Date(event.createdAtUtc).toLocaleString()}</time></td><td>{event.action}</td><td>{event.actorUserId}</td><td>{event.targetUserId}</td><td>{event.projectId ?? '—'}</td><td>{event.fromRole ?? '—'} → {event.toRole ?? '—'}<AuditDetails audit={event.audit} /></td></tr>)}</tbody></table></TableRegion>
       {result.data.totalCount === 0 && <p>No governance events recorded.</p>}<Pagination label="Company audit pages" page={result.data.page} totalPages={result.data.totalPages} onPage={page => setParams({ page: String(page) })} />
     </>}
   </section>

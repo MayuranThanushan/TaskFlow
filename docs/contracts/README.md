@@ -53,3 +53,5 @@ SaaS-010 adds nine separately gated v2 writes with the existing session/CSRF and
 SaaS-011 adds atomic company creation and current-company metadata reads, with existing session/CSRF and preview flags. Only name is writable for creation; see [company navigation](../saas/company-navigation.md).
 
 SaaS-012 adds eight lifecycle operations, explicit project roles, Removed membership state and governance audit DTOs. All three backend flags are required; lifecycle mode closes legacy resource routes. See [lifecycle semantics](../saas/workspace-lifecycle.md).
+
+SaaS-013 adds the versioned `audit` metadata object to activity and governance responses without new public routes (36 paths / 52 operations). Private value changes are redacted; version 0 is explicitly legacy. Security records have no browser DTO/route. See [structured audit](../saas/structured-audit.md).

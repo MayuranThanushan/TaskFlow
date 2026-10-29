@@ -19,8 +19,15 @@ public sealed class WorkspaceMembership
 public enum WorkspaceRole { Owner, Admin, Member, Guest }
 public enum WorkspaceMembershipState { Active, Suspended, Removed }
 
-public sealed class WorkspaceAuditLog
+public sealed class WorkspaceAuditLog : IVersionedAudit
 {
+    public int SchemaVersion { get; set; }
+    public string? Outcome { get; set; }
+    public string? CorrelationId { get; set; }
+    public string? SubjectType { get; set; }
+    public string? SubjectId { get; set; }
+    public string? ChangesJson { get; set; }
+
     public long Id { get; set; }
     public long WorkspaceId { get; set; }
     public long ActorUserId { get; set; }

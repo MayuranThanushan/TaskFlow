@@ -9,6 +9,8 @@ namespace TaskFlow.Infrastructure.Persistence;
 public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock)
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
+    private readonly AuditCapture auditCapture = new();
+    public DbSet<SecurityEvent> SecurityEvents => Set<SecurityEvent>();
     public DbSet<WorkspaceAuditLog> WorkspaceAuditLogs => Set<WorkspaceAuditLog>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
@@ -34,13 +36,17 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         PrepareChanges();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        var hadAudit = ChangeTracker.Entries().Any(e => e.State == EntityState.Added && e.Entity is IVersionedAudit);
+        var result = base.SaveChanges(acceptAllChangesOnSuccess);
+        auditCapture.Saved(hadAudit); return result;
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         PrepareChanges();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var hadAudit = ChangeTracker.Entries().Any(e => e.State == EntityState.Added && e.Entity is IVersionedAudit);
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        auditCapture.Saved(hadAudit); return result;
     }
 
     private void PrepareChanges()
@@ -49,13 +55,14 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         var now = clock.GetUtcNow().UtcDateTime;
         foreach (var entry in ChangeTracker.Entries().ToList())
         {
-            if (entry.Entity is (ActivityLog or WorkspaceAuditLog) && entry.State is EntityState.Modified or EntityState.Deleted)
+            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)
                 throw new InvalidOperationException("Projects and tasks require explicit soft deletion.");
             if (entry.State is not (EntityState.Added or EntityState.Modified)) continue;
 
             if (entry.Entity is WorkspaceAuditLog audit && entry.State == EntityState.Added) audit.CreatedAtUtc = now;
+            if (entry.Entity is SecurityEvent security && entry.State == EntityState.Added) security.CreatedAtUtc = now;
             switch (entry.Entity)
             {
                 case Workspace workspace:
@@ -98,5 +105,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
                 auditable.UpdatedAtUtc = now;
             }
         }
+        ChangeTracker.DetectChanges();
+        auditCapture.Prepare(this);
     }
 }

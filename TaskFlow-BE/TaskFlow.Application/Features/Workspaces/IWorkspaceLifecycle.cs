@@ -4,7 +4,7 @@ namespace TaskFlow.Application.Features.Workspaces;
 
 public sealed record WorkspaceMemberDto(string UserId, string DisplayName, string? Role, string? State);
 public sealed record WorkspaceMemberPage(IReadOnlyList<WorkspaceMemberDto> Items, int Page, int PageSize, int TotalCount, int TotalPages);
-public sealed record WorkspaceAuditDto(string Id, string ActorUserId, string TargetUserId, string? ProjectId, string Action, string? FromRole, string? ToRole, DateTime CreatedAtUtc);
+public sealed record WorkspaceAuditDto(string Id, string ActorUserId, string TargetUserId, string? ProjectId, string Action, string? FromRole, string? ToRole, DateTime CreatedAtUtc, TaskFlow.Application.Features.Activity.AuditMetadataDto Audit);
 public sealed record WorkspaceAuditPage(IReadOnlyList<WorkspaceAuditDto> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 
 public interface IWorkspaceLifecycle

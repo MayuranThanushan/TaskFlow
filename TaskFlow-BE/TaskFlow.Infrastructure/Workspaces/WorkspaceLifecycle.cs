@@ -52,7 +52,7 @@ public sealed class WorkspaceLifecycle(IServiceScopeFactory scopes, TaskFlowDbCo
         var total = await query.CountAsync(token);
         var rows = await query.OrderByDescending(a => a.CreatedAtUtc).ThenByDescending(a => a.Id).Skip((page - 1) * size).Take(size).ToArrayAsync(token);
         await snapshot.CommitAsync(token);
-        return new(rows.Select(a => new WorkspaceAuditDto(Id(a.Id), Id(a.ActorUserId), Id(a.TargetUserId), a.ProjectId is { } p ? Id(p) : null, a.Action, a.FromRole, a.ToRole, a.CreatedAtUtc)).ToArray(), page, size, total, (int)Math.Ceiling(total / (double)size));
+        return new(rows.Select(a => new WorkspaceAuditDto(Id(a.Id), Id(a.ActorUserId), Id(a.TargetUserId), a.ProjectId is { } p ? Id(p) : null, a.Action, a.FromRole, a.ToRole, a.CreatedAtUtc, TaskFlow.Application.Features.Activity.AuditMetadata.Map(a))).ToArray(), page, size, total, (int)Math.Ceiling(total / (double)size));
     }
 
     // Every lifecycle writer uses the same workspace -> membership -> project ordering as scoped CRUD.
@@ -101,7 +101,11 @@ public sealed class WorkspaceLifecycle(IServiceScopeFactory scopes, TaskFlowDbCo
         var signIn = scope.ServiceProvider.GetRequiredService<SignInManager<ApplicationUser>>();
         var user = await manager.FindByIdAsync(Id(actor));
         token.ThrowIfCancellationRequested();
-        if (user is null || user.TwoFactorEnabled || !(await signIn.CheckPasswordSignInAsync(user, password!, lockoutOnFailure: true)).Succeeded) Deny();
+        var verified = user is not null && !user.TwoFactorEnabled && (await signIn.CheckPasswordSignInAsync(user, password!, lockoutOnFailure: true)).Succeeded;
+        await scope.ServiceProvider.GetRequiredService<TaskFlow.Application.Features.Activity.ISecurityEvents>().WriteAsync(
+            TaskFlow.Application.Features.Activity.SecurityAction.PasswordProof,
+            verified ? TaskFlow.Application.Features.Activity.SecurityOutcome.Succeeded : TaskFlow.Application.Features.Activity.SecurityOutcome.Denied, actor, actor, CancellationToken.None);
+        if (!verified) Deny();
     }
 
     public Task SetRoleAsync(WorkspaceWriteContext context, long userId, WorkspaceRole role, string? password, CancellationToken token = default) => Write(context, async (db, actor) =>

@@ -640,6 +640,7 @@ export interface components {
             actionType: string;
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
             actorUserId: string;
+            audit: components["schemas"]["AuditMetadataDto"];
             /** Format: date-time */
             createdAtUtc: string;
             details: string;
@@ -681,6 +682,22 @@ export interface components {
             title: string;
             traceId: string;
             type: string;
+        };
+        AuditChangeDto: {
+            after: null | string;
+            before: null | string;
+            field: string;
+            redacted: boolean;
+        };
+        AuditMetadataDto: {
+            changes: components["schemas"]["AuditChangeDto"][];
+            correlationId: null | string;
+            isLegacy: boolean;
+            outcome: string;
+            /** Format: int32 */
+            schemaVersion: number;
+            subjectId: null | string;
+            subjectType: null | string;
         };
         CreateTaskRequest: {
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
@@ -870,6 +887,7 @@ export interface components {
             action: string;
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
             actorUserId: string;
+            audit: components["schemas"]["AuditMetadataDto"];
             /** Format: date-time */
             createdAtUtc: string;
             fromRole: null | string;

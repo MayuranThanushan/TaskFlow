@@ -67,6 +67,7 @@ var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
 
 app.UseMiddleware<ServiceTelemetryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<SecurityEventMiddleware>();
 app.UseExceptionHandler();
 app.UseStatusCodePages(async context =>
 {

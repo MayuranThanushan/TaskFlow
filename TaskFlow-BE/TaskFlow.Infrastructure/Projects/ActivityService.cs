@@ -30,7 +30,7 @@ public sealed class ActivityService(TaskFlowDbContext database) : IActivityServi
         var rows = await query.OrderByDescending(a => a.CreatedAtUtc).ThenByDescending(a => a.Id).Skip((options.Page - 1) * options.PageSize).Take(options.PageSize).ToListAsync(cancellationToken);
         await snapshot.CommitAsync(cancellationToken);
         return new(rows.Select(a => new ActivityDto(Id(a.Id), Id(a.ProjectId), Id(a.ActorUserId), a.TaskId is { } task ? Id(task) : null,
-            a.ActionType.ToString(), Summary(a), a.CreatedAtUtc)).ToArray(), options.Page, options.PageSize, total, (int)Math.Ceiling(total / (double)options.PageSize));
+            a.ActionType.ToString(), Summary(a), a.CreatedAtUtc, TaskFlow.Application.Features.Activity.AuditMetadata.Map(a))).ToArray(), options.Page, options.PageSize, total, (int)Math.Ceiling(total / (double)options.PageSize));
     }
     private static string Id(long id) => id.ToString(CultureInfo.InvariantCulture);
     private static string? Detail(ActivityLog activity, string key)

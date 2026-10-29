@@ -144,3 +144,7 @@ a { text-underline-offset:3px; }
   .governance-member .member-governance { width: 100%; }
   .governance-member .governance-action { max-width: none; }
 }
+
+.audit-metadata { margin-block: 12px; font-size: 12px; line-height: 1.6; }
+.audit-metadata summary { cursor: pointer; font-weight: 650; }
+.audit-metadata code { overflow-wrap: anywhere; white-space: normal; }

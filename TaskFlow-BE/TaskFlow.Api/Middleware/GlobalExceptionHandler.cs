@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TaskFlow.Application.Features.Projects;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -38,7 +37,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                 ? "database.operation_failed" : "api.unhandled";
         logger.LogError(new EventId(2000, "api.failure"),
             "API failure {FailureCode} ({ExceptionType}); trace {TraceId}",
-            failureCode, exception.GetType().Name, Activity.Current?.Id ?? context.TraceIdentifier);
+            failureCode, exception.GetType().Name, context.TraceIdentifier);
         await ProblemResponses.WriteAsync(context, ProblemResponses.Create(context, StatusCodes.Status500InternalServerError));
         return true;
     }
