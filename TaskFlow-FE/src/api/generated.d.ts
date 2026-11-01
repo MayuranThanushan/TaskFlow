@@ -369,6 +369,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/workspaces/{workspaceId}/audit/console": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. */
+        get: operations["WorkspaceAuditConsole_List"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. */
+        post: operations["WorkspaceAuditConsole_Export"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. */
+        post: operations["WorkspaceAuditConsole_Download"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/workspaces/{workspaceId}/dashboard": {
         parameters: {
             query?: never;
@@ -688,6 +739,76 @@ export interface components {
             before: null | string;
             field: string;
             redacted: boolean;
+        };
+        AuditConsolePage: {
+            highWatermark: string;
+            items: components["schemas"]["AuditConsoleRowDto"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        AuditConsoleQuery: {
+            action?: null | string;
+            actorId?: null | string;
+            entityId?: null | string;
+            entityType?: null | string;
+            /**
+             * Format: date-time
+             * @description ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.
+             */
+            fromUtc?: null | string;
+            outcome?: null | string;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            resourceState: string;
+            source: string;
+            /**
+             * Format: date-time
+             * @description ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.
+             */
+            toUtc?: null | string;
+        };
+        AuditConsoleRowDto: {
+            action: string;
+            /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
+            actorUserId: string;
+            audit: components["schemas"]["AuditMetadataDto"];
+            /** Format: date-time */
+            createdAtUtc: string;
+            /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
+            id: string;
+            projectDeleted: null | boolean;
+            /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
+            projectId: null | string;
+            source: string;
+        };
+        AuditDownloadRequest: {
+            ticket: string;
+        };
+        AuditExportDto: {
+            /** Format: date-time */
+            generatedAtUtc: string;
+            items: components["schemas"]["AuditConsoleRowDto"][];
+            /** Format: int32 */
+            maximumRecords: number;
+            truncated: boolean;
+        };
+        AuditExportRequest: {
+            filters: components["schemas"]["AuditConsoleQuery"];
+        };
+        AuditExportTicketDto: {
+            /** Format: date-time */
+            expiresAtUtc: string;
+            /** Format: int32 */
+            maximumRecords: number;
+            ticket: string;
         };
         AuditMetadataDto: {
             changes: components["schemas"]["AuditChangeDto"][];
@@ -3294,6 +3415,379 @@ export interface operations {
             409: {
                 headers: {
                     "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceAuditConsole_List: {
+        parameters: {
+            query?: {
+                action?: string;
+                actorId?: string;
+                entityId?: string;
+                entityType?: string;
+                fromUtc?: string;
+                outcome?: string;
+                page?: number;
+                pageSize?: number;
+                resourceState?: string;
+                source?: string;
+                toUtc?: string;
+            };
+            header?: never;
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditConsolePage"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceAuditConsole_Export: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["AuditExportRequest"];
+                "application/json": components["schemas"]["AuditExportRequest"];
+                "text/json": components["schemas"]["AuditExportRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditExportTicketDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceAuditConsole_Download: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["AuditDownloadRequest"];
+                "application/json": components["schemas"]["AuditDownloadRequest"];
+                "text/json": components["schemas"]["AuditDownloadRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditExportDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
                     /** @description Correlation ID; matches error traceId. */
                     "X-Trace-Id"?: string;
                     [name: string]: unknown;

@@ -7,6 +7,9 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces/{workspaceId}/audit/console": {"get"},
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports": {"post"},
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports/download": {"post"},
     "/api/v2/workspaces/{workspaceId}/members": {"get"},
     "/api/v2/workspaces/{workspaceId}/audit": {"get"},
     "/api/v2/workspaces/{workspaceId}/members/{userId}/role": {"patch"},
@@ -81,7 +84,7 @@ def main():
         print("OpenAPI snapshot matches live API.")
     else:
         args.output.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
-        print("Exported 17 paths / 24 operations to", args.output)
+        print(f"Exported {len(EXPECTED)} paths / {sum(len(methods) for methods in EXPECTED.values())} operations to", args.output)
 
 if __name__ == "__main__":
     main()

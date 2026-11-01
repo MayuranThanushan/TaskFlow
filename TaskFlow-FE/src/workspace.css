@@ -148,3 +148,10 @@ a { text-underline-offset:3px; }
 .audit-metadata { margin-block: 12px; font-size: 12px; line-height: 1.6; }
 .audit-metadata summary { cursor: pointer; font-weight: 650; }
 .audit-metadata code { overflow-wrap: anywhere; white-space: normal; }
+
+.audit-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 1rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 12px; margin-block: 1rem; background: white; }
+.audit-filters label { display: flex; flex-direction: column; gap: .4rem; min-width: 0; color: #3c4b62; font-size: 12px; font-weight: 500; }
+.audit-filters input, .audit-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--control-border); border-radius: 7px; background: white; color: #172e2a; font: inherit; font-size: 14px; }
+.audit-filters select:focus-visible { outline: 3px solid #35806a; outline-offset: 3px; }
+.audit-filters .action-row { align-self: end; flex-wrap: wrap; }
+.audit-export-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-block: 1.25rem; }

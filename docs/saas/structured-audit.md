@@ -16,7 +16,7 @@ Request middleware creates an ambient correlation scope before authentication an
 
 Migration `20261029150840_StructuredAudit` adds nullable metadata and SchemaVersion default 0 to existing business histories, plus a new SecurityEvents table. Existing rows remain unchanged: version 0 reads as `isLegacy: true`, `outcome: LegacyUnknown`, with no invented correlation or deltas. Historical action/actor/time and existing safe summaries remain available. New writers stamp version 1. A reader encountering an unknown version withholds its metadata payload and returns UnsupportedVersion rather than interpreting unreviewed changes.
 
-Audit details on project activity and the basic company audit page show version/outcome, safe changes, subject and correlation. The UI never renders before/after values marked redacted. Legacy and unsupported versions are labelled explicitly. Full audit filtering, deleted-resource review and bounded company export jobs remain SaaS-014; the existing current-project-page download retains its existing scope.
+Audit details on project activity and the basic company audit page show version/outcome, safe changes, subject and correlation. The UI never renders before/after values marked redacted. Legacy and unsupported versions are labelled explicitly. Audit filtering, deleted-resource review and bounded company export requests are implemented in [SaaS-014](audit-console.md); the existing current-project-page download retains its existing scope.
 
 ## Platform security events
 
@@ -61,4 +61,4 @@ The additive migration is required for new binaries in every environment, even w
 
 Local verification includes actual MySQL transaction/failure tests, cross-company and platform-reader denials, unknown/legacy schema handling, tracing-disabled correlation, frontend redaction and the bounded exporter safety checks. A published HTTPS rehearsal uses the actual runtime/operations grant template and checks negative SQL privileges, export and sensitive canaries. Another rehearsal upgrades a populated synthetic backup and confirms old events remain version 0 before exercising legacy journeys. See [evidence](../evidence/saas013-structured-audit.json).
 
-No live development/customer database was migrated by this implementation. Fresh hosted CI/CodeQL/container results and selected-host privilege/monitoring verification remain gates. Next is SaaS-014: the company audit console's filters, deleted-resource review and bounded exports.
+No live development/customer database was migrated by this implementation. Fresh hosted CI/CodeQL/container results and selected-host privilege/monitoring verification remain gates. The [SaaS-014 console](audit-console.md) extends these readers with filters, deleted-resource review and bounded exports.

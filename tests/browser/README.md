@@ -54,3 +54,7 @@ Build the isolated app with both VITE_WORKSPACES_ENABLED and VITE_WORKSPACE_LIFE
 ## Structured audit journey
 
 After companies.cjs and lifecycle.cjs in the same disposable instance, run `node tests/browser/structured-audit.cjs` with the same lifecycle fixture settings. The transferred company/project Owner verifies versioned governance, a safe priority delta, matching mutation correlation, withheld private title values and expanded audit details at desktop/mobile sizes. Reports go to structured-audit.json. Provision the app with the runtime grant template and a distinct SELECT-only SecurityEvents reader; run the bounded operator exporter separately and verify negative SQL privileges. These fixture accounts/exports must never use customer data.
+
+## Audit console preview
+
+After the company/lifecycle/structured-audit journeys, run `node tests/browser/audit-console.cjs` in the same disposable HTTPS instance and with the same lifecycle fixture settings. It exercises combined URL filters, expanded safe changes, an actual authenticated JSON download, string IDs, sensitive-value exclusion and deleted-only empty state, plus two desktop/mobile accessibility/overflow scans. It writes audit-console.json and screenshots; the browser-owned temporary download is not committed. API tests separately cover deleted private-project history, revoked grants, suspension, export caps/watermarks and expired/foreign tickets. Hosted lifecycle/console CI remains a separate gate.

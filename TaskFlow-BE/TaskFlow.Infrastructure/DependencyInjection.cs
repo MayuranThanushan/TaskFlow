@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceWrites, TaskFlow.Infrastructure.Workspaces.WorkspaceWrites>();
         services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceDirectory, TaskFlow.Infrastructure.Workspaces.WorkspaceDirectory>();
         services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceLifecycle, TaskFlow.Infrastructure.Workspaces.WorkspaceLifecycle>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceAuditConsole, TaskFlow.Infrastructure.Workspaces.WorkspaceAuditConsole>();
         services.AddSingleton<SecuritySignalWindow>();
         services.AddScoped<TaskFlow.Application.Features.Activity.ISecurityEvents, SecurityEvents>();
         services.AddScoped<IAccountService, AccountService>();
