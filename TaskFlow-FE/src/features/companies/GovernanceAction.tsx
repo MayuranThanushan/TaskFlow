@@ -6,7 +6,7 @@ import { Confirmation } from '../../components/Feedback'
 
 export function GovernanceAction({ client, path, method, title, children, data, passwordRequired = false, description, onSuccess }: {
   client: ApiClient; path: string; method: 'post' | 'patch' | 'put'; title: string; children?: ReactNode;
-  data: Record<string, string>; passwordRequired?: boolean; description: string; onSuccess: () => void;
+  data: Record<string, unknown>; passwordRequired?: boolean; description: string; onSuccess: () => void;
 }) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState(false)
@@ -25,7 +25,7 @@ export function GovernanceAction({ client, path, method, title, children, data, 
     } catch (failure) {
       if (!alive.current) return
       const e = asApiError(failure)
-      setError(e.status === 409 ? 'This change conflicts with current membership or ownership. Transfer active owned projects first and keep an active company Owner.' : e.status === 403 ? 'Access denied or password verification failed. Check your permissions and re-enter your password.' : e.message)
+      setError(e.code === "resource.conflict" || e.code === "quota.exceeded" ? e.message : e.status === 409 ? 'This change conflicts with current membership or ownership. Transfer active owned projects first and keep an active company Owner.' : e.status === 403 ? 'Access denied or password verification failed. Check your permissions and re-enter your password.' : e.message)
       setPassword(''); setConfirm(false)
     } finally { lock.current = false; if (alive.current) setPending(false) }
   }

@@ -12,7 +12,7 @@ using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Workspaces;
 
-public sealed class WorkspaceLifecycle(IServiceScopeFactory scopes, TaskFlowDbContext reads, IWorkspaceReads admission, TimeProvider clock) : IWorkspaceLifecycle
+public sealed partial class WorkspaceLifecycle(IServiceScopeFactory scopes, TaskFlowDbContext reads, IWorkspaceReads admission, TimeProvider clock) : IWorkspaceLifecycle, IWorkspacePolicy
 {
     private static string Id(long id) => id.ToString(CultureInfo.InvariantCulture);
     private static void Deny() => throw new ProjectAccessException(ProjectAccessDecision.Forbidden);
@@ -130,6 +130,7 @@ public sealed class WorkspaceLifecycle(IServiceScopeFactory scopes, TaskFlowDbCo
         // Transfer/demote with password verification first; this also protects the final active owner.
         if (target.Role == WorkspaceRole.Owner || target.UserId == actor.UserId) Conflict();
         if (target.State == state) return;
+        if (state == WorkspaceMembershipState.Active) await PilotQuotas.MemberAsync(db, context.WorkspaceId, token);
         if (target.State == WorkspaceMembershipState.Removed) Conflict();
         if (state == WorkspaceMembershipState.Removed) await NoOwnedProjects(db, target, token);
         var before = target.State.ToString(); target.State = state;

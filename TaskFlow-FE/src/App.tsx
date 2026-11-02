@@ -29,7 +29,7 @@ function AppLayout({ companiesEnabled, lifecycleEnabled }: { companiesEnabled: b
   const routePath = company ? location.pathname.slice(('/companies/' + company).length) : location.pathname
   const previousPath = useRef(location.pathname)
   useEffect(() => {
-    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/activity': 'Activity center', '/profile': 'Profile', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work', '/companies': 'Companies', '/team': 'Company team', '/audit': 'Company audit' }
+    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/activity': 'Activity center', '/profile': 'Profile', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work', '/companies': 'Companies', '/team': 'Company team', '/audit': 'Company audit', '/policy': 'Policy & capacity' }
     document.title = `${titles[routePath] ?? (routePath.endsWith('/activity') ? 'Project activity' : routePath.startsWith('/tasks/') ? 'Task' : routePath.endsWith('/tasks') ? 'Tasks' : routePath.endsWith('/tasks/new') ? 'Create task' : routePath.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
@@ -67,7 +67,7 @@ A lot more clarity.</span><span className="user-name"><span className="user-avat
     {session.status === 'authenticated' && session.message && <div className="connection-banner" role="status">{session.message}{' '}
       <button className="text-button" onClick={() => void refresh()}>Try again</button>
     </div>}
-    <main id="main-content" tabIndex={-1}>{session.status === 'authenticated' && <div className="workspace-topbar"><span>Workspace <span aria-hidden="true">/</span> <strong>{routePath === '/team' ? 'Team & access' : routePath === '/audit' ? 'Company audit' : routePath.startsWith('/activity') || routePath.endsWith('/activity') ? 'Activity' : routePath.startsWith('/tasks') ? 'Tasks' : routePath.startsWith('/projects') ? 'Projects' : routePath === '/profile' ? 'Profile' : routePath === '/companies' ? 'Companies' : 'Overview'}</strong></span><span className="workspace-private"><span />Private workspace</span></div>}<Outlet /></main>
+    <main id="main-content" tabIndex={-1}>{session.status === 'authenticated' && <div className="workspace-topbar"><span>Workspace <span aria-hidden="true">/</span> <strong>{routePath === '/policy' ? 'Policy & capacity' : routePath === '/team' ? 'Team & access' : routePath === '/audit' ? 'Company audit' : routePath.startsWith('/activity') || routePath.endsWith('/activity') ? 'Activity' : routePath.startsWith('/tasks') ? 'Tasks' : routePath.startsWith('/projects') ? 'Projects' : routePath === '/profile' ? 'Profile' : routePath === '/companies' ? 'Companies' : 'Overview'}</strong></span><span className="workspace-private"><span />Private workspace</span></div>}<Outlet /></main>
     <footer className="app-footer"><span>TaskFlow</span><span>A clearer way to work.</span></footer>
   </div>
 }

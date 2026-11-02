@@ -7,6 +7,12 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is TaskFlow.Application.Features.Workspaces.PilotQuotaException)
+        {
+            var problem = ProblemResponses.Create(context, 409); problem.Extensions["code"] = "quota.exceeded";
+            problem.Title = "Pilot capacity reached. Contact your company owner or operations team.";
+            await ProblemResponses.WriteAsync(context, problem); return true;
+        }
         if (exception is ResourceVersionException || exception is Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
         {
             var conflict = exception as ResourceVersionException;

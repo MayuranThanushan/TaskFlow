@@ -10,6 +10,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<PilotGate> PilotGates => Set<PilotGate>();
     public DbSet<SecurityEvent> SecurityEvents => Set<SecurityEvent>();
     public DbSet<WorkspaceAuditLog> WorkspaceAuditLogs => Set<WorkspaceAuditLog>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
@@ -29,6 +30,13 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         base.OnModelCreating(builder);
         builder.UseCollation("utf8mb4_0900_ai_ci");
         builder.ApplyConfigurationsFromAssembly(typeof(TaskFlowDbContext).Assembly);
+        builder.Entity<PilotGate>().HasKey(g => g.Id);
+        builder.Entity<PilotGate>().HasData(new PilotGate { Id = 1 });
+        builder.Entity<Workspace>().Property(w => w.PolicyVersion).HasDefaultValue(1L).IsConcurrencyToken();
+        builder.Entity<Workspace>().Property(w => w.AuditRetentionDays).HasDefaultValue(365);
+        builder.Entity<Workspace>().Property(w => w.DeletedContentRetentionDays).HasDefaultValue(30);
+        builder.Entity<Workspace>().Property(w => w.LegalHold).HasDefaultValue(true).HasSentinel(true);
+        builder.Entity<Workspace>().Property(w => w.AuditExportsEnabled).HasDefaultValue(true).HasSentinel(true);
         builder.Entity<Project>().Property(p => p.Version).IsConcurrencyToken().HasDefaultValue(1L);
         builder.Entity<TaskItem>().Property(t => t.Version).IsConcurrencyToken().HasDefaultValue(1L);
         foreach (var foreignKey in builder.Model.GetEntityTypes().SelectMany(entity => entity.GetForeignKeys()))

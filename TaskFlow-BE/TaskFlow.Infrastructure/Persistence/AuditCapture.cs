@@ -29,7 +29,7 @@ internal sealed class AuditCapture
     private static string? Scalar(object? value) => value switch
     {
         null => null, DateTime date => date.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-        Enum e => e.ToString(), long n => n.ToString(CultureInfo.InvariantCulture), _ => throw new InvalidOperationException("Unsupported audit scalar.")
+        Enum e => e.ToString(), long n => n.ToString(CultureInfo.InvariantCulture), int n => n.ToString(CultureInfo.InvariantCulture), bool b => b ? "true" : "false", _ => throw new InvalidOperationException("Unsupported audit scalar.")
     };
     public void Prepare(TaskFlowDbContext db)
     {
@@ -39,7 +39,7 @@ internal sealed class AuditCapture
             {
                 Project => ["Name", "Description", "OwnerId", "DeletedAtUtc"],
                 TaskItem => ["Title", "Description", "Status", "Priority", "AssigneeId", "DueDateUtc", "DeletedAtUtc"],
-                ProjectMember => ["Role", "RevokedAtUtc"], WorkspaceMembership => ["Role", "State"], Workspace => ["Name"], _ => []
+                ProjectMember => ["Role", "RevokedAtUtc"], WorkspaceMembership => ["Role", "State"], Workspace => ["Name", "AuditRetentionDays", "DeletedContentRetentionDays", "LegalHold", "AuditExportsEnabled"], _ => []
             };
             foreach (var field in properties)
             {
@@ -81,7 +81,7 @@ internal sealed class AuditCapture
             }
             else if (row is WorkspaceAuditLog governance)
             {
-                row.SubjectType = governance.Action == "CompanyCreated" ? "Workspace" : governance.ProjectId is null ? "WorkspaceMembership"
+                row.SubjectType = governance.Action is "CompanyCreated" or "CompanyPolicyChanged" ? "Workspace" : governance.ProjectId is null ? "WorkspaceMembership"
                     : governance.Action == "ProjectOwnershipTransferred" ? "Project" : "ProjectMembership";
                 row.SubjectId = row.SubjectType switch
                 {
@@ -89,7 +89,7 @@ internal sealed class AuditCapture
                     "Project" => governance.ProjectId!.Value.ToString(CultureInfo.InvariantCulture),
                     _ => (governance.ProjectId ?? governance.WorkspaceId).ToString(CultureInfo.InvariantCulture) + ":" + governance.TargetUserId.ToString(CultureInfo.InvariantCulture)
                 };
-                changes = governance.Action == "CompanyCreated" ? pending.Where(c => c.Entity is Workspace w && w.Id == governance.WorkspaceId).Select(c => c.Delta).ToList()
+                changes = governance.Action is "CompanyCreated" or "CompanyPolicyChanged" ? pending.Where(c => c.Entity is Workspace w && w.Id == governance.WorkspaceId).Select(c => c.Delta).ToList()
                     : governance.Action == "ProjectOwnershipTransferred" ? pending.Where(c => c.Entity is Project p && p.Id == governance.ProjectId).Select(c => c.Delta).ToList()
                     : governance.FromRole is not null || governance.ToRole is not null ? [new(governance.Action.Contains("Suspended", StringComparison.Ordinal) || governance.Action.Contains("Reactivated", StringComparison.Ordinal) || governance.Action == "CompanyMemberRemoved" ? "state" : "role", governance.FromRole, governance.ToRole, false)]
                     : pending.Where(c => c.Entity is WorkspaceMembership m && m.WorkspaceId == governance.WorkspaceId && m.UserId == governance.TargetUserId).Select(c => c.Delta).ToList();

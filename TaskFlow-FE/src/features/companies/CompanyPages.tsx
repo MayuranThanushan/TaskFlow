@@ -1,3 +1,4 @@
+import { CompanyPolicyPage } from './CompanyPolicyPage'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -88,8 +89,8 @@ function CompanyContent({ client, workspaceId, lifecycleEnabled }: { client: Api
   if (error) return <section><h1>Company not available.</h1><RetryError message={error} retry={() => { setError(''); setAttempt(a => a + 1) }} /><Link to="/companies">Choose a company</Link></section>
   if (!company) return <p role="status">Opening company...</p>
   return <CompanyContext value={{ lifecycleEnabled, role: company.role }}><div className="company-switchbar"><strong>{company.name}</strong><span>{company.role}</span> <Link to="/companies">Switch company</Link><span>Open forms are cleared when switching.</span></div>
-    {lifecycleEnabled && <nav className="company-tabs" aria-label="Company navigation"><Link to={'/companies/' + workspaceId + '/dashboard'}>Overview</Link><Link to={'/companies/' + workspaceId + '/projects'}>Projects</Link><Link to={'/companies/' + workspaceId + '/team'}>Team & access</Link>{(company.role === 'Owner' || company.role === 'Admin') && <Link to={'/companies/' + workspaceId + '/audit'}>Company audit</Link>}</nav>}<Routes>
-    {lifecycleEnabled && <><Route path="team" element={<CompanyTeamPage client={scoped} company={company} refreshCompany={() => setAttempt(a => a + 1)} />} /><Route path="audit" element={<CompanyAuditPage client={scoped} />} /></>}
+    {lifecycleEnabled && <nav className="company-tabs" aria-label="Company navigation"><Link to={'/companies/' + workspaceId + '/dashboard'}>Overview</Link><Link to={'/companies/' + workspaceId + '/projects'}>Projects</Link><Link to={'/companies/' + workspaceId + '/team'}>Team & access</Link>{(company.role === 'Owner' || company.role === 'Admin') && <><Link to={'/companies/' + workspaceId + '/audit'}>Company audit</Link><Link to={'/companies/' + workspaceId + '/policy'}>Policy &amp; capacity</Link></>}</nav>}<Routes>
+    {lifecycleEnabled && <><Route path="team" element={<CompanyTeamPage client={scoped} company={company} refreshCompany={() => setAttempt(a => a + 1)} />} /><Route path="audit" element={<CompanyAuditPage client={scoped} />} /><Route path="policy" element={<CompanyPolicyPage client={scoped} owner={company.role === "Owner"} />} /></>}
     <Route path="dashboard" element={<DashboardPage client={scoped} />} />
     <Route path="projects" element={<ProjectsPage client={scoped} />} />
     <Route path="projects/new" element={company.role === "Guest" ? <section><h1>Guests cannot create projects.</h1><Link to={"/companies/" + workspaceId + "/projects"}>Back to projects</Link></section> : <NewProjectPage client={scoped} />} />

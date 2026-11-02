@@ -28,7 +28,8 @@ export function asApiError(error: unknown): ApiError {
     }
   }
   const code = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : undefined
-  const message = code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
+  const message = code === 'quota.exceeded' ? 'Pilot capacity reached. Contact your company owner or operations team.'
+    : code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
     : status === 428 ? 'Reload this record before making changes.'
     : status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
     : status === 409 ? 'An account with this email already exists. Sign in to continue.'
@@ -99,7 +100,7 @@ export class ApiClient {
 
   async request<T>(config: AxiosRequestConfig, notifyUnauthorized = true): Promise<T> {
     if (this.workspaceId) {
-      if (!/^\/(projects|tasks|dashboard|activity|members|audit|ownership|leave)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
+      if (!/^\/(projects|tasks|dashboard|activity|members|audit|ownership|leave|policy)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
       const signal = config.signal ? AbortSignal.any([config.signal as AbortSignal, this.controller.signal]) : this.controller.signal
       return this.sessionClient!.dispatch<T>({ ...config, signal }, notifyUnauthorized, '/api/v2/workspaces/' + this.workspaceId)
     }

@@ -6,6 +6,7 @@ using TaskFlow.Application.Features.Projects;
 using TaskFlow.Application.Features.Workspaces;
 using TaskFlow.Domain.Entities;
 using TaskFlow.Infrastructure.Persistence;
+using TaskFlow.Infrastructure.Workspaces;
 
 namespace TaskFlow.Infrastructure.Projects;
 
@@ -87,6 +88,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
         }
         else
         {
+            if (workspace is { } capacityScope) await PilotQuotas.ProjectAsync(database, capacityScope.WorkspaceId, cancellationToken);
             project = new Project { OwnerId = actorId.Value, WorkspaceId = workspace?.WorkspaceId };
             database.Projects.Add(project);
         }
@@ -214,6 +216,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
             if (operation != ProjectOperation.WriteTasks) throw new InvalidOperationException("Task creation requires the task write operation.");
             if (request.AssigneeId is { } assignee && !await IsEligibleAssigneeAsync(assignee, cancellationToken))
                 throw new TaskFlow.Application.Features.Tasks.TaskValidationException("assigneeId", "Choose the project owner or a current member.");
+            if (workspaceId is { } capacityWorkspace) await PilotQuotas.TaskAsync(database, capacityWorkspace, project.Id, cancellationToken);
             var task = new TaskItem { ProjectId = project.Id, WorkspaceId = workspaceId, Title = TextRules.Required(request.Title, 200, "title"),
                 Description = TextRules.Optional(request.Description, 10_000, "description"), Priority = request.Priority,
                 Status = TaskState.ToDo, AssigneeId = request.AssigneeId, DueDateUtc = request.DueDateUtc };

@@ -159,3 +159,12 @@ a { text-underline-offset:3px; }
 .conflict-review { background: #fff9ed; border: 1px solid #d7bc7c; border-radius: 10px; padding: 20px; margin-block: 20px; }
 .conflict-review h2 { font-size: 18px; }
 .conflict-review td { max-width: 340px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.governance-action .policy-checkbox { display: flex; align-items: center; gap: 10px; }
+.governance-action .policy-checkbox input { width: 20px; min-height: 20px; flex: 0 0 20px; accent-color: #4159d1; }
+
+.pilot-capacity { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 14px; margin-block: 24px; }
+.pilot-capacity > div { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.pilot-capacity span { font-size: 12px; color: #53637b; }
+.pilot-capacity strong { font-size: 23px; overflow-wrap: anywhere; }
+.pilot-capacity .at-capacity strong { color: #9b352d; }

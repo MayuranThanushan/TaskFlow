@@ -53,3 +53,7 @@ GRANT DELETE ON taskflow.ProjectMembers TO 'taskflow'@'%';
 -- Verify SHOW GRANTS before rollout. Never give the app the migration or backup credentials.
 -- A recovery operator needs schema CREATE/DDL/DML rights on one explicitly named, new
 -- taskflow_restore_* destination. Grant runtime access there only after recovery verification.
+
+-- PilotGates has one seeded admission row. This MySQL locking read needs UPDATE privilege;
+-- runtime never changes the Id and receives no INSERT/DELETE permission on this table.
+GRANT SELECT, UPDATE (Id) ON taskflow.PilotGates TO 'taskflow'@'%';

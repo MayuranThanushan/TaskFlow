@@ -8,9 +8,9 @@ public sealed record AuditConsoleOptions(string Source = "Governance", long? Act
 public sealed record AuditConsoleRowDto(string Id, string Source, string ActorUserId, string? ProjectId,
     string Action, DateTime CreatedAtUtc, bool? ProjectDeleted, AuditMetadataDto Audit);
 public sealed record AuditConsolePage(IReadOnlyList<AuditConsoleRowDto> Items, int Page, int PageSize,
-    int TotalCount, int TotalPages, string HighWatermark);
+    int TotalCount, int TotalPages, string HighWatermark, bool AuditExportsEnabled);
 public interface IWorkspaceAuditConsole
 {
     Task<AuditConsolePage> ReadAsync(WorkspaceReadContext context, AuditConsoleOptions options, int page, int size,
-        long? highWatermark = null, CancellationToken token = default);
+        long? highWatermark = null, CancellationToken token = default, bool forExport = false);
 }

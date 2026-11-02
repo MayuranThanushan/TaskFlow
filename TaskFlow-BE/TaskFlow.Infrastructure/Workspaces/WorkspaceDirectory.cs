@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using TaskFlow.Application.Features.Projects;
 using TaskFlow.Application.Features.Workspaces;
 using TaskFlow.Domain.Entities;
@@ -13,6 +14,12 @@ public sealed class WorkspaceDirectory(TaskFlowDbContext database) : IWorkspaceD
         if (actorId <= 0) throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);
         name = TextRules.Required(name, 150, nameof(name));
         await using var transaction = await database.Database.BeginTransactionAsync(token);
+        // A seeded singleton row serializes fleet/company-owner admission across processes.
+        var gate = await database.PilotGates.FromSqlRaw("SELECT * FROM `PilotGates` WHERE `Id` = 1 FOR UPDATE").ToListAsync(token);
+        if (gate.Count != 1) throw new InvalidOperationException("Pilot admission gate is unavailable.");
+        if (await database.Workspaces.CountAsync(token) >= PilotQuotas.Companies
+            || await database.WorkspaceMemberships.CountAsync(m => m.UserId == actorId && m.Role == WorkspaceRole.Owner && m.State == WorkspaceMembershipState.Active, token) >= PilotQuotas.OwnedCompanies)
+            PilotQuotas.Deny();
         var workspace = new Workspace { Name = name };
         database.Workspaces.Add(workspace);
         await database.SaveChangesAsync(token);

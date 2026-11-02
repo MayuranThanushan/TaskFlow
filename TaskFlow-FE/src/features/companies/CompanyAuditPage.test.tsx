@@ -8,7 +8,7 @@ import { createApiClient } from '../../api/client'
 import { reply, server } from '../../test/server'
 
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals() })
-function setup(path = '/companies/1/audit', denied = false, ticketWait: Promise<void> | null = null) {
+function setup(path = '/companies/1/audit', denied = false, ticketWait: Promise<void> | null = null, disabledExports = false) {
   const auth = server(true), calls: InternalAxiosRequestConfig[] = []
   const client = createApiClient(async c => {
     calls.push(c)
@@ -18,7 +18,7 @@ function setup(path = '/companies/1/audit', denied = false, ticketWait: Promise<
     if (c.url === '/audit/console/exports') { await ticketWait; return reply(c, 200, { ticket: 'protected-ticket', expiresAtUtc: '2026-11-01T01:00:00Z', maximumRecords: 1000 }) }
     if (c.url === '/audit/console/exports/download') return reply(c, denied ? 403 : 200, { generatedAtUtc: '2026-11-01T00:00:00Z', items: [], truncated: true, maximumRecords: 1000 })
     const params = new URLSearchParams(c.url?.split('?')[1])
-    return reply(c, 200, { items: [], page: Number(params.get('page') ?? 1), pageSize: 20, totalCount: 40, totalPages: 2, highWatermark: '9007199254741111' })
+    return reply(c, 200, { items: [], page: Number(params.get('page') ?? 1), pageSize: 20, totalCount: 40, totalPages: 2, highWatermark: '9007199254741111', auditExportsEnabled: !disabledExports })
   })
   render(<MemoryRouter initialEntries={[path]}><App client={client} companiesEnabled lifecycleEnabled /></MemoryRouter>)
   return calls
@@ -74,6 +74,13 @@ describe('audit console', () => {
     await act(async () => { release(); await wait })
     expect(calls.some(c => c.url === '/audit/console/exports/download')).toBe(false)
     expect(click).not.toHaveBeenCalled()
+  })
+
+  it('disables packaged downloads when the company policy forbids exports', async () => {
+    const calls = setup('/companies/1/audit', false, null, true)
+    await screen.findByText(/Audit downloads are disabled by company policy/)
+    expect(screen.getByRole('button', { name: 'Download audit JSON' })).toBeDisabled()
+    expect(calls.some(c => c.method === 'post')).toBe(false)
   })
 
 })

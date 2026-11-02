@@ -81,3 +81,5 @@ These are proposed alert rules, not deployed alerts. Before launch, inject a fai
 5. Accept capacity only at an explicitly supported envelope with repeatable headroom, no isolation failures, no unhandled deadlocks and acceptable latency/errors. Approve quotas and objectives with the operating team. Keep SaaS-007's host/approval items open until this evidence exists.
 
 See [local evidence](evidence/saas007-load.json) for the measured baseline and its limitations.
+
+SaaS-016 adds [atomic scoped pilot caps and review policy](saas/pilot-policy.md), a reviewed tenant-control inventory, and a bounded 480-request/eight-worker scoped hot-company regression. This supplements the original unscoped 8,000-request baseline; it does not replace selected-host, representative full-pilot or fairness measurements. The machine-readable profile now distinguishes implemented pilot guardrails from unapproved service objectives and customer sizing.

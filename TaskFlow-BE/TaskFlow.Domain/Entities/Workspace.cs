@@ -1,7 +1,14 @@
 namespace TaskFlow.Domain.Entities;
 
+public sealed class PilotGate { public int Id { get; set; } }
+
 public sealed class Workspace : AuditableEntity
 {
+    public long PolicyVersion { get; set; } = 1;
+    public int AuditRetentionDays { get; set; } = 365;
+    public int DeletedContentRetentionDays { get; set; } = 30;
+    public bool LegalHold { get; set; } = true;
+    public bool AuditExportsEnabled { get; set; } = true;
     public string Name { get; set; } = "";
     // Unique, persisted legacy mapping; null for future explicitly created companies.
     public long? LegacyOwnerId { get; set; }

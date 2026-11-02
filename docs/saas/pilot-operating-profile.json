@@ -10,7 +10,10 @@
     "activeProjectsPerCompany": 20,
     "activeTasksPerCompany": 2000,
     "activeTasksPerProject": 500,
-    "enforcement": "Not implemented; tenant-aware atomic quotas planned in SaaS-016"
+    "enforcement": "SaaS-016 fixed pilot admission caps implemented for scoped v2 writes under shared database gates; lifecycle-enabled private pilot and coordinated cutover required. Sizing/service-objective approval remains pending.",
+    "retainedProjectsPerCompany": 100,
+    "retainedTasksPerCompany": 10000,
+    "companyCreationOwnerThreshold": 3
   },
   "proposedServiceObjectives": {
     "measurementWindowDays": 28,

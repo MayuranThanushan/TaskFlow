@@ -61,7 +61,7 @@ public sealed class WorkspaceAuditConsoleController(IWorkspaceAuditConsole audit
         Query(); var options = Options(request.Filters);
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         var scope = Scope(workspaceId);
-        var page = await audit.ReadAsync(scope, options, 1, 1, token: token);
+        var page = await audit.ReadAsync(scope, options, 1, 1, token: token, forExport: true);
         var expires = clock.GetUtcNow().AddMinutes(5);
         var ticket = new ExportTicket(scope.ActorId, scope.WorkspaceId, options, long.Parse(page.HighWatermark, CultureInfo.InvariantCulture), expires);
         return Ok(new AuditExportTicketDto(Protector.Protect(JsonSerializer.Serialize(ticket)), expires, 1000));
@@ -78,7 +78,7 @@ public sealed class WorkspaceAuditConsoleController(IWorkspaceAuditConsole audit
         if (ticket.ActorId != scope.ActorId || ticket.WorkspaceId != scope.WorkspaceId || clock.GetUtcNow() >= ticket.ExpiresAtUtc)
             throw new ProjectAccessException(ProjectAccessDecision.NotFound);
         // Regenerate under current authorization. The ticket never grants authority or stores a sensitive file.
-        var rows = await audit.ReadAsync(scope, ticket.Filters, 1, 1001, ticket.HighWatermark, token);
+        var rows = await audit.ReadAsync(scope, ticket.Filters, 1, 1001, ticket.HighWatermark, token, forExport: true);
         return Ok(new AuditExportDto(clock.GetUtcNow(), rows.Items.Take(1000).ToArray(), rows.Items.Count > 1000, 1000));
     }
     private sealed record ExportTicket(long ActorId, long WorkspaceId, AuditConsoleOptions Filters, long HighWatermark, DateTimeOffset ExpiresAtUtc);

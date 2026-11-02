@@ -14,7 +14,7 @@ public sealed class WorkspaceAuditConsole(TaskFlowDbContext db, IWorkspaceReads 
 {
     private static string Id(long id) => id.ToString(CultureInfo.InvariantCulture);
     public async Task<AuditConsolePage> ReadAsync(WorkspaceReadContext context, AuditConsoleOptions options, int page, int size,
-        long? highWatermark = null, CancellationToken token = default)
+        long? highWatermark = null, CancellationToken token = default, bool forExport = false)
     {
         if (page < 1 || size is < 1 or > 1001 || (long)(page - 1) * size > 10000 || highWatermark < 0)
             throw new TaskValidationException("page", "Audit page exceeds its bound; narrow the filters.");
@@ -31,6 +31,9 @@ public sealed class WorkspaceAuditConsole(TaskFlowDbContext db, IWorkspaceReads 
         await admission.AuthorizeAsync(context, token);
         if (!await db.WorkspaceMemberships.AnyAsync(m => m.WorkspaceId == context.WorkspaceId && m.UserId == context.ActorId
             && (m.Role == WorkspaceRole.Owner || m.Role == WorkspaceRole.Admin), token))
+            throw new ProjectAccessException(ProjectAccessDecision.Forbidden);
+        var exportsEnabled = await db.Workspaces.Where(w => w.Id == context.WorkspaceId).Select(w => w.AuditExportsEnabled).SingleAsync(token);
+        if (forExport && !exportsEnabled)
             throw new ProjectAccessException(ProjectAccessDecision.Forbidden);
         AuditConsoleRowDto[] rows; int count; long watermark;
         if (options.Source == "Governance")
@@ -87,7 +90,7 @@ public sealed class WorkspaceAuditConsole(TaskFlowDbContext db, IWorkspaceReads 
                 r.Event.ActionType.ToString(), r.Event.CreatedAtUtc, r.Deleted, AuditMetadata.Map(r.Event))).ToArray();
         }
         await snapshot.CommitAsync(token);
-        return new(rows, page, size, count, (int)Math.Ceiling(count / (double)size), Id(watermark));
+        return new(rows, page, size, count, (int)Math.Ceiling(count / (double)size), Id(watermark), exportsEnabled);
     }
     public static void Validate(AuditConsoleOptions o)
     {

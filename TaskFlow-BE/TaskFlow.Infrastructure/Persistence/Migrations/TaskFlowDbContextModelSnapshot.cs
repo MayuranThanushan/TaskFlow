@@ -215,6 +215,23 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.PilotGate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PilotGates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1
+                        });
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.Project", b =>
                 {
                     b.Property<long>("Id")
@@ -434,16 +451,42 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("AuditExportsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("AuditRetentionDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(365);
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("DeletedContentRetentionDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(30);
+
                     b.Property<long?>("LegacyOwnerId")
                         .HasColumnType("bigint");
+
+                    b.Property<bool>("LegalHold")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)");
+
+                    b.Property<long>("PolicyVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L);
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
