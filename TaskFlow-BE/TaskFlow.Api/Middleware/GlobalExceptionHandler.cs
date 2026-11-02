@@ -7,6 +7,16 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is ResourceVersionException || exception is Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
+        {
+            var conflict = exception as ResourceVersionException;
+            var problem = ProblemResponses.Create(context, conflict?.Status ?? 409);
+            problem.Extensions["code"] = conflict?.Code ?? "resource.conflict";
+            problem.Title = conflict?.Status == 428 ? "Reload the record and supply X-Expected-Version."
+                : conflict?.Status == 400 ? "Supply a valid X-Expected-Version revision."
+                : "This record changed. Compare the latest version before saving again.";
+            await ProblemResponses.WriteAsync(context, problem); return true;
+        }
         if (exception is ProjectAccessException denied)
         {
             var status = denied.Decision switch

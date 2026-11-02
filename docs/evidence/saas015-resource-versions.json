@@ -1,0 +1,232 @@
+{
+  "task": "SaaS-015",
+  "date": "2026-11-02",
+  "sourceBaseRevision": "7a6bab298b8e1418008bce2bd50dcbf4fd15b165",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local isolated MySQL and published Production HTTPS synthetic rehearsals. No live development/customer migration or restart, hosted CI/CodeQL/container execution, selected-host deployment or completed tenant cutover claimed. Company preview flags remain default off.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "9a22ca044c15b0ec2b931e4cecbf16b681ff555484216f9286fd46e51a658138",
+    "README.md": "5e1732eda08c17897879392abedddf2edd9323a6ab4457aeeb1ce49362a3d142",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "ac50c037e882da178b73baab5594ff7820603836327b787b330bbb3474d206b4",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/RequestContracts.cs": "d6689e38b7083208eb5455ff8aa22304e649e6b8dd69c86928d579875d84d289",
+    "TaskFlow-BE/TaskFlow.Api/Extensions/ApiServiceExtensions.cs": "e76d2aa1d3510da846d5cc2fba242e8f0161d9fbe022b90826abdc25cd53c0c0",
+    "TaskFlow-BE/TaskFlow.Api/Filters/ResourceVersionFilter.cs": "cae74a5e4ecdffe574f9c05a4963e6b62ebb8609a71a59fbb9f1223bc0dd18c3",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/GlobalExceptionHandler.cs": "6c4dbdcebc5edea4532abfc2e99d553d699a58fe0246ce04e96a007085330082",
+    "TaskFlow-BE/TaskFlow.Application/Features/Projects/IProjectService.cs": "5165fda50151295a66f06487886364359c6ea620d59bb7db7faa4bf8599a431e",
+    "TaskFlow-BE/TaskFlow.Application/Features/Projects/ResourcePrecondition.cs": "9274c6b46b97e243b8c3e3e2f7a6ecf48a4532a4d8a74696af9edde95740a46c",
+    "TaskFlow-BE/TaskFlow.Application/Features/Tasks/ITaskService.cs": "715683a73974cb6b6a01642d9a8d734fd3fa96ef673f992378e666dd64ad72e1",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Entities.cs": "f40cf7f9ef970ea074692b9d59b86a64230d19db9794f1f430652f06c250b670",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "18798a25093f3d1c002c533147ab45cce302608e8ee42b74966a45c41ce61e8f",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261102150936_ResourceVersions.Designer.cs": "0164aac968ba091b51affa1c75eba42c0538dacbf92b4d4eb2b8213c94fc99ba",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261102150936_ResourceVersions.cs": "dc3b0a58ba04b8f1a98aeb65a6799b013c78ba7d31298a4159987473f118e20b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "44888c8018892727d7ede9f27fec7a47308cd08ccd19213f5dc7be631f2d5662",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "1ddbec83d6bb0903af412f23865f22babd97a0c547404411275a4f1668458384",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectService.cs": "7262571069fa7f6337f306f1abd630b53388e89672d4e787f2ae864d4e0e744a",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs": "5ab23c56a0df020e0c96c6ce9c243828285b206ba799f1f8bd6ae5a69a1f9373",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/TaskService.cs": "c0ea25d6ac8ea5d3be5072cb346a8093d3868498e92bb1b6d0e51ab966af1bb3",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceReads.cs": "5b9656746e0291b847d60f8af62d77ea44e0b8c17a792c35c2e207e9533449c6",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceWrites.cs": "dea30cfefbc90eb5512b2ea8142632479c398e7ce989231bb5f3ceb9612a4f69",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.ResourceVersions.cs": "c0fbf5542bdbdef25b66baea01ccade974c7f80bbf093c20592e1da94077ab4d",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.TaskMutations.cs": "181d7a2cc81b7743496b01552430580f8ff30f159965ec9bef88e66edf7ee38a",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Tasks.cs": "6b60cf2aae748aa98a8b7b2809853426da396920e2cf4cc336f7546507bccd38",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs": "7e17e3b4fc63b0bfc21324ca4caae2a0b10e54f5106ad0dd16933bfe48128e4a",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "9c20a2ff136c46cc53d8cc4f44a152ce0ceb7418688418e59150c05d5f7a957f",
+    "TaskFlow-FE/src/api/client.ts": "e7735785f941e999d8dfbc8c7c1ad906b0d8f2af99fc86922eb7a5801022ccd0",
+    "TaskFlow-FE/src/api/generated.d.ts": "8f394902fcd5ca561676cf1f47abfd8d97de2a6328c059d69fb0265f80537054",
+    "TaskFlow-FE/src/components/ConflictReview.tsx": "96d3375593ae811af62e5c85a4d864e2841b812ed84d2597c9ba1b6c56387b23",
+    "TaskFlow-FE/src/features/projects/ProjectPages.test.tsx": "43c3d9838efc0424f9f14d6d06b6ac88ed38dd7356f63a36eaed32d28fc6bcda",
+    "TaskFlow-FE/src/features/projects/ProjectPages.tsx": "a987a518a9b9c9f262820918491d12b7763d5c62b8bafafb7b4dd0a540aaf32c",
+    "TaskFlow-FE/src/features/tasks/TaskPages.test.tsx": "05ce311a3acc2a78db0a15b1868cee79215c8f8f199d0666e387f0dfbdffd6ed",
+    "TaskFlow-FE/src/features/tasks/TaskPages.tsx": "5418d38bdfd543af38959c364e4c11b0bf42179fc26e05e89e2aec51ec73a6ea",
+    "TaskFlow-FE/src/workspace.css": "d6318cce279c4d56ea44165dfb954a92fcf8c0dd1354b193234f233c1b57e275",
+    "docs/contracts/README.md": "222f2630e0f36c2ce713bf5bb20369ee449c228543271ad9091751523de5a062",
+    "docs/contracts/openapi.json": "7442f68e66d0d66a3ac252f9f7388593e6529b6979981de4fe4a54e4db13cc2c",
+    "docs/saas/resource-versions.md": "4e65c316353eb97ad4836b676756a9ecfd666ebd762e9edcb60c655e9c045267",
+    "tests/browser/README.md": "0c0d9298e9b9c339890c510f2670f971673c0d383273fdf683b92b3fb80977bf",
+    "tests/browser/conflicts.cjs": "d81318d0890a776f614dab5270fddae58b5e86c9d4f28bab2193f4155191124b",
+    "tests/browser/journeys.cjs": "2fd6ab3c2b964657850e8081ce94d56f925d18832aa3c819906c1889e3fb2279"
+  },
+  "verification": {
+    "backend": {
+      "passed": 211,
+      "failed": 0,
+      "skipped": 0,
+      "report": "TestResults/saas015-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 123,
+      "failed": 0,
+      "typecheck": true,
+      "lint": true,
+      "defaultAndPreviewProductionBuilds": true,
+      "report": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 33,
+      "failed": 0,
+      "qualification": "Synthetic CodeQL-report validator tests are not a real static-analysis run."
+    },
+    "build": {
+      "releaseWarnings": 0,
+      "releaseErrors": 0,
+      "debugMigrationBuildWarnings": 0
+    },
+    "contract": {
+      "paths": 39,
+      "operations": 55,
+      "snapshotAndGeneratedTypesMatch": true
+    },
+    "efPendingModelChanges": false,
+    "publishedPreview": {
+      "httpsTlsAuthCsrfCookieReplaySmoke": true,
+      "reports": {
+        "companies": {
+          "checks": [
+            "protected company return URL",
+            "atomic create with Owner role",
+            "two company switching",
+            "scoped project/task CRUD links",
+            "reload deep link",
+            "empty company isolation",
+            "mixed-company resource denied"
+          ],
+          "scans": 8,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "lifecycle": {
+          "checks": [
+            "Viewer read-only controls",
+            "Editor upgrade",
+            "eligible assignment",
+            "suspension and immediate request denial",
+            "reactivation without assignment restoration",
+            "password-protected project transfer",
+            "password-protected company transfer",
+            "former owner departure",
+            "removed member denied",
+            "redacted retained audit"
+          ],
+          "scans": 6,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "structured-audit": {
+          "checks": [
+            "versioned governance",
+            "safe task deltas",
+            "request correlation",
+            "private value redaction",
+            "expanded audit UI"
+          ],
+          "scans": 2,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "audit-console": {
+          "checks": [
+            "intersected URL filters",
+            "expanded safe deltas",
+            "authenticated JSON download",
+            "exact string IDs",
+            "private value redaction",
+            "deleted-only empty state"
+          ],
+          "scans": 2,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "conflicts": {
+          "checks": [
+            "two project editors reject stale write",
+            "project draft rebased after comparison",
+            "two task editors reject stale write",
+            "untouched priority retained",
+            "stale deletion rejected",
+            "stale status rejected"
+          ],
+          "scans": 4,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        }
+      }
+    },
+    "publishedDefaultOff": {
+      "legacyJourneys": [
+        {
+          "script": "authentication.cjs",
+          "passed": true,
+          "durationMs": 3274
+        },
+        {
+          "script": "journeys.cjs",
+          "passed": true,
+          "durationMs": 96205
+        },
+        {
+          "script": "profile.cjs",
+          "passed": true,
+          "durationMs": 3478
+        },
+        {
+          "script": "review.cjs",
+          "passed": true,
+          "durationMs": 23087
+        }
+      ],
+      "accessibilityLayoutScans": 30,
+      "violations": 0,
+      "overflow": false,
+      "securityKeyboardAndDemoPerformanceReviewPassed": true,
+      "qualification": "Demo performance is not a production load baseline. Automated accessibility scans include incomplete checks requiring human review."
+    },
+    "combinedAccessibilityLayoutScans": 52
+  },
+  "upgrade": {
+    "fromMigrations": 2,
+    "toMigrations": 6,
+    "projectsPreserved": 35,
+    "tasksPreserved": 245,
+    "auditScopeForeignKeys": 3,
+    "idempotentMigration": true
+  },
+  "existingResourceRevisionsInitializedToOne": true,
+  "migration": "20261102150936_ResourceVersions",
+  "securityPrivileges": {
+    "exportedRecords": 21,
+    "runtimeSecurityPayloadReadDenied": true,
+    "runtimeSecurityUpdateDenied": true,
+    "runtimeGovernanceDeleteDenied": true,
+    "securityReaderProjectReadDenied": true,
+    "securityReaderUpdateDenied": true,
+    "sensitiveCanariesAbsent": true
+  },
+  "artifacts": {
+    "previewApiSha256": "c409a3a48f14e65af92ec6c9946ebcf79d77905c2960bdb3458d0217221901ba",
+    "previewIndexSha256": "9bbe685560cf8bd8ee31e351a32fb543ad149e4b4aaf19af787f4b44373570b9",
+    "defaultApiSha256": "c409a3a48f14e65af92ec6c9946ebcf79d77905c2960bdb3458d0217221901ba",
+    "defaultIndexSha256": "919b55aed91efd6ad08cfbec9637786dd909ae557bb724add485086b1d576509"
+  },
+  "behavior": [
+    "Scoped project edits/deletes and task edits/status/deletes require X-Expected-Version after current authorization under transaction locks.",
+    "One same-revision concurrent project writer wins; the other returns 409 resource.conflict with no success audit or private/current-version payload.",
+    "Task status/deletion and assignment cleanup advance revisions independently of timestamps; no-ops do not.",
+    "EF original-version predicates reject competing tracked writers.",
+    "Project/task conflict forms retain drafts, compare separately authorized latest records, rebase untouched fields and save only on explicit resubmit.",
+    "Microsecond task deadlines remain omitted when untouched.",
+    "Legacy browser journey now explicitly reviews the cleanup conflict before rebasing, and asserts the cleared assignment is not restored."
+  ],
+  "compatibilityLimitations": [
+    "v1 accepts expected revisions optionally during the existing cutover window; unversioned v1 callers retain prior behavior.",
+    "Internal stale-command writers must supply the precondition; arbitrary SQL/ExecuteUpdate must manage Version and transaction/audit rules explicitly or run in maintenance.",
+    "Old and new backend writers must not overlap during migration/deployment.",
+    "Shared tenant cutover, hosted scans, selected-host load/recovery/key/grant verification, pilot quotas and human accessibility review remain gates."
+  ],
+  "cleanup": "Only owned temporary schemas, random runtime/reader users and disposable HTTPS processes were removed. Existing user services/databases retained. No credentials, certificates, protected key rings, cookies or private exports committed.",
+  "next": "SaaS-016: tenant regression coverage, pilot quotas and privacy/retention controls"
+}

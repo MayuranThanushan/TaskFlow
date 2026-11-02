@@ -5,12 +5,14 @@ import type { Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Regis
 export class ApiError extends Error {
   readonly status?: number
   readonly fields: FieldErrors
+  readonly code?: string
 
-  constructor(message: string, status?: number, fields: FieldErrors = {}) {
+  constructor(message: string, status?: number, fields: FieldErrors = {}, code?: string) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.fields = fields
+    this.code = code
   }
 }
 
@@ -25,14 +27,17 @@ export function asApiError(error: unknown): ApiError {
       if (Array.isArray(value) && value.every(item => typeof item === 'string')) fields[key] = value
     }
   }
-  const message = status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
+  const code = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : undefined
+  const message = code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
+    : status === 428 ? 'Reload this record before making changes.'
+    : status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
     : status === 409 ? 'An account with this email already exists. Sign in to continue.'
       : status === 429 ? 'Too many attempts. Please wait a minute before trying again.'
         : status === 403 ? 'You do not have permission to do that.'
           : status === 400 ? 'Please check the details below and try again.'
             : status ? 'TaskFlow could not complete the request. Please try again.'
               : 'We could not reach TaskFlow. Check your connection and try again.'
-  return new ApiError(message, status, fields)
+  return new ApiError(message, status, fields, code)
 }
 
 export class ApiClient {
@@ -161,3 +166,5 @@ export function createApiClient(adapter?: AxiosAdapter) {
 }
 
 export const api = createApiClient()
+
+export function revisionHeaders(version?: string) { return version ? { "X-Expected-Version": version } : {} }

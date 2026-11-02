@@ -57,3 +57,5 @@ SaaS-012 adds eight lifecycle operations, explicit project roles, Removed member
 SaaS-013 adds the versioned `audit` metadata object to activity and governance responses without new public routes (then 36 paths / 52 operations). Private value changes are redacted; version 0 is explicitly legacy. Security records have no browser DTO/route. See [structured audit](../saas/structured-audit.md).
 
 SaaS-014 adds three gated audit console operations: filtered reads, protected export ticket creation and access-rechecked bounded JSON download. Existing readers remain compatible; see [console semantics](../saas/audit-console.md). The new snapshot has 39 paths / 55 operations.
+
+SaaS-015 adds decimal-string version properties, X-Expected-Version mutation preconditions and optional Problem Details code. Scoped edits/status/deletion require the loaded revision (428 missing, 400 invalid, 409 resource.conflict stale), checked after authorization; v1 supports opt-in revisions during cutover. No new routes: 39 paths / 55 operations. See [revision protocol](../saas/resource-versions.md).

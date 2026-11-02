@@ -9,7 +9,7 @@ using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Projects;
 
-public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IProjectTransactions, IWorkspaceTransactions
+public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, ResourcePrecondition? precondition = null) : IProjectTransactions, IWorkspaceTransactions
 {
     public Task<T> CreateAsync<T>(WorkspaceWriteContext context, Func<IProjectMutation, CancellationToken, Task<T>> mutation, CancellationToken token = default) =>
         RunAsync(context.ActorId, null, ProjectOperation.ManageProject, mutation, token, context);
@@ -91,6 +91,17 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory) : IPr
             database.Projects.Add(project);
         }
 
+        if (projectId is not null && precondition?.Resource is { } resource)
+        {
+            if (resource == "Project" && project.Id == precondition.ResourceId) precondition.Check(project.Version);
+            if (resource == "Task")
+            {
+                var taskQuery = database.Tasks.Where(t => t.Id == precondition.ResourceId && t.ProjectId == project.Id);
+                if (workspace is { } requiredWorkspace) taskQuery = taskQuery.Where(t => t.WorkspaceId == requiredWorkspace.WorkspaceId);
+                var task = await taskQuery.SingleOrDefaultAsync(cancellationToken) ?? throw new ProjectAccessException(ProjectAccessDecision.NotFound);
+                precondition.Check(task.Version);
+            }
+        }
         var originalId = project.Id;
         var ownerId = project.OwnerId;
         var workspaceId = project.WorkspaceId;

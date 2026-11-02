@@ -26,7 +26,7 @@ public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions
     {
         var parent = await ParentAsync(actorId, taskId, cancellationToken);
         var task = await transactions.ExecuteAsync(actorId, parent, ProjectOperation.WriteTasks, (scope, ct) => scope.SetTaskStatusAsync(taskId, status, ct), cancellationToken);
-        return new(task.Id.ToString(CultureInfo.InvariantCulture), task.Status.ToString(), task.UpdatedAtUtc);
+        return new(task.Id.ToString(CultureInfo.InvariantCulture), task.Status.ToString(), task.UpdatedAtUtc, task.Version.ToString(CultureInfo.InvariantCulture));
     }
     public async Task DeleteAsync(long? actorId, long taskId, CancellationToken cancellationToken = default)
     {
@@ -80,5 +80,5 @@ public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions
     }
     private static long Actor(long? actor) => actor is > 0 ? actor.Value : throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);
     internal static TaskDto Map(TaskItem t) => new(t.Id.ToString(CultureInfo.InvariantCulture), t.ProjectId.ToString(CultureInfo.InvariantCulture), t.Title, t.Description,
-        t.Status.ToString(), t.Priority.ToString(), t.AssigneeId?.ToString(CultureInfo.InvariantCulture), t.DueDateUtc, t.CreatedAtUtc, t.UpdatedAtUtc);
+        t.Status.ToString(), t.Priority.ToString(), t.AssigneeId?.ToString(CultureInfo.InvariantCulture), t.DueDateUtc, t.CreatedAtUtc, t.UpdatedAtUtc, t.Version.ToString(CultureInfo.InvariantCulture));
 }

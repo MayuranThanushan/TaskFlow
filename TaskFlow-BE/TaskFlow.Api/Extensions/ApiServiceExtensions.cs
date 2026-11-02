@@ -22,6 +22,7 @@ public static class ApiServiceExtensions
             {
                 // The filter-factory order must be explicit so protected writes authenticate before CSRF validation.
                 options.Filters.Add<AntiforgeryProblemFilter>(1000);
+                options.Filters.Add<ResourceVersionFilter>();
                 options.Filters.Add<LegacyResourceFilter>(400);
                 options.Filters.Add(new AuthorizeFilter());
                 options.ModelMetadataDetailsProviders.Add(new SystemTextJsonValidationMetadataProvider());

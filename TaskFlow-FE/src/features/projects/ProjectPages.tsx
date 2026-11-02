@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from '../companies/navigation'
 import { Badge, Icon } from '../../components/Workspace'
-import { asApiError } from '../../api/client'
+import { ConflictReview } from '../../components/ConflictReview'
+import { asApiError, revisionHeaders } from '../../api/client'
 import type { ApiClient } from '../../api/client'
 import type { FieldErrors } from '../../api/types'
 import { useAuth } from '../auth/auth-context'
@@ -77,6 +78,8 @@ export function EditProjectPage({ client }: { client: ApiClient }) {
 
 function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project }) {
   const navigate = useNavigate()
+  const [baseline, setBaseline] = useState(initial)
+  const [conflict, setConflict] = useState(false)
   const [name, setName] = useState(initial?.name ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [fields, setFields] = useState<FieldErrors>({})
@@ -88,7 +91,7 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (locked.current) return
+    if (locked.current || conflict) return
     const errors: FieldErrors = {}
     if (!name.trim() || name.trim().length > 150) errors.name = ['Enter a name between 1 and 150 characters.']
     if (description.trim().length > 10_000) errors.description = ['Keep the description to 10,000 characters or fewer.']
@@ -96,24 +99,29 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
     if (Object.keys(errors).length) { (event.currentTarget.elements.namedItem(Object.keys(errors)[0]) as HTMLElement)?.focus(); return }
     locked.current = true; setPending(true)
     try {
-      const project = await client.request<Project>({ url: initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects', method: initial ? 'put' : 'post', data: { name: name.trim(), description: description.trim() || null } satisfies ProjectWrite })
+      const project = await client.request<Project>({ url: initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects', method: initial ? 'put' : 'post', headers: revisionHeaders(baseline?.version), data: { name: name.trim(), description: description.trim() || null } satisfies ProjectWrite })
       if (!alive.current) return
       navigate('/projects/' + encodeURIComponent(project.id), { replace: true, state: initial ? { updated: true } : { created: true } })
     } catch (failure) {
       if (!alive.current) return
-      const problem = asApiError(failure); setError(problem.message); setFields(problem.fields)
+      const problem = asApiError(failure); setError(problem.message); setFields(problem.fields); if (problem.code === "resource.conflict") setConflict(true)
       window.setTimeout(() => summary.current?.focus(), 0)
     } finally { locked.current = false; if (alive.current) setPending(false) }
   }
   return <section className="projects-page project-form-page"><Link className="text-link" to="/projects">Back to projects</Link>
     <div className="page-heading"><div><p className="eyebrow">A fresh start</p><h1>{initial ? 'Edit project' : 'Create a project'}</h1><p className="muted">Give your work a name and a little context.</p></div></div>
     <div className="project-form-card">{error && <div ref={summary} tabIndex={-1} className="error-summary" role="alert">{error}</div>}
-      <p className="form-intro">{initial ? 'Keep the project brief clear and current. Changes are recorded in activity.' : 'Start with a clear name and a short brief. Add tasks and teammates once your project is ready.'}</p><form noValidate aria-busy={pending} onSubmit={submit}><fieldset disabled={pending}>
+      {conflict && baseline && <ConflictReview<Project> client={client} path={'/projects/' + baseline.id} draft={{ Name: name, Description: description }} values={record => ({ Name: record.name, Description: record.description ?? '' })} onKeep={record => {
+          if (name.trim() === baseline.name) setName(record.name)
+          if ((description.trim() || null) === baseline.description) setDescription(record.description ?? '')
+          setBaseline(record); setConflict(false); setError(''); setFields({})
+        }} onReload={record => { setName(record.name); setDescription(record.description ?? ''); setBaseline(record); setConflict(false); setError(''); setFields({}) }} />}
+        <p className="form-intro">{initial ? 'Keep the project brief clear and current. Changes are recorded in activity.' : 'Start with a clear name and a short brief. Add tasks and teammates once your project is ready.'}</p><form noValidate aria-busy={pending} onSubmit={submit}><fieldset disabled={pending}>
         <div className="form-field"><label htmlFor="project-name">Project name</label><input id="project-name" name="name" value={name} maxLength={150} aria-invalid={!!fields.name?.length} aria-describedby={fields.name?.length ? 'name-error' : undefined} onChange={event => { setName(event.target.value); setFields(previous => ({ ...previous, name: [] })) }} />
           <FieldError id="name-error" errors={fields.name} /></div>
         <div className="form-field"><label htmlFor="project-description">Description <span className="optional">(optional)</span></label><textarea id="project-description" name="description" rows={7} maxLength={10_000} value={description} aria-invalid={!!fields.description?.length} aria-describedby={fields.description?.length ? 'description-error' : 'description-hint'} onChange={event => { setDescription(event.target.value); setFields(previous => ({ ...previous, description: [] })) }} />
           <FieldError id="description-error" errors={fields.description} /><p id="description-hint" className="field-hint">Up to 10,000 characters. You can leave this blank.</p></div>
-        <div className="form-actions"><button className="button primary" type="submit">{pending ? 'Saving project...' : initial ? 'Save changes' : 'Create project'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects')}>Cancel</button></div>
+        <div className="form-actions"><button className="button primary" type="submit" disabled={conflict}>{pending ? 'Saving project...' : initial ? 'Save changes' : 'Create project'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/projects/' + encodeURIComponent(initial.id) : '/projects')}>Cancel</button></div>
       </fieldset></form>
     </div>
   </section>
@@ -161,13 +169,13 @@ function ProjectActions({ client, project }: { client: ApiClient; project: Proje
     if (locked.current) return
     locked.current = true; setPending(true); setError('')
     try {
-      await client.request({ url: '/projects/' + encodeURIComponent(project.id), method: 'delete' })
+      await client.request({ url: '/projects/' + encodeURIComponent(project.id), method: 'delete', headers: revisionHeaders(project.version) })
       if (alive.current) navigate('/projects', { replace: true, state: { deleted: true } })
     } catch (failure) { if (alive.current) setError(asApiError(failure).message) }
     finally { locked.current = false; if (alive.current) setPending(false) }
   }
   return <div className="project-actions">
     {!confirming ? <><Link className="button subtle" to={'/projects/' + encodeURIComponent(project.id) + '/edit'}>Edit project</Link><button ref={trigger} className="button danger" onClick={() => setConfirming(true)}>Delete project</button></>
-      : <Confirmation id="delete-heading" title="Delete this project?" pending={pending} cancelLabel="Keep project" confirmLabel="Confirm deletion" pendingLabel="Deleting project..." onCancel={dismiss} onConfirm={() => void remove()}><p>Deleting <strong>{project.name}</strong> removes access to the project and its tasks. This cannot be undone here.</p>{error && <p role="alert">{error}</p>}</Confirmation>}
+      : <Confirmation id="delete-heading" title="Delete this project?" pending={pending} cancelLabel="Keep project" confirmLabel="Confirm deletion" pendingLabel="Deleting project..." onCancel={dismiss} onConfirm={() => void remove()}><p>Deleting <strong>{project.name}</strong> removes access to the project and its tasks. This cannot be undone here.</p>{error && <><p role="alert">{error}</p><Link to={"/projects/" + project.id + "/edit"}>Review latest project before deleting</Link></>}</Confirmation>}
   </div>
 }

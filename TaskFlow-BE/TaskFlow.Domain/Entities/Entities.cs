@@ -13,8 +13,11 @@ public abstract class AuditableEntity : IAuditable
     public DateTime UpdatedAtUtc { get; set; }
 }
 
-public sealed class Project : AuditableEntity
+public interface IVersionedResource { long Version { get; set; } }
+
+public sealed class Project : AuditableEntity, IVersionedResource
 {
+    public long Version { get; set; } = 1;
     public long? WorkspaceId { get; set; }
     public long OwnerId { get; set; }
     public string Name { get; set; } = "";
@@ -33,8 +36,9 @@ public sealed class ProjectMember
     public Project Project { get; set; } = null!;
 }
 
-public sealed class TaskItem : AuditableEntity
+public sealed class TaskItem : AuditableEntity, IVersionedResource
 {
+    public long Version { get; set; } = 1;
     public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
     public Project Project { get; set; } = null!;

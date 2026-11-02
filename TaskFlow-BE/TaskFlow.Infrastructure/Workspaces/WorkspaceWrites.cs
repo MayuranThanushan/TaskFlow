@@ -44,7 +44,7 @@ public sealed class WorkspaceWrites(IWorkspaceTransactions transactions, TimePro
     public async Task<TaskStatusDto> SetStatusAsync(WorkspaceWriteContext context, long taskId, TaskState status, CancellationToken token = default)
     {
         var task = await transactions.ExecuteTaskAsync(context, taskId, ProjectOperation.WriteTasks, (scope, ct) => scope.SetTaskStatusAsync(taskId, status, ct), token);
-        return new(task.Id.ToString(CultureInfo.InvariantCulture), task.Status.ToString(), task.UpdatedAtUtc);
+        return new(task.Id.ToString(CultureInfo.InvariantCulture), task.Status.ToString(), task.UpdatedAtUtc, task.Version.ToString(CultureInfo.InvariantCulture));
     }
     public async Task DeleteTaskAsync(WorkspaceWriteContext context, long taskId, CancellationToken token = default) =>
         await transactions.ExecuteTaskAsync(context, taskId, ProjectOperation.DeleteTasks, async (scope, ct) => { await scope.DeleteTaskAsync(taskId, ct); return true; }, token);

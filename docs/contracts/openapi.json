@@ -2354,6 +2354,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2403,6 +2412,30 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -2585,6 +2618,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2607,6 +2649,30 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -3372,6 +3438,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3411,6 +3486,30 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -3569,6 +3668,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3591,6 +3699,30 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -3751,6 +3883,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3790,6 +3931,30 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -8521,6 +8686,16 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -8570,6 +8745,54 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -8762,6 +8985,16 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -8784,6 +9017,54 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -9113,6 +9394,16 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -9152,6 +9443,54 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -9344,6 +9683,16 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -9366,6 +9715,54 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -11011,6 +11408,16 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -11050,6 +11457,54 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -11348,6 +11803,12 @@
           "traceId": {
             "minLength": 1,
             "type": "string"
+          },
+          "code": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "detail": {
             "type": [
@@ -11902,7 +12363,8 @@
           "updatedAtUtc",
           "totalTasks",
           "completedTasks",
-          "progressPercentage"
+          "progressPercentage",
+          "version"
         ],
         "type": "object",
         "properties": {
@@ -11949,6 +12411,11 @@
           "progressPercentage": {
             "type": "integer",
             "format": "int32"
+          },
+          "version": {
+            "minLength": 1,
+            "type": "string",
+            "default": "1"
           }
         }
       },
@@ -11959,7 +12426,8 @@
           "description",
           "ownerId",
           "createdAtUtc",
-          "updatedAtUtc"
+          "updatedAtUtc",
+          "version"
         ],
         "type": "object",
         "properties": {
@@ -11994,6 +12462,11 @@
             "minLength": 1,
             "type": "string",
             "format": "date-time"
+          },
+          "version": {
+            "minLength": 1,
+            "type": "string",
+            "default": "1"
           }
         }
       },
@@ -12143,7 +12616,8 @@
           "assigneeId",
           "dueDateUtc",
           "createdAtUtc",
-          "updatedAtUtc"
+          "updatedAtUtc",
+          "version"
         ],
         "type": "object",
         "properties": {
@@ -12213,6 +12687,11 @@
             "minLength": 1,
             "type": "string",
             "format": "date-time"
+          },
+          "version": {
+            "minLength": 1,
+            "type": "string",
+            "default": "1"
           }
         }
       },
@@ -12331,7 +12810,8 @@
         "required": [
           "id",
           "status",
-          "updatedAtUtc"
+          "updatedAtUtc",
+          "version"
         ],
         "type": "object",
         "properties": {
@@ -12354,6 +12834,11 @@
             "minLength": 1,
             "type": "string",
             "format": "date-time"
+          },
+          "version": {
+            "minLength": 1,
+            "type": "string",
+            "default": "1"
           }
         }
       },

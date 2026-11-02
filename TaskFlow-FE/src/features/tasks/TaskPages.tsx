@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from '../companies/navigation'
 import { useAuth } from '../auth/auth-context'
-import { asApiError } from '../../api/client'
+import { ConflictReview } from '../../components/ConflictReview'
+import { asApiError, revisionHeaders } from '../../api/client'
 import type { ApiClient } from '../../api/client'
 import type { FieldErrors } from '../../api/types'
 import { useApiResource } from '../../hooks/use-api-resource'
@@ -80,12 +81,12 @@ function TaskRow({ task, client, now, members, refresh, canWrite }: { canWrite: 
     if (!canWrite || lock.current || status === task.status) return
     lock.current = true; setPending(true); setError('')
     try {
-      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + '/status', method: 'patch', data: { status } satisfies TaskStatusUpdate })
+      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + '/status', method: 'patch', headers: revisionHeaders(task.version), data: { status } satisfies TaskStatusUpdate })
       if (alive.current) refresh()
     } catch (failure) { if (alive.current) setError(asApiError(failure).message) }
     finally { lock.current = false; if (alive.current) setPending(false) }
   }
-  return <tr aria-busy={pending}><td><Link className="task-name" to={'/tasks/' + encodeURIComponent(task.id)}>{task.title}</Link>{task.description && <span className="task-description-preview">{task.description}</span>}{error && <p className="field-error" role="alert">{error}</p>}</td>
+  return <tr aria-busy={pending}><td><Link className="task-name" to={'/tasks/' + encodeURIComponent(task.id)}>{task.title}</Link>{task.description && <span className="task-description-preview">{task.description}</span>}{error && <><p className="field-error" role="alert">{error}</p><button className="button subtle" onClick={refresh}>Reload task list</button></>}</td>
     <td><select className={'inline-status badge-' + task.status.toLowerCase()} aria-label={'Status for ' + task.title} disabled={pending || !canWrite} value={task.status} onChange={event => void changeStatus(event.target.value as TaskItem['status'])}>{Object.entries(statusText).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{pending && <span className="sr-only" role="status">Saving task status...</span>}</td>
     <td><Badge value={task.priority}>{task.priority}</Badge></td><td>{task.assigneeId ? members.find(member => member.userId === task.assigneeId)?.displayName ?? 'User ' + task.assigneeId : <span className="unassigned">Unassigned</span>}</td>
     <td><span className={task.dueDateUtc && new Date(task.dueDateUtc).getTime() < now && task.status !== 'Done' ? 'overdue-label' : ''}>{deadline(task.dueDateUtc)}</span></td>
@@ -115,6 +116,8 @@ function localDeadline(value: string | null) {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 23)
 }
 function TaskForm({ client, project, initial }: { client: ApiClient; project: ProjectDetails; initial?: TaskItem }) {
+  const [baseline, setBaseline] = useState(initial)
+  const [conflict, setConflict] = useState(false)
   const navigate = useNavigate(); const path = '/projects/' + encodeURIComponent(project.id)
   const { canWrite, loading: accessLoading } = useProjectAccess(client, project.id, project.ownerId)
   const members = useApiResource<{ items: { userId: string; displayName: string; role: string }[] }>(client, path + '/members')
@@ -124,7 +127,7 @@ function TaskForm({ client, project, initial }: { client: ApiClient; project: Pr
   const alive = useRef(true); const lock = useRef(false); const summary = useRef<HTMLDivElement>(null)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (lock.current || !canWrite) return
+    event.preventDefault(); if (lock.current || !canWrite || conflict) return
     const errors: FieldErrors = {}; const parsed = due ? new Date(due) : null
     if (!title.trim() || title.trim().length > 200) errors.title = ['Enter a title between 1 and 200 characters.']
     if (description.trim().length > 10_000) errors.description = ['Keep the description to 10,000 characters or fewer.']
@@ -136,17 +139,17 @@ function TaskForm({ client, project, initial }: { client: ApiClient; project: Pr
       const values: TaskCreate = { title: title.trim(), description: description.trim() || null, priority, assigneeId: assignee || null, dueDateUtc: parsed?.toISOString() ?? null }
       const data: TaskPatch = initial ? {} : values
       if (initial) {
-        if (values.title !== initial.title) data.title = values.title
-        if (values.description !== initial.description) data.description = values.description
-        if (values.priority !== initial.priority) data.priority = values.priority
-        if (values.assigneeId !== initial.assigneeId) data.assigneeId = values.assigneeId
+        if (values.title !== baseline!.title) data.title = values.title
+        if (values.description !== baseline!.description) data.description = values.description
+        if (values.priority !== baseline!.priority) data.priority = values.priority
+        if (values.assigneeId !== baseline!.assigneeId) data.assigneeId = values.assigneeId
         // Omit an untouched deadline to preserve microseconds and ambiguous local instants.
-        if (due !== localDeadline(initial.dueDateUtc)) data.dueDateUtc = values.dueDateUtc
+        if (due !== localDeadline(baseline!.dueDateUtc)) data.dueDateUtc = values.dueDateUtc
         if (Object.keys(data).length === 0) { navigate('/tasks/' + encodeURIComponent(initial.id), { replace: true }); return }
       }
-      const task = await client.request<TaskItem>({ url: initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks', method: initial ? 'patch' : 'post', data })
+      const task = await client.request<TaskItem>({ url: initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks', method: initial ? 'patch' : 'post', headers: revisionHeaders(baseline?.version), data })
       if (alive.current) navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: initial ? { updated: true } : { created: true } })
-    } catch (failure) { if (alive.current) { const problem = asApiError(failure); setError(problem.message); setFields(problem.fields); window.setTimeout(() => summary.current?.focus(), 0) } }
+    } catch (failure) { if (alive.current) { const problem = asApiError(failure); setError(problem.message); setFields(problem.fields); if (problem.code === "resource.conflict") setConflict(true); window.setTimeout(() => summary.current?.focus(), 0) } }
     finally { lock.current = false; if (alive.current) setPending(false) }
   }
   const clearField = (field: string) => setFields(previous => ({ ...previous, [field]: [] }))
@@ -155,6 +158,14 @@ function TaskForm({ client, project, initial }: { client: ApiClient; project: Pr
   if (!canWrite) return <section><h1>Task editing is unavailable.</h1><p>Viewers can read tasks. An active Editor or Owner role is required to make changes.</p><Link to={path + "/tasks"}>Back to tasks</Link></section>
   return <section className="projects-page project-form-page"><Link className="text-link" to={path + '/tasks'}>Back to tasks</Link><div className="page-heading"><div><p className="eyebrow">{project.name}</p><h1>{initial ? 'Edit task' : 'Create a task'}</h1></div></div>
     <div className="project-form-card">{error && <div ref={summary} tabIndex={-1} className="error-summary" role="alert">{error}</div>}
+      {conflict && baseline && <ConflictReview<TaskItem> client={client} path={'/tasks/' + baseline.id} draft={{ Title: title, Description: description, Priority: priority, Assignee: assignee, Deadline: due }} values={record => ({ Title: record.title, Description: record.description ?? '', Priority: record.priority, Assignee: record.assigneeId ?? '', Deadline: localDeadline(record.dueDateUtc) })} onKeep={record => {
+        if (title.trim() === baseline.title) setTitle(record.title)
+        if ((description.trim() || null) === baseline.description) setDescription(record.description ?? '')
+        if (priority === baseline.priority) setPriority(record.priority)
+        if ((assignee || null) === baseline.assigneeId) setAssignee(record.assigneeId ?? '')
+        if (due === localDeadline(baseline.dueDateUtc)) setDue(localDeadline(record.dueDateUtc))
+        setBaseline(record); setConflict(false); setError(''); setFields({})
+      }} onReload={record => { setTitle(record.title); setDescription(record.description ?? ''); setPriority(record.priority); setAssignee(record.assigneeId ?? ''); setDue(localDeadline(record.dueDateUtc)); setBaseline(record); setConflict(false); setError(''); setFields({}) }} />}
       <p className="form-intro">{initial ? 'Refine the task details below. Your changes appear in project activity.' : 'Give your task a clear outcome, then choose its priority, owner and deadline.'}</p><form noValidate onSubmit={submit} aria-busy={pending}><fieldset className="task-form-fields" disabled={pending}>
         <div className="form-field"><label htmlFor="task-title">Task title</label><input id="task-title" name="title" aria-required="true" maxLength={200} value={title} onChange={event => { setTitle(event.target.value); clearField('title') }} aria-invalid={!!fields.title?.length} aria-describedby={fields.title?.length ? 'title-error' : undefined} />{fieldError('title')}</div>
         <div className="form-field"><label htmlFor="task-description">Description (optional)</label><textarea id="task-description" name="description" maxLength={10_000} rows={6} value={description} onChange={event => { setDescription(event.target.value); clearField('description') }} aria-invalid={!!fields.description?.length} aria-describedby={fields.description?.length ? 'description-error' : undefined} />{fieldError('description')}</div>
@@ -162,7 +173,7 @@ function TaskForm({ client, project, initial }: { client: ApiClient; project: Pr
         <div className="form-field"><label htmlFor="task-assignee">Assignee</label><select id="task-assignee" name="assigneeId" value={assignee} disabled={members.result.status !== 'ready'} onChange={event => { setAssignee(event.target.value); clearField('assigneeId') }} aria-invalid={!!fields.assigneeId?.length} aria-describedby={fields.assigneeId?.length ? 'assigneeId-error' : undefined}><option value="">Unassigned</option>{assignee && (members.result.status !== 'ready' || !members.result.data.items.some(member => member.userId === assignee)) && <option value={assignee}>Current assignee ({assignee})</option>}{members.result.status === 'ready' && members.result.data.items.filter(member => member.role !== 'Viewer').map(member => <option key={member.userId} value={member.userId}>{member.displayName} ({member.role})</option>)}</select>{fieldError('assigneeId')}
           {members.result.status === 'loading' && <p role="status">Loading assignees...</p>}{members.result.status === 'error' && <div><p role="alert">Could not load assignees. Retry to choose an assignee.</p><button className="button subtle" type="button" onClick={members.retry}>Retry assignees</button></div>}</div>
         <div className="form-field"><label htmlFor="task-due">Due date and time (optional)</label><input id="task-due" name="dueDateUtc" type="datetime-local" step="0.001" value={due} onChange={event => { setDue(event.target.value); clearField('dueDateUtc') }} aria-invalid={!!fields.dueDateUtc?.length} aria-describedby={fields.dueDateUtc?.length ? 'dueDateUtc-error' : 'task-timezone'} /><p id="task-timezone" className="field-hint">Your local time ({Intl.DateTimeFormat().resolvedOptions().timeZone}). Saved in UTC.</p>{fieldError('dueDateUtc')}</div>
-        <div className="form-actions"><button className="button primary" type="submit">{pending ? initial ? 'Saving changes...' : 'Creating task...' : initial ? 'Save changes' : 'Create task'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks')}>Cancel</button></div>
+        <div className="form-actions"><button className="button primary" type="submit" disabled={conflict}>{pending ? initial ? 'Saving changes...' : 'Creating task...' : initial ? 'Save changes' : 'Create task'}</button><button className="button subtle" type="button" onClick={() => navigate(initial ? '/tasks/' + encodeURIComponent(initial.id) : path + '/tasks')}>Cancel</button></div>
       </fieldset></form>
     </div>
   </section>
@@ -194,7 +205,7 @@ function TaskActions({ client, task, refresh }: { client: ApiClient; task: TaskI
     if (lock.current) return
     lock.current = true; setPending(true); setError('')
     try {
-      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + (remove ? '' : '/status'), method: remove ? 'delete' : 'patch', ...(remove ? {} : { data: { status } satisfies TaskStatusUpdate }) })
+      await client.request({ url: '/tasks/' + encodeURIComponent(task.id) + (remove ? '' : '/status'), method: remove ? 'delete' : 'patch', headers: revisionHeaders(task.version), ...(remove ? {} : { data: { status } satisfies TaskStatusUpdate }) })
       if (!alive.current) return
       if (remove) navigate('/projects/' + encodeURIComponent(task.projectId) + '/tasks', { replace: true, state: { deleted: true } })
       else { navigate('/tasks/' + encodeURIComponent(task.id), { replace: true, state: { statusUpdated: true } }); refresh() }
@@ -203,7 +214,7 @@ function TaskActions({ client, task, refresh }: { client: ApiClient; task: TaskI
   }
   function dismiss() { if (!lock.current) { setConfirm(false); setError(''); window.setTimeout(() => trigger.current?.focus(), 0) } }
   return <section className="task-actions" aria-label="Task actions">
-    {error && <p role="alert" className="error-summary">{error}</p>}
+    {error && <><p role="alert" className="error-summary">{error}</p><button className="button subtle" onClick={() => { setConfirm(false); refresh() }}>Reload task before retrying</button></>}
     <div className="form-actions">{canWrite && <Link className="button subtle" to={'/tasks/' + encodeURIComponent(task.id) + '/edit'}>Edit task</Link>}
       {project.result.status === 'ready' && project.result.data.ownerId === session.user?.id && <button ref={trigger} className="button danger" disabled={pending || confirm} onClick={() => setConfirm(true)}>Delete task</button>}</div>
     {project.result.status === 'error' && <button className="button subtle" onClick={project.retry}>Retry owner controls</button>}

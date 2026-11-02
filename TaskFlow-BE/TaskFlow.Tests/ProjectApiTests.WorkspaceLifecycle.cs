@@ -119,7 +119,7 @@ public sealed partial class ProjectApiTests
             Task<HttpResponseMessage> Assign() => host.MemberWriteAsync(writer, HttpMethod.Patch, W(c.B) + "/tasks/" + c.TaskB.Id, new { assigneeId = host.Users[0].Id.ToString() });
             var result = suspensionFirst ? await gate.OrderedAsync(Suspend, Assign) : await gate.OrderedAsync(Assign, Suspend);
             Assert.Equal(suspensionFirst ? HttpStatusCode.NoContent : HttpStatusCode.OK, result.First.StatusCode);
-            Assert.Equal(suspensionFirst ? HttpStatusCode.BadRequest : HttpStatusCode.NoContent, result.Second.StatusCode);
+            Assert.Equal(suspensionFirst ? HttpStatusCode.Conflict : HttpStatusCode.NoContent, result.Second.StatusCode);
             await using var db = fixture.CreateContext(); Assert.Null((await db.Tasks.SingleAsync(t => t.Id == c.TaskB.Id)).AssigneeId);
         }
         var fail = new FailGovernanceAudit();
@@ -150,7 +150,7 @@ public sealed partial class ProjectApiTests
             Task<HttpResponseMessage> Assign() => host.MemberWriteAsync(writer, HttpMethod.Patch, W(c.B) + "/tasks/" + c.TaskB.Id, new { assigneeId = host.Users[0].Id.ToString() });
             var result = downgradeFirst ? await ordered.OrderedAsync(Downgrade, Assign) : await ordered.OrderedAsync(Assign, Downgrade);
             Assert.Equal(downgradeFirst ? HttpStatusCode.NoContent : HttpStatusCode.OK, result.First.StatusCode);
-            Assert.Equal(downgradeFirst ? HttpStatusCode.BadRequest : HttpStatusCode.NoContent, result.Second.StatusCode);
+            Assert.Equal(downgradeFirst ? HttpStatusCode.Conflict : HttpStatusCode.NoContent, result.Second.StatusCode);
             await using var db = fixture.CreateContext(); Assert.Null((await db.Tasks.SingleAsync(t => t.Id == c.TaskB.Id)).AssigneeId);
         }
     }

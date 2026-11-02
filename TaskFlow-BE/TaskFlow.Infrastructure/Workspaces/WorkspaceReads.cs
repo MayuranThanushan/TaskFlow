@@ -99,7 +99,7 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
             .Select(g => new { Total = g.Count(), Done = g.Count(t => t.Status == TaskState.Done) }).SingleOrDefaultAsync(token);
         var dto = ProjectService.Map(project); var total = totals?.Total ?? 0; var done = totals?.Done ?? 0;
         return new ProjectDetailsDto(dto.Id, dto.Name, dto.Description, dto.OwnerId, dto.CreatedAtUtc, dto.UpdatedAtUtc,
-            total, done, total == 0 ? 0 : (int)Math.Round(done * 100m / total, MidpointRounding.AwayFromZero));
+            total, done, total == 0 ? 0 : (int)Math.Round(done * 100m / total, MidpointRounding.AwayFromZero), dto.Version);
     }, token);
     public Task<TaskDto> TaskAsync(WorkspaceReadContext context, long taskId, CancellationToken token = default) => Read(context, async () =>
         TaskService.Map(await Tasks(context).SingleOrDefaultAsync(t => t.Id == taskId, token) ?? throw Missing()), token);

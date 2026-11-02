@@ -78,7 +78,18 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             (health ? "Readiness 503 uses the health DTO, not Problem Details." : "Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.");
         if (controller == typeof(WorkspaceLifecycleController) || controller == typeof(WorkspaceAuditConsoleController)) operation.Description += " Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content.";
         if (controller == typeof(WorkspaceAuditConsoleController)) operation.Description += " Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants.";
+        bool versionedWrite = controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
+            || controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus" or "Delete"
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateProject" or "DeleteProject" or "UpdateTask" or "Status" or "DeleteTask";
+        if (versionedWrite)
+        {
+            operation.Parameters ??= [];
+            operation.Parameters.Add(new OpenApiParameter { Name = "X-Expected-Version", In = ParameterLocation.Header,
+                Required = controller == typeof(WorkspaceWritesController), Schema = new OpenApiSchema { Type = JsonSchemaType.String, Pattern = "^[1-9][0-9]{0,18}$" },
+                Description = "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft." });
+        }
         var failures = new HashSet<int> { 500 };
+        if (versionedWrite) { failures.Add(409); if (controller == typeof(WorkspaceWritesController)) failures.Add(428); }
         if (!health)
         {
             failures.Add(400);

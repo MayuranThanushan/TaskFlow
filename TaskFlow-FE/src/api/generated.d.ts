@@ -723,6 +723,7 @@ export interface components {
             userId: string;
         };
         ApiProblem: {
+            code?: null | string;
             detail?: null | string;
             errors?: null | {
                 [key: string]: string[];
@@ -884,6 +885,8 @@ export interface components {
             totalTasks: number;
             /** Format: date-time */
             updatedAtUtc: string;
+            /** @default 1 */
+            version: string;
         };
         ProjectDto: {
             /** Format: date-time */
@@ -896,6 +899,8 @@ export interface components {
             ownerId: string;
             /** Format: date-time */
             updatedAtUtc: string;
+            /** @default 1 */
+            version: string;
         };
         ProjectMemberDto: {
             displayName: string;
@@ -953,6 +958,8 @@ export interface components {
             title: string;
             /** Format: date-time */
             updatedAtUtc: string;
+            /** @default 1 */
+            version: string;
         };
         TaskPage: {
             items: components["schemas"]["TaskDto"][];
@@ -999,6 +1006,8 @@ export interface components {
             status: "ToDo" | "InProgress" | "Done";
             /** Format: date-time */
             updatedAtUtc: string;
+            /** @default 1 */
+            version: string;
         };
         TaskStatusRequest: {
             /** @enum {string} */
@@ -1837,6 +1846,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version"?: string;
             };
             path: {
                 projectId: string;
@@ -1911,6 +1922,18 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Unsupported Media Type */
             415: {
                 headers: {
@@ -1943,6 +1966,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version"?: string;
             };
             path: {
                 projectId: string;
@@ -1999,6 +2024,18 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */
@@ -2650,6 +2687,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version"?: string;
             };
             path: {
                 taskId: string;
@@ -2716,6 +2755,18 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Internal Server Error */
             500: {
                 headers: {
@@ -2736,6 +2787,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version"?: string;
             };
             path: {
                 taskId: string;
@@ -2796,6 +2849,18 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Unsupported Media Type */
             415: {
                 headers: {
@@ -2828,6 +2893,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version"?: string;
             };
             path: {
                 taskId: string;
@@ -2878,6 +2945,18 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */
@@ -4758,6 +4837,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
             };
             path: {
                 projectId: string;
@@ -4833,8 +4914,32 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Unsupported Media Type */
             415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */
@@ -4865,6 +4970,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
             };
             path: {
                 projectId: string;
@@ -4922,6 +5029,30 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */
@@ -5841,6 +5972,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
             };
             path: {
                 taskId: string;
@@ -5908,6 +6041,30 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Internal Server Error */
             500: {
                 headers: {
@@ -5928,6 +6085,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
             };
             path: {
                 taskId: string;
@@ -6001,8 +6160,32 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Unsupported Media Type */
             415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */
@@ -6033,6 +6216,8 @@ export interface operations {
             header: {
                 /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
                 "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
             };
             path: {
                 taskId: string;
@@ -6106,8 +6291,32 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
             /** @description Unsupported Media Type */
             415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */

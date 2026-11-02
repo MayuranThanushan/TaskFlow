@@ -29,6 +29,8 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         base.OnModelCreating(builder);
         builder.UseCollation("utf8mb4_0900_ai_ci");
         builder.ApplyConfigurationsFromAssembly(typeof(TaskFlowDbContext).Assembly);
+        builder.Entity<Project>().Property(p => p.Version).IsConcurrencyToken().HasDefaultValue(1L);
+        builder.Entity<TaskItem>().Property(t => t.Version).IsConcurrencyToken().HasDefaultValue(1L);
         foreach (var foreignKey in builder.Model.GetEntityTypes().SelectMany(entity => entity.GetForeignKeys()))
             foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
     }
@@ -98,6 +100,16 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
                     break;
             }
 
+            if (entry.Entity is IVersionedResource resource)
+            {
+                if (entry.State == EntityState.Added) resource.Version = 1;
+                else
+                {
+                    var original = (long)entry.Property(nameof(IVersionedResource.Version)).OriginalValue!;
+                    if (original == long.MaxValue) throw new TaskFlow.Application.Features.Projects.ResourceVersionException(409, "resource.version_exhausted");
+                    resource.Version = checked(original + 1);
+                }
+            }
             if (entry.Entity is IAuditable auditable)
             {
                 if (entry.State == EntityState.Added) auditable.CreatedAtUtc = now;

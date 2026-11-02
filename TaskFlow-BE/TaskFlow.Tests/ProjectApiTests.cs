@@ -40,7 +40,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         Assert.Equal(host.Users[0].Id.ToString(), project.GetProperty("ownerId").GetString());
         Assert.Equal(JsonValueKind.String, project.GetProperty("id").ValueKind);
         Assert.EndsWith("Z", project.GetProperty("createdAtUtc").GetString());
-        Assert.Equal(6, project.EnumerateObject().Count());
+        Assert.Equal(7, project.EnumerateObject().Count());
         Assert.EndsWith("/api/v1/projects/" + project.GetProperty("id").GetString(), response.Headers.Location!.ToString());
         Assert.Equal(HttpStatusCode.OK, (await owner.GetAsync(response.Headers.Location)).StatusCode);
         await using var database = fixture.CreateContext();
@@ -140,7 +140,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         var detail = await Body(await owner.GetAsync("/api/v1/projects/" + id));
         Assert.Equal(id.ToString(), detail.GetProperty("id").GetString());
         Assert.Equal(8, detail.GetProperty("totalTasks").GetInt32()); Assert.Equal(1, detail.GetProperty("completedTasks").GetInt32()); Assert.Equal(13, detail.GetProperty("progressPercentage").GetInt32());
-        Assert.Equal(9, detail.EnumerateObject().Count());
+        Assert.Equal(10, detail.EnumerateObject().Count());
     }
 
     [MySqlFact, Trait("Category", "MySql")]
@@ -376,12 +376,25 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(method, path) { Content = body is null ? null : JsonContent.Create(body) };
+            // Existing scenarios use a deliberate fresh read; conflict tests send explicit captured revisions separately.
+            if (path.StartsWith("/api/v2/", StringComparison.Ordinal) && method != HttpMethod.Post
+                && System.Text.RegularExpressions.Regex.IsMatch(path, @"/(projects|tasks)/[0-9]+(?:/status)?$"))
+            {
+                var loaded = await client.GetAsync(path.EndsWith("/status", StringComparison.Ordinal) ? path[..^7] : path);
+                if (loaded.IsSuccessStatusCode) request.Headers.Add("X-Expected-Version", (await loaded.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("version").GetString());
+            }
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async Task<HttpResponseMessage> TaskRawAsync(HttpClient client, string path, string body)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+            if (path.StartsWith("/api/v2/", StringComparison.Ordinal))
+            {
+                var loaded = await client.GetAsync(path.EndsWith("/status", StringComparison.Ordinal) ? path[..^7] : path);
+                if (loaded.IsSuccessStatusCode && (await loaded.Content.ReadFromJsonAsync<JsonElement>()).TryGetProperty("version", out var version))
+                    request.Headers.Add("X-Expected-Version", version.GetString());
+            }
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async ValueTask DisposeAsync()

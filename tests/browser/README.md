@@ -58,3 +58,7 @@ After companies.cjs and lifecycle.cjs in the same disposable instance, run `node
 ## Audit console preview
 
 After the company/lifecycle/structured-audit journeys, run `node tests/browser/audit-console.cjs` in the same disposable HTTPS instance and with the same lifecycle fixture settings. It exercises combined URL filters, expanded safe changes, an actual authenticated JSON download, string IDs, sensitive-value exclusion and deleted-only empty state, plus two desktop/mobile accessibility/overflow scans. It writes audit-console.json and screenshots; the browser-owned temporary download is not committed. API tests separately cover deleted private-project history, revoked grants, suspension, export caps/watermarks and expired/foreign tickets. Hosted lifecycle/console CI remains a separate gate.
+
+## Two-editor conflict preview
+
+Run `node tests/browser/conflicts.cjs` after companies.cjs, lifecycle.cjs, structured-audit.cjs and audit-console.cjs with the same disposable HTTPS lifecycle fixture and new migration applied. It opens two real editor tabs, verifies 409 for stale project/task saves, preserves drafts, compares latest, rebases untouched fields, explicitly resaves, and rejects stale task deletion/status. Four desktop/mobile accessibility/overflow scans cover comparison panels; conflicts.json records results. Run the default v1 journeys separately with workspace flags disabled. Client code must send the revision loaded into the UI, never fetch a revision just before replaying a write.

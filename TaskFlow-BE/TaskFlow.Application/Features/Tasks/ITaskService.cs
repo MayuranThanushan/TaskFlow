@@ -2,13 +2,13 @@ using TaskFlow.Domain.Entities;
 namespace TaskFlow.Application.Features.Tasks;
 
 public sealed record TaskDto(string Id, string ProjectId, string Title, string? Description, string Status, string Priority,
-    string? AssigneeId, DateTime? DueDateUtc, DateTime CreatedAtUtc, DateTime UpdatedAtUtc);
+    string? AssigneeId, DateTime? DueDateUtc, DateTime CreatedAtUtc, DateTime UpdatedAtUtc, string Version = "1");
 public sealed record TaskPage(IReadOnlyList<TaskDto> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 public sealed record CreateTask(string Title, string? Description, TaskPriority Priority, long? AssigneeId, DateTime? DueDateUtc);
 public readonly record struct FieldChange<T>(bool IsSpecified, T Value);
 public sealed record TaskPatch(FieldChange<string?> Title = default, FieldChange<string?> Description = default,
     FieldChange<TaskPriority> Priority = default, FieldChange<long?> AssigneeId = default, FieldChange<DateTime?> DueDateUtc = default);
-public sealed record TaskStatusDto(string Id, string Status, DateTime UpdatedAtUtc);
+public sealed record TaskStatusDto(string Id, string Status, DateTime UpdatedAtUtc, string Version = "1");
 public sealed record TaskListOptions(int Page = 1, int PageSize = 20, string? Search = null, TaskState? Status = null,
     TaskPriority? Priority = null, long? AssigneeId = null, string SortBy = "createdAtUtc", string SortDirection = "desc");
 public sealed class TaskValidationException(string field, string message) : Exception(message) { public string Field { get; } = field; }
