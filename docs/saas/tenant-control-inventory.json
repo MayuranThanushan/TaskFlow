@@ -1,7 +1,7 @@
 {
   "release": "SaaS-016",
   "date": "2026-11-02",
-  "scope": "Current default-off preview and legacy compatibility. Local evidence only; no claim that unbuilt workers/mail/invites/files/billing or hosted acceptance passed.",
+  "scope": "Current default-off preview, legacy compatibility and metadata-only checkpoint worker. Local evidence only; no external mail/invites/files/billing or hosted acceptance claim.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -968,10 +968,19 @@
       ]
     },
     {
-      "entry": "Future workers/mail/invites/files/billing/support grants",
+      "entry": "Future external delivery/mail/invites/files/billing/support grants",
       "controls": [
-        "Not implemented; no current HTTP routes or delivery jobs",
-        "Require new scope/authorization/quota/artifact review before enabling each future release"
+        "Not implemented; the metadata checkpoint worker adds no recipient-bound external delivery",
+        "Require new scope/recipient/authorization/quota/artifact review before enabling each future release"
+      ]
+    },
+    {
+      "entry": "SaaS-017 OutboxEnqueue / OutboxStore / TaskFlow.Worker",
+      "controls": [
+        "Scoped ID-only intent and initial checkpoint work append inside approved business transactions; no historical/legacy-v1 notification backfill",
+        "Composite actor/project/task/event/delivery scope constraints; producer cannot read event payloads or lease rows",
+        "Separate metadata-only worker identity; database-clock leases, fenced acknowledgements, bounded retry/replay, append-only transitions",
+        "Checkpoint receipt is not external delivery; future recipient-bound consumers must recheck current authorization and use provider idempotency keys"
       ]
     }
   ],

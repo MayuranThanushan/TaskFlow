@@ -57,3 +57,7 @@ GRANT DELETE ON taskflow.ProjectMembers TO 'taskflow'@'%';
 -- PilotGates has one seeded admission row. This MySQL locking read needs UPDATE privilege;
 -- runtime never changes the Id and receives no INSERT/DELETE permission on this table.
 GRANT SELECT, UPDATE (Id) ON taskflow.PilotGates TO 'taskflow'@'%';
+
+-- Producer may append intent/work atomically, but cannot lease, acknowledge, replay or read payloads.
+GRANT INSERT, SELECT (Id) ON taskflow.OutboxEvents TO 'taskflow'@'%';
+GRANT INSERT, SELECT (Id, AvailableAtUtc) ON taskflow.OutboxDeliveries TO 'taskflow'@'%';

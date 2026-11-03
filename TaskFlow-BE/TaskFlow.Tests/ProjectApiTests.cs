@@ -402,6 +402,11 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await factory.DisposeAsync(); await using var database = fixture.CreateContext(); var ids = Users.Select(user => user.Id).ToArray();
             var projects = await database.Projects.IgnoreQueryFilters().Where(project => ids.Contains(project.OwnerId)).Select(project => project.Id).ToArrayAsync();
             await using var transaction = await database.Database.BeginTransactionAsync();
+            var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
+            var deliveries = database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).Select(d => d.Id);
+            await database.OutboxAttempts.Where(a => deliveries.Contains(a.DeliveryId)).ExecuteDeleteAsync();
+            await database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).ExecuteDeleteAsync();
+            await database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).ExecuteDeleteAsync();
             await database.WorkspaceAuditLogs.Where(a => ids.Contains(a.ActorUserId) || ids.Contains(a.TargetUserId)).ExecuteDeleteAsync();
             await database.ActivityLogs.IgnoreQueryFilters().Where(activity => projects.Contains(activity.ProjectId)).ExecuteDeleteAsync();
             await database.Tasks.IgnoreQueryFilters().Where(task => projects.Contains(task.ProjectId)).ExecuteDeleteAsync();

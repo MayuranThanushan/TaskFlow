@@ -1,0 +1,10 @@
+-- Apply after migrations, through the migration/operator identity. Replace private password/host.
+CREATE USER 'taskflow_worker'@'%' IDENTIFIED BY '<generated-private-worker-password>';
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow_worker'@'%';
+GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow_worker'@'%';
+GRANT SELECT ON taskflow.OutboxEvents TO 'taskflow_worker'@'%';
+GRANT SELECT ON taskflow.OutboxDeliveries TO 'taskflow_worker'@'%';
+GRANT UPDATE (State, Attempts, RoundAttempts, Replays, AvailableAtUtc, LeaseToken, LeaseExpiresAtUtc, LastFailureCode, CompletedAtUtc) ON taskflow.OutboxDeliveries TO 'taskflow_worker'@'%';
+GRANT INSERT, SELECT (Id) ON taskflow.OutboxAttempts TO 'taskflow_worker'@'%';
+-- No account/project/task/private-audit/security reads, source-event writes, or deletes.
+-- Runtime producer credentials and worker credentials must remain separate.

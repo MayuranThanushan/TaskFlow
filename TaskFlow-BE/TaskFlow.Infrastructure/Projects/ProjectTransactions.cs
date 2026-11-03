@@ -146,6 +146,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
                     ActionType = activity.Action, Details = activity.Details
                 });
             }
+            TaskFlow.Infrastructure.Outbox.OutboxEnqueue.Capture(database);
             await database.SaveChangesAsync(cancellationToken);
         }
         await transaction.CommitAsync(cancellationToken);

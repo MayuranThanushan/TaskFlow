@@ -125,31 +125,31 @@
     {
       "name": "taskflow.worker.ready",
       "unit": "{state}",
-      "status": "planned",
-      "meaning": "-1 unknown, 0 not processing, 1 processing; producer/lease health defined in SaaS-017."
+      "status": "implemented-in-separate-worker-not-emitted-by-api",
+      "meaning": "0 before successful queue sampling or after a failed cycle; 1 after successful queue sampling. No external delivery/readiness claim."
     },
     {
       "name": "taskflow.worker.outbox.pending",
       "unit": "{message}",
-      "status": "planned",
+      "status": "implemented-in-separate-worker-not-emitted-by-api",
       "meaning": "Committed undelivered eligible outbox records, excluding terminal rows; no per-workspace dimension."
     },
     {
       "name": "taskflow.worker.outbox.oldest.age",
       "unit": "s",
-      "status": "planned",
+      "status": "implemented-in-separate-worker-not-emitted-by-api",
       "meaning": "Age of oldest eligible pending record. Distinguish no backlog from unavailable measurement."
     },
     {
       "name": "taskflow.worker.delivery.attempts",
       "unit": "{attempt}",
-      "status": "planned",
+      "status": "implemented-in-separate-worker-not-emitted-by-api",
       "meaning": "Bounded channel/outcome values; retries are attempts, not unique notifications."
     },
     {
       "name": "taskflow.worker.outbox.dead_letter",
       "unit": "{message}",
-      "status": "planned",
+      "status": "implemented-in-separate-worker-not-emitted-by-api",
       "meaning": "Unresolved terminal records requiring operator review; replay remains audited."
     }
   ]

@@ -19,4 +19,4 @@ class TenantControlInventoryTests(unittest.TestCase):
             for source in row['evidenceSources']:
                 self.assertTrue((ROOT / source).is_file(), source)
         self.assertEqual({f'TEN-{i:02d}' for i in range(1, 25)}, {c['case'] for c in inventory['threatCases']})
-        self.assertTrue(any('Future workers' in e['entry'] for e in inventory['nonHttpEntryPoints']))
+        self.assertTrue(any('Future external delivery' in e['entry'] for e in inventory['nonHttpEntryPoints']))
