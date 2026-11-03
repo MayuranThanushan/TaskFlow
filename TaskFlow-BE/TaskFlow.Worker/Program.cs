@@ -12,6 +12,14 @@ try
     if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } directory)
         builder.Configuration.AddKeyPerFile(source => { source.FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Path.GetFullPath(directory));
             source.Optional = false; source.ReloadOnChange = false; source.IgnoreCondition = name => name.StartsWith('.') || name.EndsWith(".pfx", StringComparison.OrdinalIgnoreCase); });
+    // Explicit offline preview command; never consumes checkpoint backlog or reads the database.
+    if (args.Length == 2 && args[0] == "--capture-email")
+    {
+        var emailOptions = builder.Configuration.GetSection("Email").Get<TaskFlow.Infrastructure.Email.LocalEmailOptions>() ?? new();
+        var sender = new TaskFlow.Infrastructure.Email.LocalEmailSender(emailOptions, builder.Environment.EnvironmentName, TimeProvider.System);
+        Environment.ExitCode = await TaskFlow.Infrastructure.Email.EmailCaptureCommand.RunAsync(args[1], sender, Console.Out);
+        return;
+    }
     builder.Logging.ClearProviders(); builder.Logging.AddJsonConsole(); builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
     builder.Services.AddSingleton(TimeProvider.System);
     builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new InvalidOperationException()));

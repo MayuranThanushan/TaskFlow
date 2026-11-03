@@ -62,6 +62,10 @@ jobs:
           TASKFLOW_REQUIRE_MYSQL: 'true'
           TASKFLOW_TEST_CONNECTION: Server=127.0.0.1;Port=${{ job.services.mysql.ports['3306'] }};Database=taskflow_test;User ID=taskflow_test;Password=TaskFlow-CI-test-only-84!
         run: dotnet test TaskFlow.slnx --configuration Release --no-build --no-restore --logger "trx;LogFileName=backend.trx" --results-directory TestResults/backend --collect:"XPlat Code Coverage"
+      - name: Verify isolated email capture with published worker processes
+        run: |
+          dotnet publish TaskFlow-BE/TaskFlow.Worker --configuration Release --no-build --no-restore -o .local/email-worker /p:UseAppHost=false
+          python3 scripts/verify_email_capture.py --worker .local/email-worker/TaskFlow.Worker.dll --output TestResults/backend/email-capture.json
       - name: Require executed tests with no skips
         run: python3 scripts/verify_test_results.py TestResults/backend/backend.trx
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

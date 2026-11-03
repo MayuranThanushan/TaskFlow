@@ -982,6 +982,20 @@
         "Separate metadata-only worker identity; database-clock leases, fenced acknowledgements, bounded retry/replay, append-only transitions",
         "Checkpoint receipt is not external delivery; future recipient-bound consumers must recheck current authorization and use provider idempotency keys"
       ]
+    },
+    {
+      "entry": "SaaS-018 offline email preview command",
+      "controls": [
+        "No HTTP entry or automatic checkpoint-to-mail conversion; operator filesystem authority only.",
+        "Development/Staging capture only, default disabled, Production refused; exact staged recipient allowlist.",
+        "ID-only private receipts, strict templates/links, safe status output, per-workspace local capture lock/quota and deduplication.",
+        "Real provider, recipient authorization, global account mail and bounce delivery remain future gates."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/EmailTests.cs",
+        "scripts/verify_email_capture.py",
+        "docs/saas/email-capture.md"
+      ]
     }
   ],
   "threatCases": [
