@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-016",
-  "date": "2026-11-02",
-  "scope": "Current default-off preview, legacy compatibility and metadata-only checkpoint worker. Local evidence only; no external mail/invites/files/billing or hosted acceptance claim.",
+  "release": "SaaS-019",
+  "date": "2026-11-04",
+  "scope": "Current global identity, company preview, checkpoint worker and explicit local/staging encrypted account-mail capture. Local evidence only; real provider delivery and hosted/cutover acceptance remain gated.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -917,6 +917,126 @@
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
       ]
+    },
+    {
+      "operationId": "AccountSecurity_Capabilities",
+      "method": "GET",
+      "path": "/api/v1/auth/capabilities",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Security",
+      "method": "GET",
+      "path": "/api/v1/auth/security",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_RequestVerification",
+      "method": "POST",
+      "path": "/api/v1/auth/request-verification",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ForgotPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ConfirmEmail",
+      "method": "POST",
+      "path": "/api/v1/auth/confirm-email",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ResetPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ChangePassword",
+      "method": "POST",
+      "path": "/api/v1/auth/change-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Reauthenticate",
+      "method": "POST",
+      "path": "/api/v1/auth/reauthenticate",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
     }
   ],
   "nonHttpEntryPoints": [
@@ -995,6 +1115,20 @@
         "TaskFlow-BE/TaskFlow.Tests/EmailTests.cs",
         "scripts/verify_email_capture.py",
         "docs/saas/email-capture.md"
+      ]
+    },
+    {
+      "entry": "SaaS-019 restricted account-mail capture worker",
+      "controls": [
+        "Explicit global recipient-bound encrypted jobs, separate from company checkpoint facts.",
+        "Development/Staging only; shared private Data Protection ring and separate DB worker identity.",
+        "Short SKIP LOCKED claims, fencing/expiry, bounded retries and terminal encrypted-payload clearing.",
+        "Current API token validation and security-stamp revocation remain authoritative; local capture never grants company access."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "tests/browser/account-security.cjs",
+        "docs/saas/account-security.md"
       ]
     }
   ],

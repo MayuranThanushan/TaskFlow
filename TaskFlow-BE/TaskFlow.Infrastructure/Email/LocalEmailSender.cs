@@ -17,7 +17,7 @@ public sealed class LocalEmailOptions
 // A local/staging file sink only: no SMTP, HTTP provider or production network path.
 public sealed class LocalEmailSender(LocalEmailOptions options, string environment, TimeProvider clock) : IEmailSender
 {
-    private sealed record Receipt(int Version, string MessageId, long WorkspaceId, EmailTemplate Template, DateTimeOffset CapturedAtUtc, string Fingerprint, string MimeSha256, string Status);
+    private sealed record Receipt(int Version, string MessageId, long WorkspaceId, long? AccountUserId, EmailTemplate Template, DateTimeOffset CapturedAtUtc, string Fingerprint, string MimeSha256, string Status);
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public async Task<EmailResult> SendAsync(EmailRequest request, CancellationToken token = default)
@@ -33,11 +33,12 @@ public sealed class LocalEmailSender(LocalEmailOptions options, string environme
         var now = clock.GetUtcNow();
         // Include origin/template/body/recipient in identity so changed requests cannot reuse a receipt.
         var body = EmailTemplates.Render(request, origin!);
-        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { request.WorkspaceId, Recipient = request.Recipient, Template = request.Template, body.Subject, body.Text, body.Html }, Json))));
+        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { request.WorkspaceId, request.AccountUserId, Recipient = request.Recipient, Template = request.Template, body.Subject, body.Text, body.Html }, Json))));
         string? temporary = null;
         try
         {
-            var company = Path.Combine(Path.GetFullPath(options.CaptureDirectory), request.WorkspaceId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            var scope = request.AccountUserId is { } account ? "account-" + account : request.WorkspaceId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var company = Path.Combine(Path.GetFullPath(options.CaptureDirectory), scope);
             EnsurePrivateDirectory(company);
             // FileShare.None is a cross-process lock. No unbounded lock wait; caller may retry.
             using var gate = new FileStream(Path.Combine(company, ".capture.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -46,7 +47,7 @@ public sealed class LocalEmailSender(LocalEmailOptions options, string environme
             {
                 EnsurePrivateDirectory(destination);
                 var receipt = await ReadReceipt(destination, token);
-                if (receipt is null || receipt.Version != 1 || receipt.WorkspaceId != request.WorkspaceId || receipt.MessageId != id || receipt.Status != "Captured") return new(EmailStatus.CaptureUnavailable, "email.capture_unavailable");
+                if (receipt is null || receipt.Version != 1 || receipt.WorkspaceId != request.WorkspaceId || receipt.AccountUserId != request.AccountUserId || receipt.MessageId != id || receipt.Status != "Captured") return new(EmailStatus.CaptureUnavailable, "email.capture_unavailable");
                 var messageFile = Path.Combine(destination, "message.eml");
                 if (!File.Exists(messageFile) || new FileInfo(messageFile).Length > 65_536 || (File.GetAttributes(messageFile) & FileAttributes.ReparsePoint) != 0 || Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(messageFile, token))) != receipt.MimeSha256) return new(EmailStatus.CaptureUnavailable, "email.capture_unavailable");
                 return receipt.Fingerprint == fingerprint ? new(EmailStatus.AlreadyCaptured, "email.already_captured") : new(EmailStatus.IdConflict, "email.id_conflict");
@@ -59,15 +60,15 @@ public sealed class LocalEmailSender(LocalEmailOptions options, string environme
                 EnsurePrivateDirectory(directory);
                 if (++total >= 10_000) return new(EmailStatus.RateLimited, "email.capture_storage_limit");
                 var receipt = await ReadReceipt(directory, token);
-                if (receipt is null || receipt.WorkspaceId != request.WorkspaceId || receipt.Version != 1 || receipt.Status != "Captured") return new(EmailStatus.CaptureUnavailable, "email.capture_unavailable");
+                if (receipt is null || receipt.WorkspaceId != request.WorkspaceId || receipt.AccountUserId != request.AccountUserId || receipt.Version != 1 || receipt.Status != "Captured") return new(EmailStatus.CaptureUnavailable, "email.capture_unavailable");
                 if (receipt.CapturedAtUtc >= hour) currentHour++;
             }
-            if (currentHour >= options.PerCompanyHourlyLimit) return new(EmailStatus.RateLimited, "email.company_limit", hour.AddHours(1));
+            if (currentHour >= options.PerCompanyHourlyLimit) return new(EmailStatus.RateLimited, request.AccountUserId is not null ? "email.account_limit" : "email.company_limit", hour.AddHours(1));
             temporary = Path.Combine(company, ".pending-" + Guid.NewGuid().ToString("N"));
             EnsurePrivateDirectory(temporary);
             var mime = EmailTemplates.Mime(request, body, now);
             await File.WriteAllBytesAsync(Path.Combine(temporary, "message.eml"), mime, token);
-            await File.WriteAllTextAsync(Path.Combine(temporary, "receipt.json"), JsonSerializer.Serialize(new Receipt(1, id, request.WorkspaceId, request.Template, now, fingerprint, Convert.ToHexString(SHA256.HashData(mime)), "Captured"), Json), token);
+            await File.WriteAllTextAsync(Path.Combine(temporary, "receipt.json"), JsonSerializer.Serialize(new Receipt(1, id, request.WorkspaceId, request.AccountUserId, request.Template, now, fingerprint, Convert.ToHexString(SHA256.HashData(mime)), "Captured"), Json), token);
             RestrictFile(Path.Combine(temporary, "message.eml")); RestrictFile(Path.Combine(temporary, "receipt.json"));
             token.ThrowIfCancellationRequested();
             // Both message and receipt become visible together on the same local filesystem.

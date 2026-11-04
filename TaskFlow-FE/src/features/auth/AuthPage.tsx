@@ -92,9 +92,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           {field('email', 'Email address', 'email')}
           {field('password', 'Password', 'password')}
           {registering && <p id="password-hint" className="field-hint">At least 12 characters, with uppercase, lowercase, a number, and a symbol.</p>}
-          <button className="button primary submit" type="submit">{pending ? registering ? 'Creating account…' : 'Signing in…' : registering ? 'Create account' : 'Sign in'}</button>
+          <button className="button primary submit" type="submit">{pending ? registering ? 'Creating accountâ€¦' : 'Signing inâ€¦' : registering ? 'Create account' : 'Sign in'}</button>
         </fieldset>
       </form>
+      {!registering && <p className="form-actions"><Link to="/forgot-password">Forgot password?</Link><Link to="/request-verification">Verify your email</Link></p>}
       <p className="auth-switch">{registering ? 'Already have an account?' : 'New to TaskFlow?'}{' '}
         <Link to={registering ? '/login' : '/register'} state={{ returnTo: returnPath(state.returnTo) }}>{registering ? 'Sign in' : 'Create an account'}</Link>
       </p>

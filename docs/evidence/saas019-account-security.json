@@ -1,0 +1,202 @@
+{
+  "task": "SaaS-019",
+  "date": "2026-11-04",
+  "sourceBaseRevision": "a9ca5f15e565cfdd88f729ccfef8fbba3f8df659",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local isolated MySQL and published HTTPS Staging synthetic verification. Global account identity only; no company grants or real provider/recipient delivery. Production email preview is disabled.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "21554e533a6c7bf177dcd13883566d234d930cc369c90570e780a84d2309040c",
+    "README.md": "7bdf2372c56e2a00a9878865f47801eeb8848fcb21af31fcb9327d9e10c350fc",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "23571b5295837df1518dffe6592e2fd4969ba89549ab36ac1f1b24685fd151a4",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractSchemaTransformer.cs": "f10a0156520ff183b4929a12631fad67e9d1b3f34f1a35be6c6e5b7f2666f84b",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/AccountSecurityController.cs": "b263e661aa68bc823e3e7766c962e5b9a53c5d52f402219e982dbebdb08ecb56",
+    "TaskFlow-BE/TaskFlow.Application/Features/Activity/ISecurityEvents.cs": "4eeaeafd80c92f8ee5f0be89f2e8249b4d5f31b0a342a19ca7de499e2b006d76",
+    "TaskFlow-BE/TaskFlow.Application/Features/Auth/IAccountSecurity.cs": "ebdfac6b7da2e53a297578b41083d0192033e03e48a689acaeea7566e6a96edc",
+    "TaskFlow-BE/TaskFlow.Application/Features/Email/IEmailSender.cs": "f3da925aa417b47ff4d2b8fe4401eff8701b7e51f71878adf8204bbc43d94d9d",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/AccountEmailJob.cs": "8d367be2a360cc765a4851ab3be54fd34cba3043199e6e7b4666f71ee2598d34",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "1ef6d452e495c381750954bd89b49e80698a5a039fc1a5c06ec5e9e9a1789275",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/AccountMailCapture.cs": "2526d30789d161064beaa00d462bec71bfe79ec4bb92395ff3333aedd3ea018e",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/EmailTemplates.cs": "68b51fd888052cc4c154126956c85aaf288c26e01d97f8d6250719efef9fbf0a",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/LocalEmailSender.cs": "0691848babc712960fad21890e02e11cf6d1f5b6a8bd2e48da55f82e243e4230",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountSecurityService.cs": "902705481a49b8e067179044fc99e98b814bf737d88d7fe5003b0b7cd75418c0",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountService.cs": "731ac9c14a7a1acc51ddddb47dbd33d403a2e73b9fb7b56fc07f610ef60ed55d",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/AccountEmailJobConfiguration.cs": "e64c7818bf63638898be257f21e4f9a31d52a57f0a6d14b45e9dd2587ef3a7f0",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261104163117_AccountSecurityMail.Designer.cs": "1d18185f37701fae1fe2e42faee405e945504005b77e920b624bedadd03374cb",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261104163117_AccountSecurityMail.cs": "46b84bbe8055e8af15c49ceff8d3fa2790ca247ce2b4f649e3b259c4bb77a9ec",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "19cdeecd9d3f1433242a00c3b9f27935d7ea20b046878219a86c5d437c23708b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "4860059101104b4486eabd0dc734085674ea43d1f2b9db8b78fdc94553f93cd6",
+    "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs": "c8e232883f3cd75ec585a0ba2ac2c6976d563a2cc206cb2154a39aa9813616a7",
+    "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs": "5a1a692d10211f51b769ccaae532f35bfd3fa6ffb6745c0a3d6139c56116141f",
+    "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs": "a5f7e2397473844dad757c5c9994349436b6b0edb65d21a94549fcd8e498ae2b",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "d219911b8bdf5be4aa8cb2eaf4573f1c2ac24941d8a13d8c7b0d6b6c276f8ee8",
+    "TaskFlow-BE/TaskFlow.Worker/Program.cs": "e4141293374a181a504479dbefa21af83c2d94860c564a7fe93564eaef78483f",
+    "TaskFlow-FE/src/App.tsx": "8e10b1905ece566fb67966a2184f85a580560b055979520c7b32a7ae2b0d87ac",
+    "TaskFlow-FE/src/api/client.ts": "3751329fcd8f3b37158da17df364d77d2508d56e38e7a950559650f642b33909",
+    "TaskFlow-FE/src/api/generated.d.ts": "ba2265e751d80474b7c2c03ae4aea9ecb0054a1ac0f9fd87dfb5a02c398e558a",
+    "TaskFlow-FE/src/api/types.ts": "d554b650c2198e0725af413b41d9f4022b0a7ea756b4080991a11a6e6b183dcf",
+    "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx": "7431cea1f5160101ea6dd2edde65ceab203eb97249a3dfce995ce8ea612b0827",
+    "TaskFlow-FE/src/features/auth/AccountSecurityPages.tsx": "2eebae8cb1f9ccd86648a6a1a17a41ac2af1ab177a072b1620694e4de3f09273",
+    "TaskFlow-FE/src/features/auth/AuthPage.tsx": "199438673531af600de21abdcd175183bf8f3247b1632ccad66b791cd3881d73",
+    "TaskFlow-FE/src/features/profile/ProfilePage.tsx": "1ed633a20971608ab08e014e789f4d7ebe9b2d6123cb8c508654e1be28983aee",
+    "TaskFlow-FE/src/workspace.css": "f7f3302d3bacc1daced0009ffbb65efbe2109c9f950175ce8f242483c05b28c6",
+    "deploy/account-mail-roles.sql.example": "5196539c3144707feb1dc2415cf4836a009f61fe26a2b54a935c6f13347d03ae",
+    "deploy/database-roles.sql.example": "1f4156c5fbcae5fd9b6c1e091c5a190c946df5851c489bcb87d1880c323bdb98",
+    "docs/contracts/README.md": "d2f769f622352609bc2e38d9861ad4c349b23051ebaa3e20898c7eef3a7d3ee4",
+    "docs/contracts/openapi.json": "87e5960df432147f5d286977be9862d24a9f1f202f9ba52582002f1f2a578511",
+    "docs/saas/account-security.md": "01cc405d59e3fa24bceeec6ba674bffc22b72dc81ec4870806453aa7ce1d24b3",
+    "docs/saas/email-capture.md": "6442106d064974dada445e57909a580bbd741cdd76e74c9f49f634c1c147b705",
+    "docs/saas/tenant-control-inventory.json": "28ad3040a0143c003688ef370f7c7913082d5ab8dad1c6a5aa60e6ad351be4c8",
+    "scripts/export_openapi.py": "f0d78a99a566d98b79d07c64998df320698ab989d56b3f4f69eadf214e7e5869",
+    "tests/browser/account-security.cjs": "cb0d4b9db7eeee61595403f91234bef37d8d4f1c11fb7a37cb45f5763e97baf4"
+  },
+  "validation": {
+    "backend": {
+      "passed": 269,
+      "failed": 0,
+      "skipped": 0,
+      "newAccountSecurityCases": 12,
+      "database": "Dedicated disposable MySQL schema removed after test execution."
+    },
+    "contractTestsAfterFinalSchemaDocumentation": {
+      "passed": 4,
+      "failed": 0
+    },
+    "frontend": {
+      "passed": 132,
+      "failed": 0,
+      "newAccountScreenCases": 6
+    },
+    "operations": {
+      "passed": 34,
+      "failed": 0
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "typescriptLintAndProductionBuild": "passed",
+    "generatedApiContract": "48 paths / 65 operations; regenerated types and drift check passed",
+    "efPendingModelChanges": false,
+    "workflowLint": "actionlint passed locally",
+    "legacyOfflineCapture": {
+      "publishedWorker": true,
+      "databaseRequired": false,
+      "independentWorkerProcesses": 2,
+      "sameIdRestartDeduplicated": true,
+      "changedRecipientRejected": true,
+      "companiesIsolated": true,
+      "eightConcurrentRequestsAtLimitTwo": {
+        "captured": 2,
+        "rateLimited": 6
+      },
+      "stagingAllowlistChecked": true,
+      "productionDisabled": true,
+      "multipartParsedWithoutDefects": true,
+      "privateFieldsAbsentFromStatus": true,
+      "externalNetworkTransport": "none",
+      "temporaryPrivateArtifactsRemoved": true
+    },
+    "publishedHttpsBrowser": {
+      "checks": [
+        "opening verification preview",
+        "verification loaded with fragment removed",
+        "private fragment removed; explicit email verification succeeded",
+        "verified status and five-minute identity proof",
+        "first reset submitted",
+        "first reset completed",
+        "captured reset succeeds and replay is rejected",
+        "password change signs out current session"
+      ],
+      "accessibility": [
+        {
+          "name": "verify-confirmation",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "verify-confirmation",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "security-settings",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "security-settings",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "password-reset",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "password-reset",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "recovery-request",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "recovery-request",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "errors": []
+    },
+    "restrictedAccountWorker": {
+      "migrations": 9,
+      "restrictedRuntimeAndAccountWorker": true,
+      "capturedProtectedJobs": 2,
+      "terminalPayloadErased": true,
+      "sharedApiWorkerKeys": true,
+      "workerAccountPasswordAndCheckpointReadDenied": true,
+      "runtimeLeaseAttemptWriteDenied": true,
+      "realProvider": "none",
+      "externalRecipientsContacted": 0
+    },
+    "ownedTemporaryApiBrowserSchemaAndIdentitiesRemoved": true
+  },
+  "publishedArtifactsSha256": {
+    ".local/releases/saas019-api/TaskFlow.Api.dll": "0b218aa425d3e7f45f01f90d2f668f9cf09d499ebc178bef1b6e6797cc2b46e4",
+    ".local/releases/saas019-api/TaskFlow.Infrastructure.dll": "ca155c36dc854750748d9c3c28ce5090dffcc025a41c500e402232cc9c3d4f9a",
+    ".local/releases/saas019-api/wwwroot/index.html": "e0582bfca9b38a5342e44b7ed78c5dc1074600ffa75db5c56170188312f63f0c",
+    ".local/releases/saas019-worker/TaskFlow.Worker.dll": "017787bee60db92c50d3735470cd462310115217c786a76c903416a2d310df08"
+  },
+  "deploymentRequirements": [
+    "Apply ninth migration 20261104163117_AccountSecurityMail and updated runtime grants before release, including when mail preview is off.",
+    "Account capture uses a separate restricted DB identity and the shared private TaskFlow Data Protection key ring.",
+    "Mail preview is explicit/default-off Development/Staging; optional confirmed-email enforcement requires existing-account onboarding review."
+  ],
+  "securitySemantics": [
+    "Framework one-hour tokens with protected account/purpose/expiry envelope; explicit CSRF-protected POST, no token-return endpoint.",
+    "User-row locks and current stamp checks prevent concurrent replay; successful account changes and security audit commit together.",
+    "Reset/change/confirmation revoke all target-account sessions; reauthentication is five-minute session metadata and grants no company authority.",
+    "Generic suppressed/unknown/eligible recovery response, minimum timing floor, per-account durable resend quotas and IP auth limiter.",
+    "Encrypted recipient jobs, bounded fenced worker retries, stable capture IDs and terminal payload erasure; global account namespace separate from companies."
+  ],
+  "limitations": [
+    "No real provider, actual email recipients, authenticated bounce callbacks or production mail activation.",
+    "No hosted CI/CodeQL/container/selected-host certification or tenant cutover claimed.",
+    "Recovery excludes unverified/MFA-enabled accounts; verification and future MFA recovery are separate flows.",
+    "Frontend automation does not complete manual screen-reader/assistive-technology review.",
+    "Local account capture remains at-least-once with sink deduplication, not exactly-once provider sending or distributed fairness."
+  ],
+  "guide": "docs/saas/account-security.md",
+  "next": "SaaS-020 tenant/project invitation API and lifecycle"
+}

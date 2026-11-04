@@ -94,3 +94,5 @@ python scripts/verify_email_capture.py --worker .local/releases/worker/TaskFlow.
 It validates two independent worker processes, quota admission, restart/idempotency, cross-company separation, MIME parsing, staging/production guards and redacted status output, then removes its own private synthetic artifacts. CI runs this rehearsal and uploads only its safe boolean/count report. See [release evidence](../evidence/saas018-email-capture.json). Hosted CI, Linux/container execution and selected-host storage/ACL tests remain separate gates.
 
 Next is SaaS-019 account verification/recovery/change and reauthentication, with appropriately scoped framework tokens and additional account-security templates. Real provider credentials, authenticated bounce/failure handling and actual staging recipient delivery remain open before onboarding acceptance (SaaS-023).
+
+SaaS-019 adds [encrypted global account-mail capture](account-security.md), two account templates and a separate restricted batch command. Company checkpoint rows still cannot authorize a recipient send. Global account captures use a separate `account-<ID>` namespace.

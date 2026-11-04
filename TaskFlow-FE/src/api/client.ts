@@ -1,6 +1,6 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosAdapter, AxiosInstance, AxiosRequestConfig, RawAxiosHeaders } from 'axios'
-import type { Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Registration } from './types'
+import type { AccountCapabilities, AccountSecurity, AccountToken, AccountReset, Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Registration } from './types'
 
 export class ApiError extends Error {
   readonly status?: number
@@ -138,6 +138,14 @@ export class ApiClient {
     }
     throw new ApiError('Please try the request again.')
   }
+
+  accountCapabilities() { return this.request<AccountCapabilities>({ url: '/auth/capabilities' }, false) }
+  accountSecurity() { return this.request<AccountSecurity>({ url: '/auth/security' }) }
+  requestAccountMail(email: string, recovery: boolean) { return this.request<void>({ url: recovery ? '/auth/forgot-password' : '/auth/request-verification', method: 'post', data: { email } }, false) }
+  confirmEmail(link: AccountToken) { return this.request<void>({ url: '/auth/confirm-email', method: 'post', data: link }, false) }
+  resetPassword(values: AccountReset) { return this.request<void>({ url: '/auth/reset-password', method: 'post', data: values }, false) }
+  changePassword(currentPassword: string, newPassword: string, signal?: AbortSignal) { return this.request<void>({ url: '/auth/change-password', method: 'post', signal, data: { currentPassword, newPassword } }) }
+  reauthenticate(currentPassword: string, signal?: AbortSignal) { return this.request<void>({ url: '/auth/reauthenticate', method: 'post', signal, data: { currentPassword } }) }
 
   updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } satisfies ProfileUpdate }) }
 

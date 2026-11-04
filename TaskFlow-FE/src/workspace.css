@@ -168,3 +168,8 @@ a { text-underline-offset:3px; }
 .pilot-capacity span { font-size: 12px; color: #53637b; }
 .pilot-capacity strong { font-size: 23px; overflow-wrap: anywhere; }
 .pilot-capacity .at-capacity strong { color: #9b352d; }
+
+.account-security-card { max-width: 42rem; margin: 2rem auto; }
+.account-security-card .form-actions { flex-wrap: wrap; gap: 1rem; }
+
+.account-security-card a { display: inline-flex; align-items: center; min-height: 2.75rem; }

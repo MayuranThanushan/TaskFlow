@@ -1,0 +1,9 @@
+-- Separate optional Development/Staging account-mail capture identity, after migration nine.
+-- Use a private generated password and restrict the host to the worker host.
+CREATE USER 'taskflow_account_mail'@'%' IDENTIFIED BY '<generated-private-account-mail-password>';
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow_account_mail'@'%';
+GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow_account_mail'@'%';
+GRANT SELECT ON taskflow.AccountEmailJobs TO 'taskflow_account_mail'@'%';
+GRANT UPDATE (State, Attempts, AvailableAtUtc, LeaseToken, LeaseExpiresAtUtc, LastCode, ProtectedPayload) ON taskflow.AccountEmailJobs TO 'taskflow_account_mail'@'%';
+-- No account/password/security/project/task reads, enqueue, deletes or checkpoint access.
+-- The worker also needs the private shared API Data Protection key ring and a private capture directory.

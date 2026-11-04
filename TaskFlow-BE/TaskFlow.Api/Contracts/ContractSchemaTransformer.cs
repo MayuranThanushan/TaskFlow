@@ -41,6 +41,8 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
                 property.Pattern = IdPattern;
                 property.Description = "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number.";
             }
+            if (name == "userId" && typeof(AccountTokenRequest).IsAssignableFrom(type))
+            { property.Pattern = "^[1-9][0-9]{0,18}$"; property.Description = "Canonical positive decimal-string account ID within signed BIGINT; no leading zeros."; }
             if (name is "dueDateUtc" or "fromUtc" or "toUtc")
             {
                 property.Format = "date-time"; property.Pattern = TimestampPattern;
@@ -56,7 +58,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             if (type == typeof(WorkspaceRoleRequest) && name == "role") SetEnum(property, ["Owner", "Admin", "Member", "Guest"]);
             if (type == typeof(WorkspaceStateRequest) && name == "state" || type.Name == "WorkspaceMemberDto" && name == "state") SetEnum(property, ["Active", "Suspended", "Removed"]);
             if (type.Name == "WorkspaceMemberDto" && name is "role" or "state") property.Enum?.Add(null!);
-            if (name == "password") { property.Format = "password"; property.WriteOnly = true; }
+            if (name is "password" or "currentPassword" or "newPassword" or "token") { property.Format = "password"; property.WriteOnly = true; }
             if (type == typeof(HealthResponse) && name == "status") SetEnum(property, ["Healthy", "Unhealthy", "Degraded"]);
         }
         return Task.CompletedTask;

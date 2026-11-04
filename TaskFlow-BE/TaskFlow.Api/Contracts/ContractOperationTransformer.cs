@@ -88,6 +88,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
                 Required = controller == typeof(WorkspaceWritesController), Schema = new OpenApiSchema { Type = JsonSchemaType.String, Pattern = "^[1-9][0-9]{0,18}$" },
                 Description = "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft." });
         }
+        if (controller == typeof(AccountSecurityController)) operation.Description += " Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled.";
         if (controller == typeof(WorkspacePolicyController)) operation.Description += " Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected.";
         var failures = new HashSet<int> { 500 };
         if (controller == typeof(WorkspaceWritesController) && action.ActionName is "CreateWorkspace" or "CreateProject" or "CreateTask") failures.Add(409);
@@ -95,6 +96,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
         if (!health)
         {
             failures.Add(400);
+            if (controller == typeof(AccountSecurityController) && action.ActionName is "RequestVerification" or "ForgotPassword" or "ConfirmEmail" or "ResetPassword") failures.Add(503);
             if (action.EndpointMetadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any()) failures.Add(429);
             if (controller == typeof(WorkspaceLifecycleController) || controller == typeof(WorkspaceAuditConsoleController) || controller == typeof(WorkspacePolicyController)) { failures.Add(403); failures.Add(404); failures.Add(409); }
             if (!anonymous || action.ActionName == "Login") failures.Add(401);

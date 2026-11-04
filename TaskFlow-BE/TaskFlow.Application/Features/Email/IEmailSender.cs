@@ -1,11 +1,13 @@
 namespace TaskFlow.Application.Features.Email;
 
-public enum EmailTemplate { CompanyInvitation = 1, TaskAssigned = 2, WorkspaceWelcome = 3 }
+public enum EmailTemplate { CompanyInvitation = 1, TaskAssigned = 2, WorkspaceWelcome = 3, EmailVerification = 4, PasswordRecovery = 5 }
 public enum EmailStatus { Captured, AlreadyCaptured, Disabled, InvalidRequest, RecipientBlocked, RateLimited, IdConflict, CaptureUnavailable }
 
 // An explicit, recipient-bound request. Never create these by replaying checkpoint facts.
 public sealed class EmailRequest
 {
+    public long? AccountUserId { get; init; }
+    public string SecurityToken { get; init; } = "";
     public long WorkspaceId { get; init; }
     public string MessageId { get; init; } = "";
     public string Recipient { get; init; } = "";

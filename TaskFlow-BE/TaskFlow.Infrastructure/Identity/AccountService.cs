@@ -92,6 +92,7 @@ public sealed class AccountService(UserManager<ApplicationUser> users, SignInMan
         await using var transaction = await database.Database.BeginTransactionAsync();
         var result = await users.UpdateSecurityStampAsync(user);
         if (!result.Succeeded) throw new InvalidOperationException("Session invalidation failed.");
+        await AccountSecurityService.InvalidateMail(database, user.Id);
         database.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.Logout, SecurityOutcome.Succeeded, user.Id, user.Id));
         await database.SaveChangesAsync(); await transaction.CommitAsync();
         await signIn.SignOutAsync();

@@ -23,6 +23,10 @@ public static class DependencyInjection
                 throw new PersistenceConfigurationException();
             options.UseMySQL(connection);
         });
+        services.AddDataProtection();
+        services.AddSingleton(sp => new AccountSecuritySettings(sp.GetService<IConfiguration>() ?? configuration, sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.EnvironmentName ?? "Production"));
+        services.AddScoped<IAccountSecurity, AccountSecurityService>();
+        services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
         services.AddIdentityCore<ApplicationUser>(options =>
         {
             options.User.RequireUniqueEmail = true;
@@ -33,7 +37,8 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = true;
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-        }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        }).AddDefaultTokenProviders().AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        services.AddOptions<IdentityOptions>().Configure<AccountSecuritySettings>((o, s) => o.SignIn.RequireConfirmedEmail = s.Enabled && s.RequireConfirmedEmail);
         services.AddScoped<TaskFlow.Application.Features.Tasks.ITaskService, TaskService>();
         services.AddScoped<TaskFlow.Application.Features.Dashboard.IDashboardService, DashboardService>();
         services.AddScoped<TaskFlow.Application.Features.Activity.IActivityService, ActivityService>();

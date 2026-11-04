@@ -61,3 +61,7 @@ GRANT SELECT, UPDATE (Id) ON taskflow.PilotGates TO 'taskflow'@'%';
 -- Producer may append intent/work atomically, but cannot lease, acknowledge, replay or read payloads.
 GRANT INSERT, SELECT (Id) ON taskflow.OutboxEvents TO 'taskflow'@'%';
 GRANT INSERT, SELECT (Id, AvailableAtUtc) ON taskflow.OutboxDeliveries TO 'taskflow'@'%';
+
+-- SaaS-019: encrypted global account mail jobs. API can enqueue and cancel only.
+GRANT SELECT, INSERT ON taskflow.AccountEmailJobs TO 'taskflow'@'%';
+GRANT UPDATE (State, ProtectedPayload, LeaseToken, LeaseExpiresAtUtc, LastCode) ON taskflow.AccountEmailJobs TO 'taskflow'@'%';

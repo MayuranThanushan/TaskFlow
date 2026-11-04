@@ -416,6 +416,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await database.WorkspaceAuditLogs.Where(a => workspaces.Contains(a.WorkspaceId)).ExecuteDeleteAsync();
             await database.WorkspaceMemberships.Where(m => workspaces.Contains(m.WorkspaceId)).ExecuteDeleteAsync();
             await database.Workspaces.Where(w => workspaces.Contains(w.Id)).ExecuteDeleteAsync();
+            await database.AccountEmailJobs.Where(j => ids.Contains(j.UserId)).ExecuteDeleteAsync();
             await database.Users.Where(user => ids.Contains(user.Id)).ExecuteDeleteAsync(); await transaction.CommitAsync();
         }
     }

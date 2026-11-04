@@ -1,6 +1,6 @@
 namespace TaskFlow.Application.Features.Activity;
 
-public enum SecurityAction { Registration, Login, Logout, PasswordProof, ProfileChanged, RequestRejected, RecoveryRequested, RecoveryCompleted }
+public enum SecurityAction { Registration, Login, Logout, PasswordProof, ProfileChanged, RequestRejected, RecoveryRequested, RecoveryCompleted, VerificationRequested, EmailVerified, PasswordChanged, Reauthentication }
 public enum SecurityOutcome { Succeeded, Denied, LockedOut, Failed }
 public interface ISecurityEvents
 {

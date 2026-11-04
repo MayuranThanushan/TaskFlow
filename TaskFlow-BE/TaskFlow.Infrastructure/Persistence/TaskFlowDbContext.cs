@@ -10,6 +10,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<AccountEmailJob> AccountEmailJobs => Set<AccountEmailJob>();
     public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
     public DbSet<OutboxDelivery> OutboxDeliveries => Set<OutboxDelivery>();
     public DbSet<OutboxAttempt> OutboxAttempts => Set<OutboxAttempt>();
