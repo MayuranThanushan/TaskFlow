@@ -1,6 +1,6 @@
 # Company and private-project permission contract
 
-Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); implemented for the default-off scoped lifecycle preview in [SaaS-012](workspace-lifecycle.md). The matrix remains the target capability contract. Company settings, custody recovery, billing/closure, invitations and MFA/SSO remain future work. Legacy routes are closed when lifecycle is enabled.
+Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); implemented for the default-off scoped lifecycle preview in [SaaS-012](workspace-lifecycle.md). The matrix remains the target capability contract. Invitation API/lifecycle is implemented behind an additional default-off flag in [SaaS-020](invitations.md); invitation UI, custody recovery, billing/closure and MFA/SSO remain future work. Legacy routes are closed when lifecycle is enabled.
 
 All permissions require an authenticated global account and active membership in the addressed workspace. Suspension takes precedence over any project role. Missing membership means no company access. Roles in different companies never combine. No endpoint accepts a client-supplied effective role.
 
@@ -34,7 +34,7 @@ These roles apply only within the same workspace. Workspace Owner/Admin alone do
 | Grant/revoke Editor/Viewer to eligible company members | Yes | No | No | No |
 | Transfer project ownership | Yes, validated recipient | No | No | No |
 
-Company invitations are a company-admin action; a project owner can add only existing active company members initially. Future project-scoped invitations must compose both capabilities or request admin approval. Assignments require active same-company membership plus project access; Viewer assignment is rejected because the recipient cannot act on the task. Existing legacy collaborators become Editors, preserving assignment eligibility.
+Company invitations are a company-admin action; a project owner can add only existing active company members initially. SaaS-020 project email invitations compose both capabilities: the actor must be company Owner/Admin and the current project owner. No company-admin private-project override is granted. Assignments require active same-company membership plus project access; Viewer assignment is rejected because the recipient cannot act on the task. Existing legacy collaborators become Editors, preserving assignment eligibility.
 
 ## Departure, suspension and recovery
 

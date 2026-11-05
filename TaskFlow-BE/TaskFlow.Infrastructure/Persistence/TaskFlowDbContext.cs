@@ -10,6 +10,8 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();
+    public DbSet<InvitationTransition> InvitationTransitions => Set<InvitationTransition>();
     public DbSet<AccountEmailJob> AccountEmailJobs => Set<AccountEmailJob>();
     public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
     public DbSet<OutboxDelivery> OutboxDeliveries => Set<OutboxDelivery>();
@@ -69,7 +71,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         var now = clock.GetUtcNow().UtcDateTime;
         foreach (var entry in ChangeTracker.Entries().ToList())
         {
-            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt) && entry.State is EntityState.Modified or EntityState.Deleted)
+            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)
                 throw new InvalidOperationException("Projects and tasks require explicit soft deletion.");

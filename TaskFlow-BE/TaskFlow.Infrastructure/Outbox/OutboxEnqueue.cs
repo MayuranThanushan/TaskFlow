@@ -11,7 +11,7 @@ public static class OutboxEnqueue
         : kind is "Company.CompanyCreated" or "Company.CompanyRoleChanged" or "Company.CompanyMemberSuspended"
             or "Company.CompanyMemberReactivated" or "Company.CompanyMemberRemoved" or "Company.CompanyMemberLeft"
             or "Company.CompanyOwnershipTransferred" or "Company.ProjectRoleChanged" or "Company.ProjectOwnershipTransferred"
-            or "Company.ProjectMemberAdded" or "Company.ProjectMemberRemoved" or "Company.CompanyPolicyChanged";
+            or "Company.ProjectMemberAdded" or "Company.ProjectMemberRemoved" or "Company.CompanyPolicyChanged" or "Company.InvitationCreated" or "Company.InvitationResent" or "Company.InvitationRevoked" or "Company.InvitationAccepted";
     public static void Capture(TaskFlowDbContext db)
     {
         if (db.Database.CurrentTransaction is null) throw new InvalidOperationException("Outbox requires the business transaction.");

@@ -79,6 +79,12 @@ internal sealed class AuditCapture
                     _ => true
                 }).ToList();
             }
+            else if (row is WorkspaceAuditLog invitation && invitation.Action is "InvitationCreated" or "InvitationResent" or "InvitationRevoked" or "InvitationAccepted")
+            {
+                row.SubjectType = "Invitation";
+                row.SubjectId = invitation.SubjectId ?? throw new InvalidOperationException("Invitation audit requires a subject.");
+                changes = [];
+            }
             else if (row is WorkspaceAuditLog governance)
             {
                 row.SubjectType = governance.Action is "CompanyCreated" or "CompanyPolicyChanged" ? "Workspace" : governance.ProjectId is null ? "WorkspaceMembership"

@@ -7,6 +7,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is TaskFlow.Application.Features.Workspaces.InvitationException invitation)
+        {
+            var problem = ProblemResponses.Create(context, invitation.Status); problem.Extensions["code"] = invitation.Code;
+            problem.Title = "Invitation action could not be completed."; await ProblemResponses.WriteAsync(context, problem); return true;
+        }
         if (exception is TaskFlow.Application.Features.Workspaces.PilotQuotaException)
         {
             var problem = ProblemResponses.Create(context, 409); problem.Extensions["code"] = "quota.exceeded";

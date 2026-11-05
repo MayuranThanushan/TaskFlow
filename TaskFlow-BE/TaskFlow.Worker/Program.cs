@@ -25,8 +25,9 @@ try
     builder.Services.AddSingleton(TimeProvider.System);
     builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new InvalidOperationException()));
     builder.Services.AddScoped<OutboxStore>(); builder.Services.AddSingleton<OutboxMetrics>(); builder.Services.AddSingleton<IOutboxConsumer, CheckpointConsumer>(); builder.Services.AddSingleton<OutboxPump>();
+    var invitationMail = args.Length == 1 && args[0] == "--invitations-once";
     var accountMail = args.Length == 1 && args[0] == "--account-mail-once";
-    if (accountMail)
+    if (accountMail || invitationMail)
     {
         if (!builder.Environment.IsDevelopment() && !builder.Environment.IsStaging()) throw new InvalidOperationException();
         var keyPath = builder.Configuration["DataProtection:KeysPath"] ?? throw new InvalidOperationException();
@@ -34,6 +35,7 @@ try
         var options = builder.Configuration.GetSection("Email").Get<TaskFlow.Infrastructure.Email.LocalEmailOptions>() ?? new();
         builder.Services.AddSingleton<TaskFlow.Application.Features.Email.IEmailSender>(new TaskFlow.Infrastructure.Email.LocalEmailSender(options, builder.Environment.EnvironmentName, TimeProvider.System));
         builder.Services.AddScoped<TaskFlow.Infrastructure.Email.AccountMailCapture>();
+        builder.Services.AddScoped<TaskFlow.Infrastructure.Email.InvitationMailCapture>();
     }
     using var host = builder.Build();
     await using (var check = host.Services.CreateAsyncScope())
@@ -41,11 +43,11 @@ try
         var db = check.ServiceProvider.GetRequiredService<TaskFlowDbContext>();
         if (!db.Database.GetMigrations().ToHashSet(StringComparer.Ordinal).SetEquals(await db.Database.GetAppliedMigrationsAsync())) throw new InvalidOperationException();
     }
-    if (accountMail)
+    if (accountMail || invitationMail)
     {
         await using var scope = host.Services.CreateAsyncScope();
-        var count = await scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Email.AccountMailCapture>().RunAsync();
-        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { eventId = 3401, code = "account_mail.batch_completed", count })); return;
+        var count = invitationMail ? await scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Email.InvitationMailCapture>().RunAsync() : await scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Email.AccountMailCapture>().RunAsync();
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { eventId = 3401, code = invitationMail ? "invitation_mail.batch_completed" : "account_mail.batch_completed", count })); return;
     }
     var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("TaskFlow.Worker");
     if (args.Length == 3 && args[0] == "--replay" && long.TryParse(args[1], out var workspace) && workspace > 0 && long.TryParse(args[2], out var delivery) && delivery > 0)

@@ -25,6 +25,6 @@ public static class PilotQuotas
     }
     public static async Task MemberAsync(TaskFlowDbContext db, long workspace, CancellationToken token)
     {
-        if (await db.WorkspaceMemberships.CountAsync(m => m.WorkspaceId == workspace && m.State == WorkspaceMembershipState.Active, token) >= Members) Deny();
+        if (await db.WorkspaceMemberships.CountAsync(m => m.WorkspaceId == workspace && m.State == WorkspaceMembershipState.Active, token) + await InvitationPolicy.Reservations(db, workspace, await InvitationPolicy.Now(db, token), token) >= Members) Deny();
     }
 }

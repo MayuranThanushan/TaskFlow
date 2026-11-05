@@ -142,12 +142,21 @@ def restore(args):
     if schema_state(args, target) != {'tableCounts': manifest['tableCounts'], 'migrations': manifest['migrations']}:
         raise RecoveryError('Restored table counts or migration history differ; do not start the app.')
     # An older snapshot could otherwise revive sessions revoked since its creation.
-    query(args, f'UPDATE {identifier(target)}.`AspNetUsers` SET SecurityStamp=UUID(), ConcurrencyStamp=UUID(), UpdatedAtUtc=UTC_TIMESTAMP(6)')
+    invalidations = [f'UPDATE {identifier(target)}.`AspNetUsers` SET SecurityStamp=UUID(), ConcurrencyStamp=UUID(), UpdatedAtUtc=UTC_TIMESTAMP(6)']
+    tables = {name.lower(): name for name in manifest['tableCounts']}
+    if 'workspaceinvitations' in tables:
+        table = identifier(tables['workspaceinvitations'])
+        invalidations.append(f"UPDATE {identifier(target)}.{table} SET State='Revoked', Version=Version+1, TokenHash=NULL, PendingEmail=NULL, ProtectedMessage=NULL, DeliveryState='Cancelled', LeaseToken=NULL, LeaseExpiresAtUtc=NULL, LastCode='invitation.restore_invalidated' WHERE State='Pending'")
+    if 'accountemailjobs' in tables:
+        table = identifier(tables['accountemailjobs'])
+        invalidations.append(f"UPDATE {identifier(target)}.{table} SET State='Cancelled', ProtectedPayload=NULL, LeaseToken=NULL, LeaseExpiresAtUtc=NULL, LastCode='account.restore_invalidated' WHERE State IN ('Pending','Leased')")
+    # Recovered snapshots must not resurrect revoked invitation tokens or send obsolete recovery links.
+    query(args, 'START TRANSACTION; ' + '; '.join(invalidations) + '; COMMIT')
     private_directory(key_target)
     for name in manifest['files']:
         if name.startswith('keys/'):
             private_write(key_target / PurePosixPath(name).name, safe_file(Path(args.backup), name).read_bytes())
-    print('Recovery complete in a new schema; row counts/history match, keys restored and all prior sessions invalidated.')
+    print('Recovery complete in a new schema; counts/history match, keys restored and sessions invalidated; pending invitations revoked and obsolete account mail cancelled when present.')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

@@ -7,6 +7,11 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces/{workspaceId}/invitations": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept": {"post"},
     "/api/v2/workspaces/{workspaceId}/policy": {"get", "put"},
     "/api/v2/workspaces/{workspaceId}/audit/console": {"get"},
     "/api/v2/workspaces/{workspaceId}/audit/console/exports": {"post"},

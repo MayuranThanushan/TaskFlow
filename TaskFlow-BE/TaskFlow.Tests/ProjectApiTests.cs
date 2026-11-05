@@ -329,12 +329,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors) : this(fixture, workspaceReads, false, interceptors) { }
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, params IInterceptor[] interceptors) : this(fixture, workspaceReads, workspaceWrites, false, interceptors) { }
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, params IInterceptor[] interceptors)
+            : this(fixture, workspaceReads, workspaceWrites, lifecycle, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString() }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -343,6 +345,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
                 });
             });
         }
+        public IServiceProvider Services => factory.Services;
         public async Task InitializeAsync()
         {
             await using var scope = factory.Services.CreateAsyncScope(); var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -402,6 +405,9 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await factory.DisposeAsync(); await using var database = fixture.CreateContext(); var ids = Users.Select(user => user.Id).ToArray();
             var projects = await database.Projects.IgnoreQueryFilters().Where(project => ids.Contains(project.OwnerId)).Select(project => project.Id).ToArrayAsync();
             await using var transaction = await database.Database.BeginTransactionAsync();
+            var invites = await database.WorkspaceInvitations.Where(i => ids.Contains(i.InviterUserId)).Select(i => i.Id).ToArrayAsync();
+            await database.InvitationTransitions.Where(a => invites.Contains(a.InvitationId)).ExecuteDeleteAsync();
+            await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();
             var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
             var deliveries = database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).Select(d => d.Id);
             await database.OutboxAttempts.Where(a => deliveries.Contains(a.DeliveryId)).ExecuteDeleteAsync();

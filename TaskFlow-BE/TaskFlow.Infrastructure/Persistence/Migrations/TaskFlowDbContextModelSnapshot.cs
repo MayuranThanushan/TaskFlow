@@ -277,6 +277,46 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.InvitationTransition", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<long>("ActorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("InvitationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("WorkspaceId", "InvitationId", "Id");
+
+                    b.ToTable("InvitationTransitions");
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.OutboxAttempt", b =>
                 {
                     b.Property<long>("Id")
@@ -786,6 +826,118 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("WorkspaceAuditLogs", (string)null);
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceInvitation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("AcceptedUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AvailableAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("DeliveryState")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("InviterUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LastCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<DateTime>("LastSentAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("LeaseExpiresAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("LeaseToken")
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)");
+
+                    b.Property<string>("PendingEmail")
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)");
+
+                    b.Property<long?>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProtectedMessage")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Resends")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("TokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcceptedUserId");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "CreatedAtUtc");
+
+                    b.HasIndex("WorkspaceId", "InviterUserId");
+
+                    b.HasIndex("WorkspaceId", "PendingEmail")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "ProjectId");
+
+                    b.HasIndex("DeliveryState", "AvailableAtUtc", "Id");
+
+                    b.ToTable("WorkspaceInvitations");
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceMembership", b =>
                 {
                     b.Property<long>("WorkspaceId")
@@ -987,6 +1139,22 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Task");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.InvitationTransition", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.WorkspaceInvitation", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "InvitationId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.OutboxAttempt", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entities.OutboxDelivery", null)
@@ -1100,6 +1268,20 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WorkspaceInvitation", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AcceptedUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "InviterUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

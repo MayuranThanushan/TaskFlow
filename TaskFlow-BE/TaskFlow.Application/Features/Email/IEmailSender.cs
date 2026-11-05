@@ -6,6 +6,7 @@ public enum EmailStatus { Captured, AlreadyCaptured, Disabled, InvalidRequest, R
 // An explicit, recipient-bound request. Never create these by replaying checkpoint facts.
 public sealed class EmailRequest
 {
+    public long? InvitationId { get; init; }
     public long? AccountUserId { get; init; }
     public string SecurityToken { get; init; } = "";
     public long WorkspaceId { get; init; }

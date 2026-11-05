@@ -26,7 +26,7 @@ public static class EmailTemplates
         var account = request.Template is EmailTemplate.EmailVerification or EmailTemplate.PasswordRecovery;
         if (!Guid.TryParseExact(request.MessageId, "N", out _) || !ValidRecipient(request.Recipient) || !Label(request.DisplayName, 160) || !Enum.IsDefined(request.Template)) return false;
         if (account) return request.WorkspaceId == 0 && request.AccountUserId > 0 && request.SecurityToken is { Length: >= 20 and <= 4096 } && request.SecurityToken.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
-        return request.WorkspaceId > 0 && request.AccountUserId is null && Label(request.CompanyName, 160) &&
+        return request.WorkspaceId > 0 && (request.InvitationId is null || request.InvitationId > 0) && request.AccountUserId is null && Label(request.CompanyName, 160) &&
             (request.Template != EmailTemplate.TaskAssigned || Label(request.TaskTitle, 200) && request.ProjectId > 0 && request.TaskId > 0) &&
             (request.Template != EmailTemplate.CompanyInvitation || request.InvitationToken is { Length: >= 20 and <= 512 } && request.InvitationToken.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_'));
     }
@@ -39,7 +39,7 @@ public static class EmailTemplates
         {
             EmailTemplate.EmailVerification => ("Verify your TaskFlow email", "Confirm your email address to protect your TaskFlow account. This link expires in one hour.", $"/verify-email#userId={request.AccountUserId}&token={Uri.EscapeDataString(request.SecurityToken)}", "Verify email"),
             EmailTemplate.PasswordRecovery => ("Reset your TaskFlow password", "A password reset was requested for your account. If this was not you, ignore this message. This link expires in one hour.", $"/reset-password#userId={request.AccountUserId}&token={Uri.EscapeDataString(request.SecurityToken)}", "Reset password"),
-            EmailTemplate.CompanyInvitation => ("You are invited to TaskFlow", $"You have been invited to join {request.CompanyName}.", "/invitations/accept?token=" + Uri.EscapeDataString(request.InvitationToken), "Review invitation"),
+            EmailTemplate.CompanyInvitation => ("You are invited to TaskFlow", $"You have been invited to join {request.CompanyName}.", request.InvitationId is { } invitation ? $"/invitations/accept#workspaceId={request.WorkspaceId}&invitationId={invitation}&token={Uri.EscapeDataString(request.InvitationToken)}" : "/invitations/accept?token=" + Uri.EscapeDataString(request.InvitationToken), "Review invitation"),
             EmailTemplate.TaskAssigned => ("A task was assigned to you", $"A task in {request.CompanyName} was assigned to you: {request.TaskTitle}", $"/companies/{request.WorkspaceId}/tasks/{request.TaskId}", "View task"),
             EmailTemplate.WorkspaceWelcome => ("Welcome to your TaskFlow workspace", $"Your workspace, {request.CompanyName}, is ready.", $"/companies/{request.WorkspaceId}", "Open workspace"),
             _ => throw new ArgumentException("Unknown email template.")

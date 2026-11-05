@@ -1,6 +1,6 @@
 {
-  "release": "SaaS-019",
-  "date": "2026-11-04",
+  "release": "SaaS-020",
+  "date": "2026-11-05",
   "scope": "Current global identity, company preview, checkpoint worker and explicit local/staging encrypted account-mail capture. Local evidence only; real provider delivery and hosted/cutover acceptance remain gated.",
   "operations": [
     {
@@ -1037,6 +1037,96 @@
         "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
         "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
       ]
+    },
+    {
+      "operationId": "Invitations_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Resend",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Revoke",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Preview",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Accept",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
     }
   ],
   "nonHttpEntryPoints": [
@@ -1129,6 +1219,19 @@
         "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
         "tests/browser/account-security.cjs",
         "docs/saas/account-security.md"
+      ]
+    },
+    {
+      "entry": "SaaS-020 restricted invitation capture worker",
+      "controls": [
+        "Recipient-bound protected invite messages and current inviter/project authority recheck.",
+        "Shared workspace gate and fenced delivery row; no locks during capture; bounded retries.",
+        "Separate grants: no source authority, membership/account/private-project content/history mutation.",
+        "Local/staging capture only; no real provider or invitation UI."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "deploy/invitation-mail-roles.sql.example"
       ]
     }
   ],

@@ -65,3 +65,7 @@ GRANT INSERT, SELECT (Id, AvailableAtUtc) ON taskflow.OutboxDeliveries TO 'taskf
 -- SaaS-019: encrypted global account mail jobs. API can enqueue and cancel only.
 GRANT SELECT, INSERT ON taskflow.AccountEmailJobs TO 'taskflow'@'%';
 GRANT UPDATE (State, ProtectedPayload, LeaseToken, LeaseExpiresAtUtc, LastCode) ON taskflow.AccountEmailJobs TO 'taskflow'@'%';
+
+-- SaaS-020 invitation authority stays in API; all payloads are private.
+GRANT SELECT, INSERT, UPDATE ON taskflow.WorkspaceInvitations TO 'taskflow'@'%';
+GRANT INSERT, SELECT (Id) ON taskflow.InvitationTransitions TO 'taskflow'@'%';
