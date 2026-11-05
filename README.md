@@ -2,6 +2,28 @@
 
 Private projects, membership, tasks, dashboard progress, activity history and profiles. Follow this checklist in order to run the application manually on Windows. Commands use PowerShell and the existing D:\TaskFlow workspace.
 
+## Print the startup checklist or run with visible commands
+
+To print the complete manual commands with this checkout's paths, without starting services, installing dependencies or applying migrations:
+
+```powershell
+Set-Location D:\TaskFlow
+./scripts/Start-Local.ps1 -PrintCommandsOnly
+# Include the company/team/invitation preview flags:
+./scripts/Start-Local.ps1 -PrintCommandsOnly -EnableSaasPreview
+```
+
+Copy the generated **Terminal A**, **Terminal B** and **Terminal C** sections separately. Each section shows its working directory, settings and commands. The private database connection is loaded by reference; its value is never printed.
+
+To have the helper run the steps while printing the commands and directories:
+
+```powershell
+Set-Location D:\TaskFlow
+./scripts/Start-Local.ps1 -EnableSaasPreview
+```
+
+Normal execution saves the manual checklist at `.local/runtime/startup-commands.ps1` and prints each command before running it. Read that file section by section; do not execute the whole checklist as a single script, because the API and frontend run in separate foreground terminals. Use `-SkipDatabase` with either mode for your own development MySQL, after configuring `ConnectionStrings__TaskFlow` privately in the API terminal. Mail workers are configured separately; this option enables the company/invitation UI and APIs, not email sending. Existing Vite must be restarted to inherit changed preview flags. Keep the checklist below for fully manual startup without the helper.
+
 ## 1. Stop the old backend before building
 
 - [ ] In the terminal running the API, press **Ctrl+C**. Also stop Vite with Ctrl+C if you want to restart the frontend. Keep MySQL running.

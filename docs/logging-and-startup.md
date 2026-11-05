@@ -18,6 +18,21 @@ From PowerShell in the repository root:
 ./scripts/Start-Local.ps1
 ```
 
+The helper now prints a copyable manual checklist with absolute repository paths before running. It prints `[RUN] Directory:` and `PS>` command lines for restore, build, migrations, process launches and health probes, and saves the checklist to `.local/runtime/startup-commands.ps1`. It references private connection configuration without printing credentials. The saved file is a multi-terminal checklist, not an unattended script.
+
+```powershell
+# Print only: no writes, dependency installation, migrations or process changes.
+./scripts/Start-Local.ps1 -PrintCommandsOnly
+# Include company/team/invitation feature flags in the printed commands.
+./scripts/Start-Local.ps1 -PrintCommandsOnly -EnableSaasPreview
+# Execute startup and show commands, enabling the company/invitation preview.
+./scripts/Start-Local.ps1 -EnableSaasPreview
+# Own database: set the private development connection first, then:
+./scripts/Start-Local.ps1 -PrintCommandsOnly -SkipDatabase
+```
+
+`-EnableSaasPreview` sets the four backend company/invitation gates and the three matching Vite flags for newly launched processes. Existing Vite does not inherit new settings; stop it in its original terminal and restart. Default startup preserves existing flag configuration. Account/invitation email capture remains separately configured with explicit workers and private recipient allowlists; no mail worker is started here. The database remains restricted to development names.
+
 The script performs these steps in order:
 
 1. Start the initialized portable MySQL instance on 127.0.0.1:13306 if needed. Load its private development connection from ignored .local/mysql/connections.json unless the terminal already has one.
