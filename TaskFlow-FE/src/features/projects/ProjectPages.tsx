@@ -128,6 +128,7 @@ function ProjectForm({ client, initial }: { client: ApiClient; initial?: Project
 }
 
 export function ProjectDetailPage({ client }: { client: ApiClient }) {
+  const companyAccess = useCompany()
   const { projectId = '' } = useParams()
   const location = useLocation()
   const { session } = useAuth()
@@ -147,6 +148,7 @@ export function ProjectDetailPage({ client }: { client: ApiClient }) {
       <section className="project-about" aria-labelledby="project-about"><h2 id="project-about">About this project</h2><p className="project-description">{result.data.description || 'No description added.'}</p></section>
       <section className="project-about"><h2>Tasks</h2><p>Plan the next steps and track your project work.</p><Link className="button primary" to={'/projects/' + encodeURIComponent(projectId) + '/tasks'}>View tasks</Link></section>
       <section className="project-about"><h2>Project history</h2><p>See changes to this project, its tasks and membership.</p><Link className="button subtle" to={'/projects/' + encodeURIComponent(projectId) + '/activity'}>View activity</Link></section>
+      {companyAccess.invitationsEnabled && (companyAccess.role === 'Owner' || companyAccess.role === 'Admin') && session.user?.id === result.data.ownerId && <section className="project-about"><h2>Invite a teammate</h2><p>New teammates can review an invitation and verify their email before joining this project.</p><Link className="button subtle" to={'/projects/' + projectId + '/invitations'}>Manage project invitations</Link></section>}
       <ProjectMembers onAccessChanged={retry} key={'members:' + projectId} client={client} projectId={projectId} owner={session.user?.id === result.data.ownerId} />
       <section className="project-progress" aria-labelledby="progress-heading"><h2 id="progress-heading">Project progress</h2><dl><div><dt>Total tasks</dt><dd>{result.data.totalTasks}</dd></div><div><dt>Completed tasks</dt><dd>{result.data.completedTasks}</dd></div><div><dt>Progress</dt><dd>{result.data.progressPercentage}%</dd></div></dl>
         <progress aria-label="Project progress" value={result.data.progressPercentage} max={100}>{result.data.progressPercentage}%</progress>

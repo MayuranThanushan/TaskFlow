@@ -13,10 +13,11 @@ export function CompanyPolicyPage({ client, owner }: { client: ApiClient; owner:
       <div className="pilot-capacity" aria-label="Company capacity">{[
         ['Active projects', result.data.capacity.activeProjects, result.data.capacity.projectLimit],
         ['Active tasks', result.data.capacity.activeTasks, result.data.capacity.taskLimit],
-        ['Active members', result.data.capacity.activeMembers, result.data.capacity.memberLimit],
+        ['Member seats used or reserved', result.data.capacity.activeMembers + (result.data.capacity.reservedMemberSeats ?? 0), result.data.capacity.memberLimit],
         ['Retained projects', result.data.capacity.retainedProjects, result.data.capacity.retainedProjectLimit],
         ['Retained tasks', result.data.capacity.retainedTasks, result.data.capacity.retainedTaskLimit],
       ].map(([label, used, limit]) => <div className={Number(used) >= Number(limit) ? "at-capacity" : undefined} key={label}><span>{label}</span><strong>{used} / {limit}</strong></div>)}</div>
+      <p className="field-hint">{result.data.capacity.activeMembers} active members and {result.data.capacity.reservedMemberSeats ?? 0} seats reserved by valid pending invitations.</p>
       <p className="field-hint">Each project supports up to {result.data.capacity.tasksPerProjectLimit} active tasks. Deleted projects/tasks remain in retained totals. Limits are managed by operations.</p>
       <p className="notice">Automatic deletion is off. These periods guide retention reviews; they do not schedule or guarantee erasure. A legal hold requires records to remain retained.</p>
       <PolicyForm key={result.data.version} client={client} initial={result.data} owner={owner} refresh={retry} />

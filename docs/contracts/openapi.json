@@ -16114,7 +16114,8 @@
           "version",
           "expiresAtUtc",
           "resends",
-          "deliveryState"
+          "deliveryState",
+          "resendAvailableAtUtc"
         ],
         "type": "object",
         "properties": {
@@ -16186,6 +16187,11 @@
               "DeadLetter"
             ],
             "type": "string"
+          },
+          "resendAvailableAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -16340,7 +16346,8 @@
           "memberLimit",
           "tasksPerProjectLimit",
           "retainedProjectLimit",
-          "retainedTaskLimit"
+          "retainedTaskLimit",
+          "reservedMemberSeats"
         ],
         "type": "object",
         "properties": {
@@ -16385,6 +16392,10 @@
             "format": "int32"
           },
           "retainedTaskLimit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reservedMemberSeats": {
             "type": "integer",
             "format": "int32"
           }

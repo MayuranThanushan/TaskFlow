@@ -10,7 +10,7 @@ import { reply, server } from '../../test/server'
 function setup(role = 'Owner') {
   const auth = server(true), calls: InternalAxiosRequestConfig[] = []
   const policy = { version: '9007199254741111', auditRetentionDays: 365, deletedContentRetentionDays: 30, legalHold: true, auditExportsEnabled: true, automaticPurgeEnabled: false,
-    capacity: { activeProjects: 20, activeTasks: 50, activeMembers: 2, retainedProjects: 21, retainedTasks: 55, projectLimit: 20, taskLimit: 2000, memberLimit: 25, tasksPerProjectLimit: 500, retainedProjectLimit: 100, retainedTaskLimit: 10000 } }
+    capacity: { reservedMemberSeats: 0, activeProjects: 20, activeTasks: 50, activeMembers: 2, retainedProjects: 21, retainedTasks: 55, projectLimit: 20, taskLimit: 2000, memberLimit: 25, tasksPerProjectLimit: 500, retainedProjectLimit: 100, retainedTaskLimit: 10000 } }
   const client = createApiClient(async c => {
     calls.push(c)
     if (c.baseURL === '/api/v1') return auth.adapter(c)

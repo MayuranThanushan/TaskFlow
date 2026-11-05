@@ -1149,6 +1149,8 @@ export interface components {
             id: string;
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
             projectId: null | string;
+            /** Format: date-time */
+            resendAvailableAtUtc: string;
             /** Format: int32 */
             resends: number;
             /** @enum {string} */
@@ -1206,6 +1208,8 @@ export interface components {
             memberLimit: number;
             /** Format: int32 */
             projectLimit: number;
+            /** Format: int32 */
+            reservedMemberSeats: number;
             /** Format: int32 */
             retainedProjectLimit: number;
             /** Format: int32 */

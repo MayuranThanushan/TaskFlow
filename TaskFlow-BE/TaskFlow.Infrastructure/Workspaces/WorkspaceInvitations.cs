@@ -19,7 +19,7 @@ public sealed class WorkspaceInvitations(IServiceScopeFactory scopes, IDataProte
 {
     private static string Id(long id) => id.ToString(CultureInfo.InvariantCulture);
     private static void Fail(int status = 409, string code = "invitation.conflict") => throw new InvitationException(status, code);
-    private static InvitationDto Map(WorkspaceInvitation i, string? effective = null) => new(Id(i.Id), Id(i.WorkspaceId), i.ProjectId is { } p ? Id(p) : null, i.Email, i.Role, effective ?? i.State, Id(i.Version), i.ExpiresAtUtc, i.Resends, effective is "Expired" or "Revoked" ? "Cancelled" : i.DeliveryState);
+    private static InvitationDto Map(WorkspaceInvitation i, string? effective = null) => new(Id(i.Id), Id(i.WorkspaceId), i.ProjectId is { } p ? Id(p) : null, i.Email, i.Role, effective ?? i.State, Id(i.Version), i.ExpiresAtUtc, i.Resends, effective is "Expired" or "Revoked" ? "Cancelled" : i.DeliveryState, i.LastSentAtUtc.AddMinutes(1));
     private static async Task Gate(TaskFlowDbContext db, WorkspaceWriteContext c, CancellationToken token)
     {
         if (c.ActorId <= 0) Fail(401, "invitation.unauthenticated");

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { useCompany } from './company-context'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { ApiClient } from '../../api/client'
@@ -13,7 +15,9 @@ export function CompanyTeamPage({ client, company, refreshCompany }: { client: A
   const { session } = useAuth()
   const navigate = useNavigate()
   const [target, setTarget] = useState('')
+  const { invitationsEnabled } = useCompany()
   return <section className="projects-page"><div className="page-heading"><div><p className="eyebrow">{company.name}</p><h1>Company team</h1><p className="muted">Company membership does not grant access to private projects.</p></div></div>
+    {invitationsEnabled && (company.role === 'Owner' || company.role === 'Admin') && <p><Link className="button primary" to={'/companies/' + company.id + '/invitations'}>Manage invitations</Link></p>}
     {company.role === 'Guest' ? <p>As a Guest, you can see collaborators inside projects shared with you.</p> : <TeamDirectory client={client} company={company} refresh={refreshCompany} />}
     {company.role === 'Owner' && <GovernanceAction client={client} path="/ownership" method="post" title="Transfer company ownership" data={{ userId: target }} passwordRequired description="The selected active non-Guest member becomes Owner. You become Admin and keep ownership of your private projects until you transfer them separately." onSuccess={refreshCompany}>
       <label>New company owner ID<input inputMode="numeric" pattern="[1-9][0-9]*" maxLength={19} required value={target} onChange={e => setTarget(e.target.value)} /></label>

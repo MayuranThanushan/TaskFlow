@@ -23,7 +23,8 @@ public sealed partial class WorkspaceLifecycle
             await tasks.CountAsync(t => t.DeletedAtUtc == null && t.Project.DeletedAtUtc == null, token),
             await reads.WorkspaceMemberships.CountAsync(m => m.WorkspaceId == context.WorkspaceId && m.State == WorkspaceMembershipState.Active, token),
             await projects.CountAsync(token), await tasks.CountAsync(token), PilotQuotas.Projects, PilotQuotas.Tasks, PilotQuotas.Members,
-            PilotQuotas.ProjectTasks, PilotQuotas.RetainedProjects, PilotQuotas.RetainedTasks);
+            PilotQuotas.ProjectTasks, PilotQuotas.RetainedProjects, PilotQuotas.RetainedTasks,
+            await InvitationPolicy.Reservations(reads, context.WorkspaceId, await InvitationPolicy.Now(reads, token), token));
         await snapshot.CommitAsync(token);
         return new(Id(workspace.PolicyVersion), workspace.AuditRetentionDays, workspace.DeletedContentRetentionDays, workspace.LegalHold,
             workspace.AuditExportsEnabled, false, capacity);

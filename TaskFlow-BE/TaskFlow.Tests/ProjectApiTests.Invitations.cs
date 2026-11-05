@@ -102,6 +102,8 @@ public sealed partial class ProjectApiTests
             for (var n = 0; n < 22; n++) { var email = "seat-" + Guid.NewGuid().ToString("N") + "@example.test"; var user = new ApplicationUser { DisplayName = "Synthetic seat", Email = email, NormalizedEmail = email.ToUpperInvariant(), UserName = email, NormalizedUserName = email.ToUpperInvariant() }; db.Users.Add(user); await db.SaveChangesAsync(); host.Users.Add(user); db.WorkspaceMemberships.Add(new() { WorkspaceId = c.A.Id, UserId = user.Id, Role = WorkspaceRole.Member }); } await db.SaveChangesAsync();
         }
         var invite = await Invite(host, owner, c, host.Users[1].Email!); var id = invite.GetProperty("id").GetString()!; var mail = await InviteMail(host, id);
+        var policy = (await Body(await owner.GetAsync(W(c.A) + "/policy"))).GetProperty("capacity"); Assert.Equal(1, policy.GetProperty("reservedMemberSeats").GetInt32()); Assert.Equal(24, policy.GetProperty("activeMembers").GetInt32());
+        Assert.EndsWith("Z", invite.GetProperty("resendAvailableAtUtc").GetString());
         await Problem(await host.MemberWriteAsync(owner, HttpMethod.Post, W(c.A) + "/invitations", new { email = "excess@example.test", role = "Member" }), HttpStatusCode.Conflict);
         Assert.Equal(HttpStatusCode.OK, (await host.MemberWriteAsync(recipient, HttpMethod.Post, W(c.A) + "/invitations/" + id + "/accept", new { token = mail.InvitationToken })).StatusCode);
         await using var verify = fixture.CreateContext(); Assert.Equal(25, await verify.WorkspaceMemberships.CountAsync(m => m.WorkspaceId == c.A.Id && m.State == WorkspaceMembershipState.Active));

@@ -1,5 +1,5 @@
 namespace TaskFlow.Application.Features.Workspaces;
-public sealed record InvitationDto(string Id, string WorkspaceId, string? ProjectId, string Email, string Role, string State, string Version, DateTime ExpiresAtUtc, int Resends, string DeliveryState);
+public sealed record InvitationDto(string Id, string WorkspaceId, string? ProjectId, string Email, string Role, string State, string Version, DateTime ExpiresAtUtc, int Resends, string DeliveryState, DateTime ResendAvailableAtUtc);
 public sealed record InvitationPage(InvitationDto[] Items, int Page, int PageSize, int TotalCount, int TotalPages);
 public sealed record InvitationPreviewDto(string WorkspaceId, string WorkspaceName, string? ProjectId, string? ProjectName, string Role, DateTime ExpiresAtUtc);
 public interface IWorkspaceInvitations

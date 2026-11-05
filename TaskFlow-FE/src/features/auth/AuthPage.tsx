@@ -1,3 +1,4 @@
+import { useInvitation } from '../invitations/invitation-context'
 import { FieldError } from '../../components/Feedback'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -12,7 +13,9 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { pending: invitation } = useInvitation()
   const state = (location.state ?? {}) as { returnTo?: unknown; notice?: string; registeredEmail?: string }
+  const destination = returnPath(state.returnTo ?? (invitation ? '/invitations/accept' : undefined))
   const [values, setValues] = useState({ displayName: '', email: state.registeredEmail ?? '', password: '' })
   const [fields, setFields] = useState<FieldErrors>({})
   const [error, setError] = useState('')
@@ -48,10 +51,10 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       if (registering) {
         await auth.register({ ...credentials, displayName: values.displayName.trim() })
         navigate('/login', { replace: true, state: { registeredEmail: credentials.email,
-          returnTo: returnPath(state.returnTo), notice: 'Account created. Sign in to continue.' } })
+          returnTo: destination, notice: 'Account created. Sign in to continue.' } })
       } else {
         await auth.signIn(credentials)
-        navigate(returnPath(state.returnTo), { replace: true })
+        navigate(destination, { replace: true })
       }
     } catch (failure) {
       const problem = asApiError(failure)
@@ -84,6 +87,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       <p className="eyebrow">{registering ? 'Start with a fresh page' : 'Good to see you again'}</p>
       <h1 id="form-title">{registering ? 'Create your account' : 'Sign in to TaskFlow'}</h1>
       <p className="muted">{registering ? 'A place to organize what matters.' : 'Pick up where you left off.'}</p>
+      {invitation && <p className="notice">Your invitation is kept in this tab. Sign in with the email that received it, or verify your new account and return to this tab.</p>}
       {notice && !error && <p className="notice" role="status">{notice}</p>}
       {error && <div className="error-summary" role="alert" tabIndex={-1} ref={summary}>{error}</div>}
       <form onSubmit={submit} noValidate aria-busy={pending}>
@@ -97,7 +101,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       </form>
       {!registering && <p className="form-actions"><Link to="/forgot-password">Forgot password?</Link><Link to="/request-verification">Verify your email</Link></p>}
       <p className="auth-switch">{registering ? 'Already have an account?' : 'New to TaskFlow?'}{' '}
-        <Link to={registering ? '/login' : '/register'} state={{ returnTo: returnPath(state.returnTo) }}>{registering ? 'Sign in' : 'Create an account'}</Link>
+        <Link to={registering ? '/login' : '/register'} state={{ returnTo: destination }}>{registering ? 'Sign in' : 'Create an account'}</Link>
       </p>
     </section>
   </div>

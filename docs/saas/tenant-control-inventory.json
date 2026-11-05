@@ -1,5 +1,5 @@
 {
-  "release": "SaaS-020",
+  "release": "SaaS-021",
   "date": "2026-11-05",
   "scope": "Current global identity, company preview, checkpoint worker and explicit local/staging encrypted account-mail capture. Local evidence only; real provider delivery and hosted/cutover acceptance remain gated.",
   "operations": [
@@ -1356,5 +1356,18 @@
       "status": "partially-implemented-future-gates-open",
       "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
     }
-  ]
+  ],
+  "invitationUi": {
+    "controls": [
+      "Fragment stripped into per-tab memory; no persistent token storage",
+      "Verified intended-recipient preview and explicit committed acceptance",
+      "Company administration plus project ownership for project invitation management",
+      "Revision confirmation, single-flight writes and reserved-seat display"
+    ],
+    "evidenceSources": [
+      "TaskFlow-FE/src/features/invitations/Invitations.test.tsx",
+      "tests/browser/invitations.cjs",
+      "docs/evidence/saas021-invitation-ui.json"
+    ]
+  }
 }

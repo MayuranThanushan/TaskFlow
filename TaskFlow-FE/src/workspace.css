@@ -173,3 +173,15 @@ a { text-underline-offset:3px; }
 .account-security-card .form-actions { flex-wrap: wrap; gap: 1rem; }
 
 .account-security-card a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+
+.invite-accept { max-width: 42rem; margin: 2rem auto; }
+.invite-accept a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+.invite-accept .form-actions { margin-top: 1.5rem; flex-wrap: wrap; gap: .75rem; }
+.invite-preview { display: grid; gap: 1rem; padding: 1.25rem; background: var(--surface-subtle, #f4f6f8); border-radius: .75rem; }
+.invite-preview div { display: grid; grid-template-columns: 6rem 1fr; gap: 1rem; }
+.invite-preview dt { color: var(--muted, #52636b); }.invite-preview dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+.invite-capacity { display: flex; gap: 1.25rem; flex-wrap: wrap; padding: 1rem 1.25rem; margin-bottom: 1.5rem; background: #edf5f1; border-radius: .75rem; color: #214e40; }
+.invitation-create { margin-bottom: 2rem; }.invitation-fields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(8rem, 1fr); gap: 1rem; }
+.invitation-list { list-style: none; padding: 0; display: grid; gap: .75rem; }.invitation-list > li { display: flex; justify-content: space-between; gap: 1rem; padding: 1.25rem; border: 1px solid var(--border, #dce3df); background: white; border-radius: .75rem; }
+.invitation-recipient { display: grid; gap: .4rem; min-width: 0; overflow-wrap: anywhere; }.invitation-recipient > span { color: #52636b; font-size: .9rem; }.invitation-list .form-actions { align-self: center; flex-wrap: wrap; }
+@media (max-width: 600px) { .invitation-fields { grid-template-columns: 1fr; }.invitation-list > li { flex-direction: column; }.invitation-list .form-actions { align-self: stretch; }.invite-preview div { grid-template-columns: 1fr; gap: .2rem; }.invite-accept { margin: 1rem auto; } }

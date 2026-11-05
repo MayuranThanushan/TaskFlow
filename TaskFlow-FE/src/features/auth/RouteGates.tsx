@@ -1,3 +1,4 @@
+import { useInvitation } from '../invitations/invitation-context'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './auth-context'
 import { returnPath } from './navigation'
@@ -24,8 +25,9 @@ export function ProtectedRoute() {
 }
 
 export function GuestRoute() {
+  const { pending: invitation } = useInvitation()
   const { session } = useAuth()
   const location = useLocation()
   if (session.status === 'checking' || session.status === 'error') return <SessionCheck />
-  return session.status === 'authenticated' ? <Navigate to={returnPath(location.state?.returnTo)} replace /> : <Outlet />
+  return session.status === 'authenticated' ? <Navigate to={returnPath(location.state?.returnTo ?? (invitation ? '/invitations/accept' : undefined))} replace /> : <Outlet />
 }
