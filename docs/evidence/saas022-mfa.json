@@ -1,0 +1,381 @@
+{
+  "task": "SaaS-022",
+  "date": "2026-11-07",
+  "sourceBaseRevision": "07f64e41ce30762452b7ba2577f8e8973e05d48d",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Optional account MFA, hashed recovery codes and default-off deployment-wide administrator proof policy. Isolated local MySQL and published HTTPS Staging only; no live-user migration or external delivery.",
+  "verifiedSourceSha256NormalizedLf": [
+    {
+      "path": ".env.deploy.example",
+      "sha256": "a9d4939c022aff41f314caf103bbd74662f490a5c7da6a9030d98dec63ce3a1d"
+    },
+    {
+      "path": "Documents/Feature-Release-Roadmap.md",
+      "sha256": "517c2615dfee8f2700335ed715c96c9e1ac1371a96d643d2ca3924e13b933746"
+    },
+    {
+      "path": "README.md",
+      "sha256": "30a902c912a748ec71714992c28f268a8cb34abfb0767489304366911f07aaf6"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs",
+      "sha256": "8c83aa41a8db8e6b45698152102c8ca76851aad9cfc0e0b8a444b465410222b8"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Contracts/ContractSchemaTransformer.cs",
+      "sha256": "0eb307ee62bf74158770c217369bb091504e655f00edbc84398c16de6a7ff2e3"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Controllers/AccountSecurityController.cs",
+      "sha256": "073dd4270cbf3a0b14a4e87f4b3bb0f87c47062eb5edaa42459d3a1321899055"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Controllers/AuthController.cs",
+      "sha256": "8c26066fe6b2785fca86713640d9134f7b3e8ed6269bdf859e43f760081772bd"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Controllers/MfaController.cs",
+      "sha256": "e5f93e878b9673821cbd512f352b7913875d362678e0e68a6ae36675db6f093a"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Extensions/ApiServiceExtensions.cs",
+      "sha256": "49cab99b9e288557151ee886f23385a8134f02ac044d9bdd6e9549dbe7238d01"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Filters/MfaAdministrationFilter.cs",
+      "sha256": "0ca3ec0f1674c0c0b58983ee80a16200bdc3489493958103f9fa2ab09c28beac"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/Program.cs",
+      "sha256": "513b7a9588757abdf71cc65bc6163680617774613bb7c9d15f700a8a30ed8eeb"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Api/appsettings.json",
+      "sha256": "baccf55a69386e836e035219c41b64ff3894e62f98aeb87f3bba1ca8d04c9a8b"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Application/Features/Activity/ISecurityEvents.cs",
+      "sha256": "f658a4eb8fb24fd3269441e56a7cd4418d15486a757e693436b87de0509bf15d"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Application/Features/Auth/IAccountSecurity.cs",
+      "sha256": "dba33b2681bab5b4048c0088752659e5d4605235a79bb1a197cbedea690260d1"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Application/Features/Auth/IAccountService.cs",
+      "sha256": "18dca8c04221db9811e22b615015581b356f4f72d4cff080e02406cf83fe24d3"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Application/Features/Auth/IMfaService.cs",
+      "sha256": "7e36dcc58f671f383a8e99e13239a5e571c16d1c44719193faa7c6370d07f8ad"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Domain/Entities/AccountMfa.cs",
+      "sha256": "8f72e7c2b6c3337c5c04c319849f2af4ff549ae7accb6487c2e1a0cbe49a971e"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs",
+      "sha256": "0a1b2f6e0ff432aab2149872b265e764d086b71dac9cf04bd64b302b5b04370a"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountSecurityService.cs",
+      "sha256": "4a5118c171eb2ddb65b3cb8a8c72a278ba490493f6950860f79defbac8952dd8"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountService.cs",
+      "sha256": "a8de3268a250bd9dd47c8c4377646d3efdf1e13be005d0533ce8142624ea3689"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Identity/MfaCodes.cs",
+      "sha256": "dc6a634293d03f2178821ced3bf91d818ac1162b03c074effc2cc5c01f4e6b74"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Identity/MfaService.cs",
+      "sha256": "954546e9724662e05d60853f726b587bf84be4a2040869fd2130aa179eb67a66"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261107131844_AccountMfa.Designer.cs",
+      "sha256": "d9f0191c50928ef9adcd62501bf67571585b74b98c11ead484e9c839b20b20e1"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261107131844_AccountMfa.cs",
+      "sha256": "09e079519edf73a291b2db491ac67d52d6cd80fa928f611ef67f898ab50aa0a2"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs",
+      "sha256": "5556aaf976cee2d237127c1e08c7d1e5da3b05a7d7745350ad904f4532bebeb1"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs",
+      "sha256": "18e614613301fbb9c1b25e51a8fd972e417f9cde43c5dbf6a6ecbdbaedb60380"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceLifecycle.cs",
+      "sha256": "46d94aad932851addf5e61ab58ebe74f966f5d79a9313e97446e97299b6d1bac"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+      "sha256": "a78a5ea3d1c08b7f6d05c02b2dd8a6abe5a48107a0d86d757f206bd5923dbc0b"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+      "sha256": "4e4e0c77687bf66ea637399b7599e7331bd0816cd24c831056498167ea0cd922"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+      "sha256": "022d5abb9ecb64969729ce78c298f92366e4dcf852a7fdf33fdfc36aeedb5feb"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Tests/MfaConfigurationTests.cs",
+      "sha256": "2873dbe20e87e29cd9204c357a5081a84e81b854ffdf3521d6bc27729f74f040"
+    },
+    {
+      "path": "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs",
+      "sha256": "6add482656b6bb453877dc0a18d2b385408de905e16e3caa9f8f77d9eb61094d"
+    },
+    {
+      "path": "TaskFlow-FE/src/App.tsx",
+      "sha256": "338955250997eb15a4ce519ba7f133c885f601e310771fdd782b2f03c618241e"
+    },
+    {
+      "path": "TaskFlow-FE/src/api/client.ts",
+      "sha256": "c8d04844aa7716a58b02b19bfe5488560765f60c06975bbf9e828d0febccce93"
+    },
+    {
+      "path": "TaskFlow-FE/src/api/generated.d.ts",
+      "sha256": "c7448e78f23d093770e6607bb03c04c80c909fd74fb52e69befdb8bf65536431"
+    },
+    {
+      "path": "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx",
+      "sha256": "9b43ff71481b7d4e3eb017410c78dfcf4bd0aa54c05039453668188ec010301e"
+    },
+    {
+      "path": "TaskFlow-FE/src/features/auth/AccountSecurityPages.tsx",
+      "sha256": "778226a013e294dab0e61be68feec1d55be886254d6a1e929681e4444fdae8d4"
+    },
+    {
+      "path": "TaskFlow-FE/src/features/auth/AuthPage.tsx",
+      "sha256": "dce3b816fa36908fabb17edf3645f7b6a4ac0e60a41f090fa346f3b5b849a112"
+    },
+    {
+      "path": "TaskFlow-FE/src/features/auth/MfaPage.test.tsx",
+      "sha256": "c4a12a92cd6e9775cb140972fd111b3e8eb80be4dec4f05e652fbc469743e678"
+    },
+    {
+      "path": "TaskFlow-FE/src/features/auth/MfaPage.tsx",
+      "sha256": "c1eaf800661709741aee1b6c17e39313c761bc3a2f54c3ae51c1ff3f9ffc1852"
+    },
+    {
+      "path": "TaskFlow-FE/src/workspace.css",
+      "sha256": "5d172bee65cc6547cd011d92b40362eccc2a19a4263f07fd54670590a8f65f8f"
+    },
+    {
+      "path": "compose.deploy.yaml",
+      "sha256": "bc5afe0937758def4570a20de3e6af82f42e47fe5de92eb9883a99e9e79fac44"
+    },
+    {
+      "path": "deploy/database-roles.sql.example",
+      "sha256": "2b3862750855bc01e7d4bc4fed12fd06c0399cc6d467355f37f9ce1f39a44a57"
+    },
+    {
+      "path": "docs/contracts/README.md",
+      "sha256": "d713bc87a2ff97de2576ef175aba09a3944aba5439a9bd12acc48dc0931a4c47"
+    },
+    {
+      "path": "docs/contracts/openapi.json",
+      "sha256": "ef84f713e0f526c08efb255eef8d2aed8fa6a6d1dacefafa5f3520b757253259"
+    },
+    {
+      "path": "docs/saas/account-security.md",
+      "sha256": "a2739786c882d6cf53c9816733843146b3f7beab972ba71febe11f38d161a685"
+    },
+    {
+      "path": "docs/saas/mfa.md",
+      "sha256": "0b932f081ee2759af45a6ebda411412e8d102c3d3678a80be7c0124599ea1f72"
+    },
+    {
+      "path": "docs/saas/permissions.md",
+      "sha256": "1bd9c0a6003eaeda120b4fe068bb54cb39aa03420b208b6b88ca2b9bac24738d"
+    },
+    {
+      "path": "docs/saas/tenant-control-inventory.json",
+      "sha256": "3b4fd8f88390d74e9fe3337f2e6e9019da8643edd382dde939ca6a6611b78521"
+    },
+    {
+      "path": "scripts/Local-StartupCommands.ps1",
+      "sha256": "52f1555948d04187fd26bcf5e45d49ec4a226f7c451cf3514143e13555e5e2cc"
+    },
+    {
+      "path": "scripts/backup_recovery.py",
+      "sha256": "f10ebbb955d7f46274251000f409a6c923694a2418f98328013f04301dac7633"
+    },
+    {
+      "path": "scripts/export_openapi.py",
+      "sha256": "69e8fadf9ded80c87f9717d4b1c1103b4876e8b9d201269f896782d89359e77f"
+    },
+    {
+      "path": "tests/browser/mfa.cjs",
+      "sha256": "114ec65963ea34cd1427e1a844f6b7b0ca64c81c1767b85a4ef049b19deff3d2"
+    },
+    {
+      "path": "tests/operations/test_release_operations.py",
+      "sha256": "41dda28db458a35964e2eeb85f0222572514b734a776490ca317b5ddfa665351"
+    }
+  ],
+  "validation": {
+    "fullBackend": {
+      "passed": 300,
+      "failed": 0,
+      "skipped": 0,
+      "artifact": "TestResults/saas022-backend/backend.trx"
+    },
+    "contractTests": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "artifact": "TestResults/saas022-contracts/contracts.trx"
+    },
+    "frontend": {
+      "passed": 154,
+      "failed": 0,
+      "artifact": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 35,
+      "failed": 0
+    },
+    "frontendLintTypecheckAndBuild": true,
+    "defaultAndCompanyPreviewBuilds": true,
+    "contractTypeDriftCheck": true,
+    "pendingModelChanges": false,
+    "composeDefaultAndEnabledEnvironmentMapping": true,
+    "composeQualification": "Configuration rendering only; no container execution.",
+    "startupCommandRendererMockedCheck": true,
+    "gitleaksStagedDiff": {
+      "findings": 0,
+      "artifact": "TestResults/saas022-security/gitleaks.json",
+      "qualification": "Only the published RFC 6238 Appendix B test-vector key is annotated locally as public test data; no production rule or directory exclusion added."
+    },
+    "browser": {
+      "checks": [
+        "password-only denial and authenticator sign-in",
+        "session-bound enrollment and one-time recovery display",
+        "recovery sign-in cannot grant company administration",
+        "authenticator restoration rotates secrets/codes and restores proof",
+        "mandatory administrators cannot disable MFA",
+        "no browser credential storage"
+      ],
+      "accessibility": [
+        {
+          "name": "mfa-before-enrollment",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-before-enrollment",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-setup",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-setup",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-one-time-codes",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-one-time-codes",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-enabled",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-enabled",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-account-security",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "mfa-account-security",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "errors": []
+    },
+    "publishedHost": {
+      "publishedHttpsUi": true,
+      "migrations": 11,
+      "restrictedRuntimeGrants": true,
+      "noEmailOrExternalRecipients": true,
+      "encryptedCredentialsRetained": true,
+      "browserOwnAccountOnly": true,
+      "adminRecoveryRestoration": true
+    },
+    "visualInspection": [
+      "mfa-enabled-320.png"
+    ]
+  },
+  "schema": {
+    "migrationCount": 11,
+    "newMigration": "20261107131844_AccountMfa",
+    "paths": 58,
+    "operations": 76
+  },
+  "artifactsSha256": [
+    {
+      "path": ".local/releases/saas022-api/TaskFlow.Api.dll",
+      "sha256": "0c2af97459733503951787300ce16f1e7398a1352aea595cd907a9140baabfb1"
+    },
+    {
+      "path": ".local/releases/saas022-api/TaskFlow.Infrastructure.dll",
+      "sha256": "9cbebfc22fe7e8f05b4686738adfa5c7bbf758ccbe0c0279845a5527ba46d088"
+    },
+    {
+      "path": ".local/releases/saas022-api/wwwroot/index.html",
+      "sha256": "b591e683130a00615463ce17b76c2cb9d3707ea5e21f893cc45d9603fdb0949b"
+    },
+    {
+      "path": ".local/releases/saas022-api/wwwroot/assets/index-BaZ7i4si.js",
+      "sha256": "91a0b9e5043e2c7de55f824bf84bc3b15267612daf120077357915f6a8f9f851"
+    },
+    {
+      "path": ".local/releases/saas022-api/wwwroot/assets/index-D9XE-sKP.css",
+      "sha256": "a66e2c9b136a9d266f86c5d031c9470cf535dc2656c86bfe1632dda133e47818"
+    }
+  ],
+  "remainingGates": [
+    "Hosted CI and CodeQL execution",
+    "Container execution and selected-host deployment/key-at-rest/backup acceptance",
+    "Real staging email provider and production delivery",
+    "Independent security and manual assistive-technology review",
+    "Mandatory tenant cutover",
+    "Phishing-resistant passkeys/SSO and per-company MFA configuration are outside this release"
+  ]
+}

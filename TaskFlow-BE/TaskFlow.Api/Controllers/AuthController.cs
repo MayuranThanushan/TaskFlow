@@ -29,7 +29,7 @@ public sealed class AuthController(IAccountService accounts) : ControllerBase
     [ProducesResponseType<ProfileDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var profile = await accounts.LoginAsync(request.Email, request.Password);
+        var profile = await accounts.LoginAsync(request.Email, request.Password, request.Code, request.RecoveryCode);
         return profile is null ? Unauthorized() : Ok(profile);
     }
 
@@ -50,18 +50,24 @@ public sealed class AuthController(IAccountService accounts) : ControllerBase
     }
 }
 
-public sealed class RegisterRequest : LoginRequest
+public sealed class RegisterRequest : EmailPasswordRequest
 {
     private string displayName = "";
     [Required, StringLength(100)]
     public string DisplayName { get => displayName; set => displayName = value?.Trim() ?? ""; }
 }
 
-public class LoginRequest
+public class EmailPasswordRequest
 {
     private string email = "";
     [Required, EmailAddress, StringLength(256)]
     public string Email { get => email; set => email = value?.Trim() ?? ""; }
     [Required, StringLength(128)]
     public string Password { get; set; } = "";
+}
+
+public sealed class LoginRequest : EmailPasswordRequest
+{
+    [StringLength(6, MinimumLength = 6), RegularExpression("^[0-9]{6}$")] public string? Code { get; set; }
+    [StringLength(64)] public string? RecoveryCode { get; set; }
 }

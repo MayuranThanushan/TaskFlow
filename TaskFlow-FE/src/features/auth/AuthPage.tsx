@@ -17,6 +17,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const state = (location.state ?? {}) as { returnTo?: unknown; notice?: string; registeredEmail?: string }
   const destination = returnPath(state.returnTo ?? (invitation ? '/invitations/accept' : undefined))
   const [values, setValues] = useState({ displayName: '', email: state.registeredEmail ?? '', password: '' })
+  const [mfaMode, setMfaMode] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
   const [fields, setFields] = useState<FieldErrors>({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -37,6 +39,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     else if (registering && (values.password.length < 12 || !/[A-Z]/.test(values.password) || !/[a-z]/.test(values.password)
       || !/[0-9]/.test(values.password) || !/[^a-zA-Z0-9]/.test(values.password)))
       errors.password = ['Use at least 12 characters with uppercase, lowercase, a number, and a symbol.']
+    if (!registering && mfaMode === 'authenticator' && !/^[0-9]{6}$/.test(mfaCode.trim())) errors.code = ['Enter a six-digit authenticator code.']
+    if (!registering && mfaMode === 'recovery' && !mfaCode.trim()) errors.recoveryCode = ['Enter an unused recovery code.']
     setFields(errors)
     setError('')
     if (Object.keys(errors).length) {
@@ -53,7 +57,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         navigate('/login', { replace: true, state: { registeredEmail: credentials.email,
           returnTo: destination, notice: 'Account created. Sign in to continue.' } })
       } else {
-        await auth.signIn(credentials)
+        await auth.signIn({ ...credentials, ...(mfaMode === 'authenticator' ? { code: mfaCode.trim() } : mfaMode === 'recovery' ? { recoveryCode: mfaCode.trim() } : {}) })
         navigate(destination, { replace: true })
       }
     } catch (failure) {
@@ -61,7 +65,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       setFields(problem.fields)
       setError(problem.message)
       window.setTimeout(() => summary.current?.focus(), 0)
-    } finally { locked.current = false; setPending(false) }
+    } finally { locked.current = false; setPending(false); setMfaCode('') }
   }
 
   const field = (name: 'displayName' | 'email' | 'password', label: string, type = 'text') => <div className="form-field">
@@ -95,6 +99,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           {registering && field('displayName', 'Your name')}
           {field('email', 'Email address', 'email')}
           {field('password', 'Password', 'password')}
+          {!registering && <><div className="form-field"><label htmlFor="mfa-signin-mode">Additional verification</label><select id="mfa-signin-mode" value={mfaMode} onChange={e => { setMfaMode(e.target.value); setMfaCode('') }}><option value="">Password only</option><option value="authenticator">Authenticator code</option><option value="recovery">Recovery code</option></select><p className="field-hint">If you enabled MFA, choose an authenticator or a one-use recovery code.</p></div>{mfaMode && <div className="form-field"><label htmlFor="mfa-signin-code">{mfaMode === 'recovery' ? 'Recovery code' : 'Authenticator code'}</label><input id="mfa-signin-code" name={mfaMode === 'recovery' ? 'recoveryCode' : 'code'} aria-invalid={!!fields[mfaMode === 'recovery' ? 'recoveryCode' : 'code']?.length} aria-describedby="mfa-signin-error" type={mfaMode === 'recovery' ? 'password' : 'text'} inputMode={mfaMode === 'authenticator' ? 'numeric' : 'text'} autoComplete={mfaMode === 'authenticator' ? 'one-time-code' : 'off'} maxLength={mfaMode === 'recovery' ? 64 : 6} value={mfaCode} onChange={e => setMfaCode(e.target.value)} /><FieldError id="mfa-signin-error" errors={fields[mfaMode === 'recovery' ? 'recoveryCode' : 'code']} /></div>}</>}
           {registering && <p id="password-hint" className="field-hint">At least 12 characters, with uppercase, lowercase, a number, and a symbol.</p>}
           <button className="button primary submit" type="submit">{pending ? registering ? 'Creating accountâ€¦' : 'Signing inâ€¦' : registering ? 'Create account' : 'Sign in'}</button>
         </fieldset>

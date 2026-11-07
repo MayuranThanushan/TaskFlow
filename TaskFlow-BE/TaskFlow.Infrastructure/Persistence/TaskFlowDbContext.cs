@@ -10,6 +10,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<AccountMfa> AccountMfa => Set<AccountMfa>();
     public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();
     public DbSet<InvitationTransition> InvitationTransitions => Set<InvitationTransition>();
     public DbSet<AccountEmailJob> AccountEmailJobs => Set<AccountEmailJob>();
@@ -36,6 +37,11 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         base.OnModelCreating(builder);
         builder.UseCollation("utf8mb4_0900_ai_ci");
         builder.ApplyConfigurationsFromAssembly(typeof(TaskFlowDbContext).Assembly);
+        builder.Entity<AccountMfa>().HasKey(m => m.UserId);
+        builder.Entity<AccountMfa>().HasOne<ApplicationUser>().WithOne().HasForeignKey<AccountMfa>(m => m.UserId);
+        builder.Entity<AccountMfa>().Property(m => m.ProtectedSecret).HasMaxLength(2048);
+        builder.Entity<AccountMfa>().Property(m => m.PendingProtectedSecret).HasMaxLength(2048);
+        builder.Entity<AccountMfa>().Property(m => m.RecoveryHashes).HasMaxLength(2048);
         builder.Entity<PilotGate>().HasKey(g => g.Id);
         builder.Entity<PilotGate>().HasData(new PilotGate { Id = 1 });
         builder.Entity<Workspace>().Property(w => w.PolicyVersion).HasDefaultValue(1L).IsConcurrencyToken();

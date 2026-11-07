@@ -71,6 +71,8 @@ if ($taskflowDbName -ne 'taskflow_dev' -and !$taskflowDbName.StartsWith('taskflo
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 $env:Transport__RequireHttps = 'false'
 __API_FLAGS__
+# Optional MFA enrollment preview (off by default): $env:Mfa__Enabled = 'true'
+# Administrator enforcement is separate; read docs/saas/mfa.md before enabling it.
 dotnet restore TaskFlow.slnx --locked-mode
 if ($LASTEXITCODE -ne 0) { throw 'Restore failed.' }
 dotnet tool restore

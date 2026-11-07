@@ -17,6 +17,7 @@ export function AccountActionPage({ client, mode }: { client: ApiClient; mode: '
   const [capabilities, setCapabilities] = useState<Capabilities | null>(null)
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [repeat, setRepeat] = useState('')
   const [pending, setPending] = useState(false), [done, setDone] = useState(false), [error, setError] = useState('')
+  const [factor, setFactor] = useState(''), [factorCode, setFactorCode] = useState('')
   const [fields, setFields] = useState<Record<string, string[]>>({})
   const lock = useRef(false), summary = useRef<HTMLDivElement>(null)
   const request = mode === 'forgot' || mode === 'resend'
@@ -36,14 +37,14 @@ export function AccountActionPage({ client, mode }: { client: ApiClient; mode: '
     try {
       if (request) await client.requestAccountMail(email.trim(), mode === 'forgot')
       else if (mode === 'confirm') await client.confirmEmail(link)
-      else await client.resetPassword({ ...link, newPassword: password })
+      else await client.resetPassword({ ...link, newPassword: password, ...(factor === 'authenticator' ? { code: factorCode.trim() } : factor === 'recovery' ? { recoveryCode: factorCode.trim() } : {}) })
       setPassword(''); setRepeat(''); setDone(true)
       if (!request) { client.forgetSession(); await auth.refresh() }
     } catch (failure) {
       const problem = asApiError(failure); setFields(problem.fields)
-      setError(problem.fields.token ? 'This link is invalid or expired. Request a new one.' : problem.status === 503 ? 'Email account services are currently unavailable. Contact your administrator.' : problem.status === 429 ? problem.message : problem.fields.newPassword?.join(' ') ?? problem.message)
+      setError(problem.fields.token ? 'This link is invalid or expired. Request a new one.' : problem.status === 503 ? 'Email account services are currently unavailable. Contact your administrator.' : problem.status === 429 ? problem.message : problem.fields.code?.join(' ') ?? problem.fields.newPassword?.join(' ') ?? problem.message)
       window.setTimeout(() => summary.current?.focus(), 0)
-    } finally { lock.current = false; setPending(false) }
+    } finally { lock.current = false; setPending(false); setFactorCode('') }
   }
   return <section className="auth-card account-security-card" aria-labelledby="account-action-title">
     <p className="eyebrow">Account security</p><h1 id="account-action-title">{titles[mode]}</h1>
@@ -55,6 +56,7 @@ export function AccountActionPage({ client, mode }: { client: ApiClient; mode: '
       : <form onSubmit={submit} noValidate aria-busy={pending}><fieldset disabled={pending || !capabilities}>
         {request && <div className="form-field"><label htmlFor="account-email">Email address</label><input id="account-email" name="email" type="email" autoComplete="email" maxLength={254} value={email} aria-invalid={!!fields.email} aria-describedby={fields.email ? 'account-email-error' : undefined} onChange={e => setEmail(e.target.value)} /><FieldError id="account-email-error" errors={fields.email} /></div>}
         {mode === 'reset' && <><div className="form-field"><label htmlFor="new-password">New password</label><input id="new-password" name="newPassword" type="password" autoComplete="new-password" maxLength={128} value={password} aria-invalid={!!fields.newPassword} aria-describedby={fields.newPassword ? 'new-password-hint new-password-error' : 'new-password-hint'} onChange={e => setPassword(e.target.value)} /><p id="new-password-hint" className="field-hint">{passwordHint}</p><FieldError id="new-password-error" errors={fields.newPassword} /></div><div className="form-field"><label htmlFor="repeat-password">Confirm new password</label><input id="repeat-password" name="repeat" type="password" autoComplete="new-password" maxLength={128} value={repeat} aria-invalid={!!fields.repeat} aria-describedby={fields.repeat ? 'repeat-error' : undefined} onChange={e => setRepeat(e.target.value)} /><FieldError id="repeat-error" errors={fields.repeat} /></div></>}
+        {mode === 'reset' && <><div className="form-field"><label htmlFor="reset-mfa-mode">Additional verification</label><select id="reset-mfa-mode" value={factor} onChange={e => { setFactor(e.target.value); setFactorCode('') }}><option value="">MFA not enabled</option><option value="authenticator">Authenticator code</option><option value="recovery">Recovery code</option></select><p className="field-hint">MFA stays enabled after a password reset. If you enabled it, provide an authenticator or unused recovery code too.</p></div>{factor && <div className="form-field"><label htmlFor="reset-mfa-code">{factor === 'recovery' ? 'Recovery code' : 'Authenticator code'}</label><input id="reset-mfa-code" type={factor === 'recovery' ? 'password' : 'text'} inputMode={factor === 'authenticator' ? 'numeric' : 'text'} autoComplete={factor === 'authenticator' ? 'one-time-code' : 'off'} maxLength={factor === 'recovery' ? 64 : 6} value={factorCode} onChange={e => setFactorCode(e.target.value)} /></div>}</>}
         <button type="submit" className="button primary">{pending ? 'Working...' : request ? 'Request link' : mode === 'confirm' ? 'Verify email' : 'Reset password'}</button>
       </fieldset></form>}
     <div className="form-actions"><Link to="/login">Back to sign in</Link>{!request && <Link to={mode === 'confirm' ? '/request-verification' : '/forgot-password'}>Request a new link</Link>}</div>
@@ -67,6 +69,7 @@ export function AccountSecurityPage({ client }: { client: ApiClient }) {
 }
 function AccountSecurityForm({ client }: { client: ApiClient }) {
   const [state, setState] = useState<Security | null>(null), [error, setError] = useState(''), [notice, setNotice] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
   const [current, setCurrent] = useState(''), [password, setPassword] = useState(''), [repeat, setRepeat] = useState('')
   const [fields, setFields] = useState<Record<string, string[]>>({}), [pending, setPending] = useState(false)
   const abort = useRef<AbortController | null>(null)
@@ -86,17 +89,18 @@ function AccountSecurityForm({ client }: { client: ApiClient }) {
     lock.current = true; setPending(true)
     const signal = abort.current?.signal
     try {
-      if (proof) { await client.reauthenticate(current, signal); if (signal?.aborted) return; client.forgetSession(); setState(await client.accountSecurity()); setNotice('Identity confirmed for five minutes.'); setCurrent('') }
-      else { await client.changePassword(current, password, signal); if (signal?.aborted) return; setCurrent(''); setPassword(''); setRepeat(''); client.forgetSession(); await auth.refresh(); void navigate('/login', { replace: true, state: { notice: 'Password changed. All sessions were signed out. Sign in with your new password.' } }) }
+      if (proof) { await client.reauthenticate(current, signal, mfaCode || undefined); if (signal?.aborted) return; client.forgetSession(); setState(await client.accountSecurity()); setNotice('Identity confirmed for five minutes.'); setCurrent('') }
+      else { await client.changePassword(current, password, signal, mfaCode || undefined); if (signal?.aborted) return; setCurrent(''); setPassword(''); setRepeat(''); client.forgetSession(); await auth.refresh(); void navigate('/login', { replace: true, state: { notice: 'Password changed. All sessions were signed out. Sign in with your new password.' } }) }
     } catch (failure) { if (signal?.aborted) return; const problem = asApiError(failure); setFields(problem.fields); setError(problem.fields.currentPassword?.join(' ') ?? problem.fields.newPassword?.join(' ') ?? problem.message); window.setTimeout(() => summary.current?.focus(), 0) }
-    finally { lock.current = false; setPending(false) }
+    finally { lock.current = false; setPending(false); setMfaCode('') }
   }
   return <section className="auth-card account-security-card" aria-labelledby="account-security-title"><p className="eyebrow">Your account</p><h1 id="account-security-title">Account security</h1>
-    <p className="muted">Manage your password and confirm your identity for sensitive actions.</p>
+    <p className="muted">Manage your password and confirm your identity for sensitive actions.</p><p><Link to="/account-security/mfa">Manage MFA and recovery codes</Link></p>
     {state && <div className="notice"><p>Email: {state.emailConfirmed ? 'Verified' : 'Not verified'}</p>{!state.emailConfirmed && <Link to="/request-verification">Request verification</Link>}<p>Recent identity proof: {state.reauthenticatedUntilUtc && Date.parse(state.reauthenticatedUntilUtc) > now ? 'Active for up to five minutes' : 'Not active'}</p></div>}
     {error && <div className="error-summary" role="alert" tabIndex={-1} ref={summary}>{error}</div>}{notice && <p className="notice" role="status">{notice}</p>}
     <form onSubmit={e => void submit(e, (e.nativeEvent as SubmitEvent).submitter?.id === 'confirm-identity')} noValidate aria-busy={pending}><fieldset disabled={pending}>
       <div className="form-field"><label htmlFor="current-password">Current password</label><input id="current-password" name="currentPassword" type="password" autoComplete="current-password" maxLength={128} value={current} aria-invalid={!!fields.currentPassword} aria-describedby={fields.currentPassword ? 'current-error' : undefined} onChange={e => setCurrent(e.target.value)} /><FieldError id="current-error" errors={fields.currentPassword} /></div>
+      <div className="form-field"><label htmlFor="security-mfa-code">Authenticator code (if MFA is enabled)</label><input id="security-mfa-code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={mfaCode} onChange={e => setMfaCode(e.target.value)} /><p className="field-hint">Use a fresh six-digit code for password changes or identity confirmation. Recovery sign-in requires restoring your authenticator first.</p></div>
       <div className="form-field"><label htmlFor="change-password">New password</label><input id="change-password" name="newPassword" type="password" autoComplete="new-password" maxLength={128} value={password} aria-invalid={!!fields.newPassword} aria-describedby={fields.newPassword ? 'change-password-hint change-password-error' : 'change-password-hint'} onChange={e => setPassword(e.target.value)} /><p id="change-password-hint" className="field-hint">{passwordHint}</p><FieldError id="change-password-error" errors={fields.newPassword} /></div>
       <div className="form-field"><label htmlFor="confirm-password">Confirm new password</label><input id="confirm-password" name="repeat" type="password" autoComplete="new-password" maxLength={128} value={repeat} aria-invalid={!!fields.repeat} aria-describedby={fields.repeat ? 'change-repeat-error' : undefined} onChange={e => setRepeat(e.target.value)} /><FieldError id="change-repeat-error" errors={fields.repeat} /></div>
       <p className="field-hint">Changing your password signs out every device. You will need to sign in again.</p>

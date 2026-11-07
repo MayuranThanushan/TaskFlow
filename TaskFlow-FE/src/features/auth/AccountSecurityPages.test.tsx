@@ -24,6 +24,16 @@ function setup(path: string, authenticated = false, enabled = true) {
   return { calls, state, user: userEvent.setup() }
 }
 describe('account security journeys', () => {
+  it('includes the selected MFA recovery proof in password reset and clears it after rejection', async () => {
+    const user = userEvent.setup(), { state, calls } = setup('/reset-password#userId=42&token=' + 'x'.repeat(30))
+    await user.type(await screen.findByLabelText('New password'), 'ExampleOnly-Pass123!')
+    await user.type(screen.getByLabelText('Confirm new password'), 'ExampleOnly-Pass123!')
+    await user.selectOptions(screen.getByLabelText('Additional verification'), 'recovery')
+    await user.type(screen.getByLabelText('Recovery code'), 'LOCAL-TEST-RECOVERY-CODE'); state.status = 400
+    await user.click(screen.getByRole('button', { name: 'Reset password' })); await screen.findByRole('alert')
+    expect(calls[0].body.recoveryCode).toBe('LOCAL-TEST-RECOVERY-CODE'); expect(calls[0].body).not.toHaveProperty('code')
+    expect(screen.getByLabelText('Recovery code')).toHaveValue('')
+  })
   it('validates recovery and gives a generic receipt without echoing an account', async () => {
     const { calls, user } = setup('/forgot-password')
     await waitFor(() => expect(screen.getByRole('button', { name: 'Request link' })).toBeEnabled())

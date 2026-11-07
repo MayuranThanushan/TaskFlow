@@ -1,3 +1,4 @@
+import { MfaPage } from './features/auth/MfaPage'
 import { InvitationProvider } from './features/invitations/InvitationProvider'
 import { InvitationAcceptPage } from './features/invitations/InvitationAcceptPage'
 import { useEffect, useRef, useState } from 'react'
@@ -106,6 +107,7 @@ export default function App({ client = api, companiesEnabled = import.meta.env.V
     </Route>
     <Route element={<ProtectedRoute />}>
       {companiesEnabled && <><Route path="companies" element={<CompanyDirectory client={client} />} /><Route path="companies/:workspaceId/*" element={<CompanyArea client={client} lifecycleEnabled={lifecycleEnabled} invitationsEnabled={invitationsEnabled} />} /></>}
+      <Route path="account-security/mfa" element={<MfaPage client={client} />} />
       <Route path="account-security" element={<AccountSecurityPage client={client} />} />
       <Route path="profile" element={<ProfilePage />} />
       <Route path="activity" element={lifecycleEnabled ? <Navigate to="/companies" replace /> : <ActivityHub client={client} />} />

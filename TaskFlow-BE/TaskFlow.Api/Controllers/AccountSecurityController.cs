@@ -31,15 +31,15 @@ public sealed class AccountSecurityController(IAccountSecurity accounts) : Contr
     public async Task<IActionResult> ResetPassword(AccountResetRequest request)
     {
         if (!accounts.Capabilities.EmailFlowsEnabled) return StatusCode(503);
-        var result = await accounts.ResetAsync(long.Parse(request.UserId), request.Token, request.NewPassword); return result.Succeeded ? NoContent() : Failure(result.Errors);
+        var result = await accounts.ResetAsync(long.Parse(request.UserId), request.Token, request.NewPassword, request.Code, request.RecoveryCode); return result.Succeeded ? NoContent() : Failure(result.Errors);
     }
     [Authorize, HttpPost("change-password"), EnableRateLimiting("auth"), ProducesResponseType(204)]
     public async Task<IActionResult> ChangePassword(AccountPasswordChangeRequest request)
     {
-        var result = await accounts.ChangeAsync(User, request.CurrentPassword, request.NewPassword); return result.Succeeded ? NoContent() : Failure(result.Errors);
+        var result = await accounts.ChangeAsync(User, request.CurrentPassword, request.NewPassword, request.Code); return result.Succeeded ? NoContent() : Failure(result.Errors);
     }
     [Authorize, HttpPost("reauthenticate"), EnableRateLimiting("auth"), ProducesResponseType(204)]
-    public async Task<IActionResult> Reauthenticate(AccountPasswordProofRequest request) => await accounts.ReauthenticateAsync(User, request.CurrentPassword) ? NoContent() : Failure(new() { ["currentPassword"] = ["Password could not be verified."] });
+    public async Task<IActionResult> Reauthenticate(AccountReauthenticationRequest request) => await accounts.ReauthenticateAsync(User, request.CurrentPassword, request.Code) ? NoContent() : Failure(new() { ["currentPassword"] = ["Password could not be verified."] });
     private IActionResult Failure(Dictionary<string, string[]> errors)
     {
         var problem = new ValidationProblemDetails(errors) { Status = 400, Title = "Account action could not be completed." }; ProblemResponses.Enrich(HttpContext, problem);
@@ -59,13 +59,19 @@ public class AccountTokenRequest : IValidatableObject
 }
 public sealed class AccountResetRequest : AccountTokenRequest
 {
+    [StringLength(6, MinimumLength = 6), RegularExpression("^[0-9]{6}$")] public string? Code { get; set; }
+    [StringLength(64)] public string? RecoveryCode { get; set; }
     [Required, StringLength(128, MinimumLength = 12)] public string NewPassword { get; set; } = "";
 }
 public class AccountPasswordProofRequest
 {
     [Required, StringLength(128)] public string CurrentPassword { get; set; } = "";
 }
-public sealed class AccountPasswordChangeRequest : AccountPasswordProofRequest
+public class AccountReauthenticationRequest : AccountPasswordProofRequest
+{
+    [StringLength(6, MinimumLength = 6), RegularExpression("^[0-9]{6}$")] public string? Code { get; set; }
+}
+public sealed class AccountPasswordChangeRequest : AccountReauthenticationRequest
 {
     [Required, StringLength(128, MinimumLength = 12)] public string NewPassword { get; set; } = "";
 }

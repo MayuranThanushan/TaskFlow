@@ -10,7 +10,7 @@ public sealed record ProfileUpdateResult(ProfileDto? User, bool Conflict = false
 public interface IAccountService
 {
     Task<RegistrationResult> RegisterAsync(string displayName, string email, string password);
-    Task<ProfileDto?> LoginAsync(string email, string password);
+    Task<ProfileDto?> LoginAsync(string email, string password, string? code = null, string? recoveryCode = null);
     Task<ProfileDto?> CurrentAsync(ClaimsPrincipal principal);
     Task<ProfileUpdateResult> UpdateProfileAsync(ClaimsPrincipal principal, string displayName);
     Task LogoutAsync(ClaimsPrincipal principal);

@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         get: operations["AccountSecurity_Capabilities"];
         put?: never;
         post?: never;
@@ -30,7 +30,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_ChangePassword"];
         delete?: never;
         options?: never;
@@ -47,7 +47,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_ConfirmEmail"];
         delete?: never;
         options?: never;
@@ -81,7 +81,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_ForgotPassword"];
         delete?: never;
         options?: never;
@@ -140,6 +140,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions. */
+        get: operations["Mfa_Status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions. */
+        post: operations["Mfa_Confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions. */
+        post: operations["Mfa_Disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions. */
+        post: operations["Mfa_RecoveryCodes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions. */
+        post: operations["Mfa_Setup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/reauthenticate": {
         parameters: {
             query?: never;
@@ -149,7 +234,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_Reauthenticate"];
         delete?: never;
         options?: never;
@@ -183,7 +268,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_RequestVerification"];
         delete?: never;
         options?: never;
@@ -200,7 +285,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         post: operations["AccountSecurity_ResetPassword"];
         delete?: never;
         options?: never;
@@ -215,7 +300,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled. */
         get: operations["AccountSecurity_Security"];
         put?: never;
         post?: never;
@@ -446,7 +531,7 @@ export interface paths {
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Workspaces"];
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceWrites_CreateWorkspace"];
         delete?: never;
         options?: never;
@@ -531,7 +616,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceAuditConsole_Export"];
         delete?: never;
         options?: never;
@@ -548,7 +633,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceAuditConsole_Download"];
         delete?: never;
         options?: never;
@@ -580,10 +665,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. */
         get: operations["Invitations_List"];
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["Invitations_Create"];
         delete?: never;
         options?: never;
@@ -600,7 +685,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["Invitations_Accept"];
         delete?: never;
         options?: never;
@@ -617,7 +702,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["Invitations_Preview"];
         delete?: never;
         options?: never;
@@ -634,7 +719,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["Invitations_Resend"];
         delete?: never;
         options?: never;
@@ -651,7 +736,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. No UI or real mail provider is enabled by this foundation. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["Invitations_Revoke"];
         delete?: never;
         options?: never;
@@ -668,7 +753,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceLifecycle_Leave"];
         delete?: never;
         options?: never;
@@ -706,7 +791,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         patch: operations["WorkspaceLifecycle_Role"];
         trace?: never;
     };
@@ -723,7 +808,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         patch: operations["WorkspaceLifecycle_State"];
         trace?: never;
     };
@@ -736,7 +821,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceLifecycle_TransferCompany"];
         delete?: never;
         options?: never;
@@ -753,7 +838,7 @@ export interface paths {
         };
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected. */
         get: operations["WorkspacePolicy_Get"];
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         put: operations["WorkspacePolicy_Update"];
         post?: never;
         delete?: never;
@@ -772,7 +857,7 @@ export interface paths {
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Projects"];
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceWrites_CreateProject"];
         delete?: never;
         options?: never;
@@ -789,10 +874,10 @@ export interface paths {
         };
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Project"];
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         put: operations["WorkspaceWrites_UpdateProject"];
         post?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         delete: operations["WorkspaceWrites_DeleteProject"];
         options?: never;
         head?: never;
@@ -826,7 +911,7 @@ export interface paths {
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Members"];
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceWrites_AddMember"];
         delete?: never;
         options?: never;
@@ -842,10 +927,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         put: operations["WorkspaceLifecycle_ProjectRole"];
         post?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         delete: operations["WorkspaceWrites_RemoveMember"];
         options?: never;
         head?: never;
@@ -861,7 +946,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceLifecycle_TransferProject"];
         delete?: never;
         options?: never;
@@ -879,7 +964,7 @@ export interface paths {
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Tasks"];
         put?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceWrites_CreateTask"];
         delete?: never;
         options?: never;
@@ -898,11 +983,11 @@ export interface paths {
         get: operations["WorkspaceReads_Task"];
         put?: never;
         post?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         delete: operations["WorkspaceWrites_DeleteTask"];
         options?: never;
         head?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         patch: operations["WorkspaceWrites_UpdateTask"];
         trace?: never;
     };
@@ -919,7 +1004,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         patch: operations["WorkspaceWrites_Status"];
         trace?: never;
     };
@@ -937,17 +1022,25 @@ export interface components {
         };
         AccountPasswordChangeRequest: {
             /** Format: password */
+            code?: null | string;
+            /** Format: password */
             currentPassword: string;
             /** Format: password */
             newPassword: string;
         };
-        AccountPasswordProofRequest: {
+        AccountReauthenticationRequest: {
+            /** Format: password */
+            code?: null | string;
             /** Format: password */
             currentPassword: string;
         };
         AccountResetRequest: {
             /** Format: password */
+            code?: null | string;
+            /** Format: password */
             newPassword: string;
+            /** Format: password */
+            recoveryCode?: null | string;
             /** Format: password */
             token: string;
             /** @description Canonical positive decimal-string account ID within signed BIGINT; no leading zeros. */
@@ -1000,6 +1093,7 @@ export interface components {
             userId: string;
         };
         ApiProblem: {
+            /** Format: password */
             code?: null | string;
             detail?: null | string;
             errors?: null | {
@@ -1192,10 +1286,47 @@ export interface components {
             expectedVersion: string;
         };
         LoginRequest: {
+            /** Format: password */
+            code?: null | string;
             /** Format: email */
             email: string;
             /** Format: password */
             password: string;
+            /** Format: password */
+            recoveryCode?: null | string;
+        };
+        MfaCodeRequest: {
+            /** Format: password */
+            code: string;
+            /** Format: password */
+            currentPassword: string;
+        };
+        MfaProofRequest: {
+            /** Format: password */
+            code?: null | string;
+            /** Format: password */
+            currentPassword: string;
+            /** Format: password */
+            recoveryCode?: null | string;
+        };
+        MfaRecoveryDto: {
+            recoveryCodes: string[];
+        };
+        MfaSetupDto: {
+            /** Format: date-time */
+            expiresAtUtc: string;
+            sharedKey: string;
+        };
+        MfaStatusDto: {
+            enabled: boolean;
+            enrollmentAvailable: boolean;
+            /** Format: int32 */
+            recoveryCodesRemaining: number;
+            /** Format: date-time */
+            recoveryVerifiedUntilUtc: null | string;
+            requiredForAdministration: boolean;
+            /** Format: date-time */
+            verifiedUntilUtc: null | string;
         };
         PilotCapacityDto: {
             /** Format: int32 */
@@ -2093,6 +2224,439 @@ export interface operations {
             };
         };
     };
+    Mfa_Status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaStatusDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    Mfa_Confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["MfaCodeRequest"];
+                "application/json": components["schemas"]["MfaCodeRequest"];
+                "text/json": components["schemas"]["MfaCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaRecoveryDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    Mfa_Disable: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["MfaProofRequest"];
+                "application/json": components["schemas"]["MfaProofRequest"];
+                "text/json": components["schemas"]["MfaProofRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    Mfa_RecoveryCodes: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["MfaCodeRequest"];
+                "application/json": components["schemas"]["MfaCodeRequest"];
+                "text/json": components["schemas"]["MfaCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaRecoveryDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    Mfa_Setup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/*+json": components["schemas"]["MfaProofRequest"];
+                "application/json": components["schemas"]["MfaProofRequest"];
+                "text/json": components["schemas"]["MfaProofRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaSetupDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Optional retry interval in seconds. */
+                    "Retry-After"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
     AccountSecurity_Reauthenticate: {
         parameters: {
             query?: never;
@@ -2105,9 +2669,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/*+json": components["schemas"]["AccountPasswordProofRequest"];
-                "application/json": components["schemas"]["AccountPasswordProofRequest"];
-                "text/json": components["schemas"]["AccountPasswordProofRequest"];
+                "application/*+json": components["schemas"]["AccountReauthenticationRequest"];
+                "application/json": components["schemas"]["AccountReauthenticationRequest"];
+                "text/json": components["schemas"]["AccountReauthenticationRequest"];
             };
         };
         responses: {

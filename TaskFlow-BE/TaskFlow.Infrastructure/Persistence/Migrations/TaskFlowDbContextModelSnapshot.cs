@@ -208,6 +208,35 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("AccountEmailJobs");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.AccountMfa", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("LastAcceptedStep")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("PendingExpiresAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("PendingProtectedSecret")
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)");
+
+                    b.Property<string>("ProtectedSecret")
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)");
+
+                    b.Property<string>("RecoveryHashes")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("varchar(2048)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("AccountMfa");
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.ActivityLog", b =>
                 {
                     b.Property<long>("Id")
@@ -1106,6 +1135,15 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.AccountMfa", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("TaskFlow.Domain.Entities.AccountMfa", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

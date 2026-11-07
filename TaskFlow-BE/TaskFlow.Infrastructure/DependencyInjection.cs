@@ -27,6 +27,9 @@ public static class DependencyInjection
         services.AddSingleton(sp => new AccountSecuritySettings(sp.GetService<IConfiguration>() ?? configuration, sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.EnvironmentName ?? "Production"));
         services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceInvitations, TaskFlow.Infrastructure.Workspaces.WorkspaceInvitations>();
         services.AddScoped<IAccountSecurity, AccountSecurityService>();
+        services.AddSingleton<MfaSettings>();
+        services.AddScoped<MfaService>();
+        services.AddScoped<IMfaService>(sp => sp.GetRequiredService<MfaService>());
         services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
         services.AddIdentityCore<ApplicationUser>(options =>
         {

@@ -57,6 +57,8 @@ services:
       WorkspaceWrites__Enabled: ${TASKFLOW_WORKSPACE_WRITES_ENABLED:-false}
       WorkspaceLifecycle__Enabled: ${TASKFLOW_WORKSPACE_LIFECYCLE_ENABLED:-false}
       Invitations__Enabled: ${TASKFLOW_INVITATIONS_ENABLED:-false}
+      Mfa__Enabled: ${TASKFLOW_MFA_ENABLED:-false}
+      Mfa__RequireForCompanyAdministrators: ${TASKFLOW_MFA_REQUIRE_ADMINISTRATORS:-false}
       AllowedHosts: ${TASKFLOW_HOST:?Set the public hostname without scheme or port}
       Kestrel__Certificates__Default__Path: /run/secrets/tls.pfx
     ports:

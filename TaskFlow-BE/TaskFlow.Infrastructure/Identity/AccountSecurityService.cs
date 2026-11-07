@@ -21,7 +21,7 @@ public sealed class AccountSecuritySettings(IConfiguration configuration, string
     public bool RequireConfirmedEmail { get; } = configuration.GetValue<bool>("AccountSecurity:RequireConfirmedEmail");
 }
 public sealed class AccountSecurityService(UserManager<ApplicationUser> users, SignInManager<ApplicationUser> signIn,
-    TaskFlowDbContext db, IDataProtectionProvider protection, AccountSecuritySettings settings, TimeProvider clock, ISecurityEvents security) : IAccountSecurity
+    TaskFlowDbContext db, IDataProtectionProvider protection, AccountSecuritySettings settings, TimeProvider clock, ISecurityEvents security, MfaService mfa) : IAccountSecurity
 {
     public const string RecentClaim = "taskflow:recent_authentication";
     private sealed record ActionToken(long UserId, bool Recovery, string IdentityToken, DateTimeOffset Expires);
@@ -58,7 +58,7 @@ public sealed class AccountSecurityService(UserManager<ApplicationUser> users, S
             var user = await Lock(found.Id); if (user is null) return;
             var now = clock.GetUtcNow().UtcDateTime;
             // Same response for absent, unverified, cooling down, capped and accepted accounts.
-            if (recovery && !user.EmailConfirmed || !recovery && user.EmailConfirmed || user.TwoFactorEnabled) return;
+            if (recovery && !user.EmailConfirmed || !recovery && user.EmailConfirmed) return;
             if (await db.AccountEmailJobs.AnyAsync(j => j.UserId == user.Id && j.CreatedAtUtc > now.AddMinutes(-1)) || await db.AccountEmailJobs.CountAsync(j => j.UserId == user.Id && j.CreatedAtUtc > now.AddHours(-1)) >= 3) return;
             var raw = recovery ? await users.GeneratePasswordResetTokenAsync(user) : await users.GenerateEmailConfirmationTokenAsync(user);
             var job = new AccountEmailJob { UserId = user.Id, Kind = recovery ? "PasswordRecovery" : "EmailVerification", CreatedAtUtc = now, AvailableAtUtc = now, ExpiresAtUtc = now.AddHours(1) };
@@ -80,38 +80,58 @@ public sealed class AccountSecurityService(UserManager<ApplicationUser> users, S
         db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.EmailVerified, SecurityOutcome.Succeeded, user.Id));
         await db.SaveChangesAsync(); await transaction.CommitAsync(); await signIn.SignOutAsync(); return true;
     }
-    public async Task<AccountActionResult> ResetAsync(long userId, string token, string password)
+    public async Task<AccountActionResult> ResetAsync(long userId, string token, string password, string? code = null, string? recoveryCode = null)
     {
         var raw = Read(userId, true, token); if (raw is null) return InvalidLink();
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
-        var user = await Lock(userId); if (user is null || !user.EmailConfirmed || user.TwoFactorEnabled) return InvalidLink();
+        var user = await Lock(userId); if (user is null || !user.EmailConfirmed) return InvalidLink();
+        if (user.TwoFactorEnabled)
+        {
+            if (!await users.VerifyUserTokenAsync(user, users.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", raw)) return InvalidLink();
+            if (await users.IsLockedOutAsync(user) || !await mfa.Verify(user, code, recoveryCode))
+            {
+                if (!await users.IsLockedOutAsync(user) && !(await users.AccessFailedAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+                db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.MfaAction, SecurityOutcome.Denied, user.Id));
+                await db.SaveChangesAsync(); await transaction.CommitAsync();
+                return new(false, new() { ["code"] = ["A fresh authenticator or unused recovery code is required. Repeated failures temporarily lock the account."] });
+            }
+            if (!string.IsNullOrWhiteSpace(recoveryCode)) db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.MfaRecoveryUsed, SecurityOutcome.Succeeded, user.Id));
+        }
         var result = await users.ResetPasswordAsync(user, raw, password); if (!result.Succeeded) return Errors(result);
         await InvalidateMail(db, user.Id);
         db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.RecoveryCompleted, SecurityOutcome.Succeeded, user.Id));
         await db.SaveChangesAsync(); await transaction.CommitAsync(); await signIn.SignOutAsync(); return new(true, []);
     }
-    public async Task<AccountActionResult> ChangeAsync(ClaimsPrincipal principal, string currentPassword, string newPassword)
+    public async Task<AccountActionResult> ChangeAsync(ClaimsPrincipal principal, string currentPassword, string newPassword, string? code = null)
     {
         var id = users.GetUserId(principal); if (!long.TryParse(id, out var number)) return new(false, []);
         await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
-        var user = await Lock(number); if (user is null || user.TwoFactorEnabled) return new(false, []);
+        var user = await Lock(number); if (user is null || principal.FindFirstValue(users.Options.ClaimsIdentity.SecurityStampClaimType) != user.SecurityStamp) return new(false, []);
         var proof = await signIn.CheckPasswordSignInAsync(user, currentPassword, true);
-        if (!proof.Succeeded)
+        if (!proof.Succeeded || user.TwoFactorEnabled && !await mfa.Verify(user, code))
         {
-            await transaction.CommitAsync(); await security.WriteAsync(SecurityAction.PasswordChanged, proof.IsLockedOut ? SecurityOutcome.LockedOut : SecurityOutcome.Denied, number, number);
+            if (proof.Succeeded && !(await users.AccessFailedAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+            await db.SaveChangesAsync(); await transaction.CommitAsync(); await security.WriteAsync(SecurityAction.PasswordChanged, proof.IsLockedOut ? SecurityOutcome.LockedOut : SecurityOutcome.Denied, number, number);
             return new(false, new() { ["currentPassword"] = ["Current password could not be verified."] });
         }
         var result = await users.ChangePasswordAsync(user, currentPassword, newPassword); if (!result.Succeeded) return Errors(result);
         await InvalidateMail(db, user.Id); db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.PasswordChanged, SecurityOutcome.Succeeded, number, number));
         await db.SaveChangesAsync(); await transaction.CommitAsync(); await signIn.SignOutAsync(); return new(true, []);
     }
-    public async Task<bool> ReauthenticateAsync(ClaimsPrincipal principal, string password)
+    public async Task<bool> ReauthenticateAsync(ClaimsPrincipal principal, string password, string? code = null)
     {
-        var user = await users.GetUserAsync(principal); if (user is null || user.TwoFactorEnabled) return false;
+        if (!long.TryParse(users.GetUserId(principal), out var id)) return false;
+        await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+        var user = await Lock(id); if (user is null || principal.FindFirstValue(users.Options.ClaimsIdentity.SecurityStampClaimType) != user.SecurityStamp) return false;
         var result = await signIn.CheckPasswordSignInAsync(user, password, true);
-        await security.WriteAsync(SecurityAction.Reauthentication, result.Succeeded ? SecurityOutcome.Succeeded : result.IsLockedOut ? SecurityOutcome.LockedOut : SecurityOutcome.Denied, user.Id, user.Id);
-        if (!result.Succeeded) return false;
-        await signIn.SignInWithClaimsAsync(user, false, [new Claim(RecentClaim, clock.GetUtcNow().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture))]); return true;
+        var verified = result.Succeeded && (!user.TwoFactorEnabled || await mfa.Verify(user, code));
+        if (!verified && result.Succeeded && !(await users.AccessFailedAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+        if (verified && !(await users.ResetAccessFailedCountAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+        db.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.Reauthentication, verified ? SecurityOutcome.Succeeded : result.IsLockedOut ? SecurityOutcome.LockedOut : SecurityOutcome.Denied, user.Id, user.Id));
+        await db.SaveChangesAsync(); await transaction.CommitAsync();
+        if (!verified) return false;
+        var claims = user.TwoFactorEnabled ? MfaProof.Claims(clock) : new[] { new Claim(RecentClaim, clock.GetUtcNow().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)) };
+        await signIn.SignInWithClaimsAsync(user, false, claims); return true;
     }
     public async Task<AccountSecurityDto?> StatusAsync(ClaimsPrincipal principal)
     {

@@ -28,7 +28,8 @@ export function asApiError(error: unknown): ApiError {
     }
   }
   const code = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : undefined
-  const message = code === 'quota.exceeded' ? 'Pilot capacity reached. Contact your company owner or operations team.'
+  const message = code === 'mfa.administration_required' ? 'Open Account security and confirm your identity with a fresh authenticator code before this company action.'
+    : code === 'quota.exceeded' ? 'Pilot capacity reached. Contact your company owner or operations team.'
     : code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
     : status === 428 ? 'Reload this record before making changes.'
     : status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
@@ -144,8 +145,8 @@ export class ApiClient {
   requestAccountMail(email: string, recovery: boolean) { return this.request<void>({ url: recovery ? '/auth/forgot-password' : '/auth/request-verification', method: 'post', data: { email } }, false) }
   confirmEmail(link: AccountToken) { return this.request<void>({ url: '/auth/confirm-email', method: 'post', data: link }, false) }
   resetPassword(values: AccountReset) { return this.request<void>({ url: '/auth/reset-password', method: 'post', data: values }, false) }
-  changePassword(currentPassword: string, newPassword: string, signal?: AbortSignal) { return this.request<void>({ url: '/auth/change-password', method: 'post', signal, data: { currentPassword, newPassword } }) }
-  reauthenticate(currentPassword: string, signal?: AbortSignal) { return this.request<void>({ url: '/auth/reauthenticate', method: 'post', signal, data: { currentPassword } }) }
+  changePassword(currentPassword: string, newPassword: string, signal?: AbortSignal, code?: string) { return this.request<void>({ url: '/auth/change-password', method: 'post', signal, data: { currentPassword, newPassword, ...(code ? { code } : {}) } }) }
+  reauthenticate(currentPassword: string, signal?: AbortSignal, code?: string) { return this.request<void>({ url: '/auth/reauthenticate', method: 'post', signal, data: { currentPassword, ...(code ? { code } : {}) } }) }
 
   updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } satisfies ProfileUpdate }) }
 

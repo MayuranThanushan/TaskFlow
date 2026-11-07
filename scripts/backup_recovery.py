@@ -144,6 +144,11 @@ def restore(args):
     # An older snapshot could otherwise revive sessions revoked since its creation.
     invalidations = [f'UPDATE {identifier(target)}.`AspNetUsers` SET SecurityStamp=UUID(), ConcurrencyStamp=UUID(), UpdatedAtUtc=UTC_TIMESTAMP(6)']
     tables = {name.lower(): name for name in manifest['tableCounts']}
+    if 'accountmfa' in tables:
+        table = identifier(tables['accountmfa'])
+        # A restored snapshot must not resurrect consumed recovery codes or pending enrollments.
+        # Keep the active authenticator; require the next unambiguously fresh time window.
+        invalidations.append(f"UPDATE {identifier(target)}.{table} SET RecoveryHashes='[]', PendingProtectedSecret=NULL, PendingExpiresAtUtc=NULL, LastAcceptedStep=FLOOR(TIMESTAMPDIFF(SECOND,'1970-01-01 00:00:00',UTC_TIMESTAMP())/30)+1")
     if 'workspaceinvitations' in tables:
         table = identifier(tables['workspaceinvitations'])
         invalidations.append(f"UPDATE {identifier(target)}.{table} SET State='Revoked', Version=Version+1, TokenHash=NULL, PendingEmail=NULL, ProtectedMessage=NULL, DeliveryState='Cancelled', LeaseToken=NULL, LeaseExpiresAtUtc=NULL, LastCode='invitation.restore_invalidated' WHERE State='Pending'")

@@ -10,7 +10,7 @@ using TaskFlow.Infrastructure.Persistence;
 namespace TaskFlow.Infrastructure.Identity;
 
 public sealed class AccountService(UserManager<ApplicationUser> users, SignInManager<ApplicationUser> signIn,
-    UnknownUserPasswordCheck unknownUserCheck, TaskFlowDbContext database, ISecurityEvents security) : IAccountService
+    UnknownUserPasswordCheck unknownUserCheck, TaskFlowDbContext database, ISecurityEvents security, MfaService mfa, TimeProvider clock) : IAccountService
 {
     public async Task<RegistrationResult> RegisterAsync(string displayName, string email, string password)
     {
@@ -38,7 +38,7 @@ public sealed class AccountService(UserManager<ApplicationUser> users, SignInMan
         return new(null, false, errors);
     }
 
-    public async Task<ProfileDto?> LoginAsync(string email, string password)
+    public async Task<ProfileDto?> LoginAsync(string email, string password, string? code = null, string? recoveryCode = null)
     {
         var user = await users.FindByEmailAsync(email.Trim());
         if (user is null)
@@ -47,15 +47,24 @@ public sealed class AccountService(UserManager<ApplicationUser> users, SignInMan
             await security.WriteAsync(SecurityAction.Login, SecurityOutcome.Denied, null);
             return null;
         }
+        await using var transaction = await database.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+        user = await mfa.Lock(user.Id);
+        if (user is null) return null;
         var result = await signIn.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
-        if (!result.Succeeded || user.TwoFactorEnabled)
+        var verified = result.Succeeded && (!user.TwoFactorEnabled || await mfa.Verify(user, code, recoveryCode));
+        if (!verified)
         {
+            if (result.Succeeded && user.TwoFactorEnabled && !(await users.AccessFailedAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+            await database.SaveChangesAsync(); await transaction.CommitAsync();
             await security.WriteAsync(SecurityAction.Login, result.IsLockedOut ? SecurityOutcome.LockedOut : SecurityOutcome.Denied, user.Id);
             return null;
         }
-        // Persist credential verification before issuing a session; a sink failure issues no cookie.
-        await security.WriteAsync(SecurityAction.Login, SecurityOutcome.Succeeded, user.Id, user.Id);
-        await signIn.SignInAsync(user, isPersistent: false);
+        if (!(await users.ResetAccessFailedCountAsync(user)).Succeeded) throw new InvalidOperationException("Account failure tracking failed.");
+        database.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.Login, SecurityOutcome.Succeeded, user.Id, user.Id));
+        if (user.TwoFactorEnabled && !string.IsNullOrWhiteSpace(recoveryCode)) database.SecurityEvents.Add(SecurityRecords.Create(SecurityAction.MfaRecoveryUsed, SecurityOutcome.Succeeded, user.Id, user.Id));
+        await database.SaveChangesAsync(); await transaction.CommitAsync();
+        if (user.TwoFactorEnabled) await signIn.SignInWithClaimsAsync(user, false, MfaProof.Claims(clock, !string.IsNullOrWhiteSpace(recoveryCode)));
+        else await signIn.SignInAsync(user, isPersistent: false);
         return ToProfile(user);
     }
 

@@ -102,7 +102,7 @@ public sealed partial class WorkspaceLifecycle(IServiceScopeFactory scopes, Task
         var signIn = scope.ServiceProvider.GetRequiredService<SignInManager<ApplicationUser>>();
         var user = await manager.FindByIdAsync(Id(actor));
         token.ThrowIfCancellationRequested();
-        var verified = user is not null && !user.TwoFactorEnabled && (await signIn.CheckPasswordSignInAsync(user, password!, lockoutOnFailure: true)).Succeeded;
+        var verified = user is not null && (!user.TwoFactorEnabled || MfaProof.Until(scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>().HttpContext?.User ?? new System.Security.Claims.ClaimsPrincipal(), clock) is not null) && (await signIn.CheckPasswordSignInAsync(user, password!, lockoutOnFailure: true)).Succeeded;
         await scope.ServiceProvider.GetRequiredService<TaskFlow.Application.Features.Activity.ISecurityEvents>().WriteAsync(
             TaskFlow.Application.Features.Activity.SecurityAction.PasswordProof,
             verified ? TaskFlow.Application.Features.Activity.SecurityOutcome.Succeeded : TaskFlow.Application.Features.Activity.SecurityOutcome.Denied, actor, actor, CancellationToken.None);

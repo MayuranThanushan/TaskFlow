@@ -8,8 +8,8 @@ public interface IAccountSecurity
     AccountCapabilitiesDto Capabilities { get; }
     Task RequestAsync(string email, bool recovery);
     Task<bool> ConfirmAsync(long userId, string token);
-    Task<AccountActionResult> ResetAsync(long userId, string token, string password);
-    Task<AccountActionResult> ChangeAsync(ClaimsPrincipal principal, string currentPassword, string newPassword);
-    Task<bool> ReauthenticateAsync(ClaimsPrincipal principal, string password);
+    Task<AccountActionResult> ResetAsync(long userId, string token, string password, string? code = null, string? recoveryCode = null);
+    Task<AccountActionResult> ChangeAsync(ClaimsPrincipal principal, string currentPassword, string newPassword, string? code = null);
+    Task<bool> ReauthenticateAsync(ClaimsPrincipal principal, string password, string? code = null);
     Task<AccountSecurityDto?> StatusAsync(ClaimsPrincipal principal);
 }

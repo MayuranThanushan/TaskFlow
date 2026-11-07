@@ -69,3 +69,6 @@ GRANT UPDATE (State, ProtectedPayload, LeaseToken, LeaseExpiresAtUtc, LastCode) 
 -- SaaS-020 invitation authority stays in API; all payloads are private.
 GRANT SELECT, INSERT, UPDATE ON taskflow.WorkspaceInvitations TO 'taskflow'@'%';
 GRANT INSERT, SELECT (Id) ON taskflow.InvitationTransitions TO 'taskflow'@'%';
+
+-- SaaS-022: private account MFA material; never grant workers/readers access.
+GRANT SELECT, INSERT, UPDATE ON taskflow.AccountMfa TO 'taskflow'@'%';

@@ -185,3 +185,9 @@ a { text-underline-offset:3px; }
 .invitation-list { list-style: none; padding: 0; display: grid; gap: .75rem; }.invitation-list > li { display: flex; justify-content: space-between; gap: 1rem; padding: 1.25rem; border: 1px solid var(--border, #dce3df); background: white; border-radius: .75rem; }
 .invitation-recipient { display: grid; gap: .4rem; min-width: 0; overflow-wrap: anywhere; }.invitation-recipient > span { color: #52636b; font-size: .9rem; }.invitation-list .form-actions { align-self: center; flex-wrap: wrap; }
 @media (max-width: 600px) { .invitation-fields { grid-template-columns: 1fr; }.invitation-list > li { flex-direction: column; }.invitation-list .form-actions { align-self: stretch; }.invite-preview div { grid-template-columns: 1fr; gap: .2rem; }.invite-accept { margin: 1rem auto; } }
+
+.mfa-secret { padding:16px; background:var(--accent-soft); border-radius:8px; overflow-wrap:anywhere; user-select:all; }
+.mfa-recovery ul { display:grid; gap:10px; padding:0; list-style:none; }
+.mfa-recovery code { overflow-wrap:anywhere; font-size:13px; }
+.mfa-choice { display:flex; align-items:flex-start; gap:10px; margin:12px 0; }
+.mfa-choice input { width:auto; margin-top:4px; }

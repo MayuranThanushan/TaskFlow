@@ -39,6 +39,9 @@ builder.Services.AddSessionAuthentication(builder.Configuration, builder.Environ
 
 if (workspaceMigration) builder.Logging.ClearProviders();
 var app = builder.Build();
+if (!workspaceMigration && app.Configuration.GetValue<bool>("Mfa:RequireForCompanyAdministrators")
+    && !new[] { "WorkspaceReads:Enabled", "WorkspaceWrites:Enabled", "WorkspaceLifecycle:Enabled" }.All(k => app.Configuration.GetValue<bool>(k)))
+    throw new InvalidOperationException("MFA administrator enforcement requires WorkspaceReads, WorkspaceWrites and WorkspaceLifecycle enabled; legacy company writes must be closed.");
 if (workspaceMigration)
 {
     // Offline process only: no web listener, hosted exporters or request-serving application.
