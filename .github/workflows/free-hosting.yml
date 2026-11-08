@@ -1,0 +1,57 @@
+name: Free hosting image
+
+on:
+  push:
+    branches: ['hosting/**']
+  pull_request:
+    paths:
+      - '.github/workflows/free-hosting.yml'
+      - '.dockerignore'
+      - 'deploy/render/**'
+      - 'render.yaml'
+      - 'TaskFlow-BE/**'
+      - 'TaskFlow-FE/**'
+      - 'global.json'
+      - 'Directory.Build.props'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: free-hosting-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    # Standard runners are free for public repositories; no paid runner/storage.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build combined frontend and API image
+        run: docker build --file deploy/render/Dockerfile --tag taskflow-free:ci .
+      - name: Verify non-root runtime and frontend assets
+        run: |
+          docker run --rm --entrypoint /bin/sh taskflow-free:ci -ec '
+            test "$(id -u)" -ne 0
+            test -s /app/wwwroot/index.html
+            test -s /app/TaskFlow.Api.dll
+            test -x /app/start.sh
+          '
+      - name: Verify offline key generation in Linux
+        run: |
+          docker run --rm --entrypoint /bin/sh taskflow-free:ci -ec '
+            dotnet TaskFlow.Api.dll --hosting-keys=/tmp/taskflow-ci-keys
+            test -s /tmp/taskflow-ci-keys/key-ring.base64
+            test "$(stat -c %a /tmp/taskflow-ci-keys/key-ring.base64)" = 600
+          '
+      - name: Verify missing secrets prevent startup
+        run: |
+          if docker run --rm taskflow-free:ci; then
+            echo 'Startup unexpectedly accepted missing secrets' >&2
+            exit 1
+          fi
