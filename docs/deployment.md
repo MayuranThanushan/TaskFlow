@@ -1,6 +1,6 @@
 # Portable deployment and smoke verification - steps 09 and 22
 
-No hosting provider or public environment has been selected. The portable configuration and local Production rehearsal are complete. Docker execution and public-host verification remain pending; nothing has been published. The local step 22 release/recovery rehearsal is also complete; see the [release runbook](release-runbook.md) and [backup/recovery procedure](backup-recovery.md). External checks remain release requirements.
+The no-card, free pilot target is Render Free with TiDB Cloud Starter; see the separate [free hosting checklist](free-hosting.md). Provider authorization, Docker execution and public-host verification remain pending; nothing has been published. The portable configuration and local Production rehearsal are complete. The local step 22 release/recovery rehearsal is also complete; see the [release runbook](release-runbook.md) and [backup/recovery procedure](backup-recovery.md). External checks remain release requirements.
 
 ## Deployment shape
 

@@ -211,6 +211,8 @@ Recorded local results: 122 backend passes with live MySQL and zero skips, 95 fr
 
 ## Project and release references
 
+Free public pilot preparation: follow the [Render Free + TiDB checklist](docs/free-hosting.md). Account authorization, Docker execution and public-origin verification remain pending; no public URL is live yet.
+
 [Architecture/ERD](docs/architecture.md), [decisions](docs/decisions/README.md), [API contracts/OpenAPI](docs/contracts/README.md), [demo/acceptance handoff](docs/handoff.md), [delivery backlog](Documents/Delivery-Backlog.md), [deployment](docs/deployment.md), [release runbook](docs/release-runbook.md), [backup/recovery](docs/backup-recovery.md).
 
 The implemented MVP is locally verified. Container execution, hosted CI and selected-host verification remain release gates; nothing has been publicly deployed. Keep private settings, credentials, keys, databases and generated output outside Git.

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using TaskFlow.Api.Middleware;
 using TaskFlow.Infrastructure.Identity;
+using TaskFlow.Api.Hosting;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace TaskFlow.Api.Extensions;
 
@@ -17,6 +19,18 @@ public static class AuthenticationExtensions
         var keysPath = configuration["DataProtection:KeysPath"]
             ?? Path.GetFullPath(Path.Combine(environment.ContentRootPath, "../../.local/data-protection"));
         services.AddDataProtection().SetApplicationName("TaskFlow").PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+        // Resolve final configuration when options are built, including host/test overrides.
+        services.AddOptions<KeyManagementOptions>().Configure<IConfiguration>((options, current) =>
+        {
+            if (current["DataProtection:ReadOnlyKeyRingBase64"] is not { Length: > 0 } encoded) return;
+            options.XmlRepository = new ReadOnlyKeyRing(encoded); options.AutoGenerateKeys = false;
+        });
+        services.AddOptions<LoggerFilterOptions>().Configure<IConfiguration>((options, current) =>
+        {
+            // Malformed secret XML must not be echoed by framework diagnostics.
+            if (current["DataProtection:ReadOnlyKeyRingBase64"] is { Length: > 0 })
+                options.Rules.Add(new LoggerFilterRule(null, "Microsoft.AspNetCore.DataProtection", LogLevel.None, null));
+        });
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;

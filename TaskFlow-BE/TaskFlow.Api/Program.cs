@@ -3,6 +3,12 @@ using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Middleware;
 using TaskFlow.Infrastructure;
 
+if (TaskFlow.Api.Operations.HostingKeyCommand.IsRequested(args))
+{
+    Environment.ExitCode = TaskFlow.Api.Operations.HostingKeyCommand.Execute(args);
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 var workspaceMigration = TaskFlow.Api.Operations.WorkspaceMigrationCommand.IsRequested(args);
 if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secretsDirectory)
@@ -67,6 +73,8 @@ if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("TaskFlow"))
 
 var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
     !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local"));
+
+TaskFlow.Api.Hosting.RenderIngress.Configure(app);
 
 app.UseMiddleware<ServiceTelemetryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();

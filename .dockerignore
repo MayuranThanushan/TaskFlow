@@ -9,6 +9,8 @@
 !TaskFlow-FE/**
 !deploy
 !deploy/migrate.sh
+!deploy/render/
+!deploy/render/**
 **/bin
 **/obj
 **/node_modules

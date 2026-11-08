@@ -1,0 +1,42 @@
+# This profile must remain Free. Do not add a disk, paid database, worker or pre-deploy job.
+services:
+  - type: web
+    name: taskflow
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health/ready
+    autoDeployTrigger: "off"
+    envVars:
+      - key: ConnectionStrings__TaskFlow
+        sync: false
+      - key: DataProtection__ReadOnlyKeyRingBase64
+        sync: false
+      - key: VITE_WORKSPACES_ENABLED
+        value: "true"
+      - key: VITE_WORKSPACE_LIFECYCLE_ENABLED
+        value: "true"
+      - key: VITE_INVITATIONS_ENABLED
+        value: "false"
+      - key: WorkspaceReads__Enabled
+        value: "true"
+      - key: WorkspaceWrites__Enabled
+        value: "true"
+      - key: WorkspaceLifecycle__Enabled
+        value: "true"
+      - key: Invitations__Enabled
+        value: "false"
+      - key: AccountSecurity__EmailFlowsEnabled
+        value: "false"
+      - key: AccountSecurity__RequireConfirmedEmail
+        value: "false"
+      - key: Mfa__Enabled
+        value: "false"
+      - key: Mfa__RequireForCompanyAdministrators
+        value: "false"
+      - key: FileLogging__Enabled
+        value: "false"
+      - key: Logging__LogLevel__Microsoft
+        value: Warning

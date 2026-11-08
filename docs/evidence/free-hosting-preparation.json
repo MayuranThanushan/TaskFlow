@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-08",
+  "status": "prepared-not-publicly-deployed",
+  "target": "Render Free web service and owner-controlled TiDB Cloud Starter",
+  "constraints": ["free only", "no payment method", "no card verification", "MayuranThanushan ownership"],
+  "verification": {
+    "backend": {"passed": 311, "failed": 0, "skipped": 0, "database": "isolated local MySQL schema removed after tests"},
+    "operations": {"passed": 35},
+    "hostingAndTransportFocused": {"passed": 19},
+    "renderBlueprint": "validated against official Render JSON schema",
+    "entrypoint": "bash syntax check passed",
+    "secretScan": "new hosting, operations, deploy/render and scripts directories passed redacted gitleaks scan",
+    "publishedApi": "Release publish passed after aligning EF Design with the existing 10.0.11 database stack",
+    "cloudDatabase": {
+      "type": "disposable TiDB Cloud Zero compatibility probe; synthetic data only",
+      "publicDeployment": false,
+      "checks": ["eleven migrations and verified TLS readiness", "two-account registration and secure sign-in", "company-scoped project/task CRUD and stale version conflict", "outsider access rejection", "owner soft deletion", "session survives process replacement", "logout revocation survives restart"],
+      "passed": true,
+      "performance": "Several-second requests observed from local machine; hosted latency not certified"
+    }
+  },
+  "pending": ["owner Render and TiDB account authorization", "Docker image execution", "owner-controlled persistent database and restricted runtime grants", "public HTTPS deployment and browser verification", "hosted latency, quotas and recovery rehearsal"],
+  "disabled": ["invitations", "email flows", "mail/checkpoint workers", "new MFA enrollment and administrator enforcement"],
+  "limitations": ["TiDB SKIP LOCKED worker compatibility not certified", "Render Free cold starts and no availability SLA", "authentication rate limits aggregate by ingress peer", "operator must rotate static hosting keys before expiry retaining prior keys"]
+}
