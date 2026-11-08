@@ -22,13 +22,13 @@
       },
       "MySql.EntityFrameworkCore": {
         "type": "Direct",
-        "requested": "[10.0.9, 10.0.9]",
-        "resolved": "10.0.9",
-        "contentHash": "1WF31dFOi9UzkLsDl3A6QnvxIJGXzVikgVbuYbgESRDsoI5WYr5ygWQJC9kbDJxldrCT6nDgt87LNFTKRgrwpQ==",
+        "requested": "[10.0.12, 10.0.12]",
+        "resolved": "10.0.12",
+        "contentHash": "WUYo85/+IfUDP5OcvNmgxJrQaQ49agt5o2mV3xKTnUV9/Gss6StFsL7G4Sy+amoMSJBYRVgCgyyClbw9l2r8Mg==",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": "10.0.9",
-          "Microsoft.EntityFrameworkCore.Relational": "10.0.9",
-          "MySql.Data": "26.7.0"
+          "Microsoft.EntityFrameworkCore": "10.0.12",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.12",
+          "MySql.Data": "26.10.0"
         }
       },
       "BouncyCastle.Cryptography": {
@@ -81,8 +81,8 @@
       },
       "MySql.Data": {
         "type": "Transitive",
-        "resolved": "26.7.0",
-        "contentHash": "WXk00B5N6TnuTU0SVRFxMAr2nfLj+4T6gY1NPeDdtj8cwy2Rk5v4GIUK9oSiTSMntEdrKeaYG4eyYPjZun7D7w==",
+        "resolved": "26.10.0",
+        "contentHash": "2mhCTH+6kqDvGRlaQ+2GGa+42TPGygcIwXulLwmAMNdTNUhL2dZ/LXMOmMZcJg88CAlBwkBtzOzDrUwq1InkZw==",
         "dependencies": {
           "BouncyCastle.Cryptography": "2.6.2",
           "Google.Protobuf": "3.35.0",
