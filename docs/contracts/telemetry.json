@@ -118,6 +118,7 @@
     "database.unreachable",
     "database.schema_mismatch",
     "database.configuration_missing",
+    "database.configuration_invalid",
     "database.check_failed",
     "cancelled"
   ],

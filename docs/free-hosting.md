@@ -14,6 +14,7 @@ Render Free sleeps after inactivity and provides no persistent disk. TiDB quotas
 
 - [ ] Use an owner-controlled persistent Starter instance. The disposable Cloud Zero compatibility probe is synthetic test infrastructure, expires automatically, and must not receive real users.
 - [ ] Obtain the dashboard's MySQL connection settings and require `SslMode=VerifyFull`; configure its allowed network access for the hosting service.
+- [ ] `ConnectionStrings__TaskFlow` accepts either `Server=HOST;Port=4000;Database=test;User ID=USER;Password=PASSWORD;SslMode=VerifyFull;` or a `mysql://USER:PASSWORD@HOST:4000/test?ssl-mode=VERIFY_IDENTITY` URL. Use the actual database/port from TiDB. URL usernames/passwords must be percent-encoded when they contain special characters. Cloud URLs always use verified TLS; unsupported URL options are rejected. A shell command beginning `mysql -h ...` is not supported: replace it using the separate fields in TiDB's Connect screen. Keep the actual value private.
 - [ ] Use a separate migration identity and least-privilege application identity following [runtime grants](../deploy/database-roles.sql.example). Review the managed service's supported privileges before applying grants.
 - [ ] From the repository root, restore and build the exact revision being deployed:
 

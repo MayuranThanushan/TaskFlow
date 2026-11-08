@@ -35,7 +35,12 @@ public sealed class DatabaseReadinessCheck(IServiceScopeFactory scopeFactory, IL
         catch (Exception error) when (!cancellationToken.IsCancellationRequested)
         {
             // Health responses and logs must not expose connection strings or database diagnostics.
-            return NotReady(error is PersistenceConfigurationException ? "database.configuration_missing" : "database.check_failed");
+            return NotReady(error switch
+            {
+                PersistenceConfigurationException => "database.configuration_missing",
+                DatabaseConnectionConfigurationException => "database.configuration_invalid",
+                _ => "database.check_failed"
+            });
         }
         finally
         {

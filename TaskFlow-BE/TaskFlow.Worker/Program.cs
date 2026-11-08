@@ -23,7 +23,7 @@ try
     }
     builder.Logging.ClearProviders(); builder.Logging.AddJsonConsole(); builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
     builder.Services.AddSingleton(TimeProvider.System);
-    builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new InvalidOperationException()));
+    builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(TaskFlowConnectionString.Normalize(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new PersistenceConfigurationException())));
     builder.Services.AddScoped<OutboxStore>(); builder.Services.AddSingleton<OutboxMetrics>(); builder.Services.AddSingleton<IOutboxConsumer, CheckpointConsumer>(); builder.Services.AddSingleton<OutboxPump>();
     var invitationMail = args.Length == 1 && args[0] == "--invitations-once";
     var accountMail = args.Length == 1 && args[0] == "--account-mail-once";

@@ -99,6 +99,7 @@ The file sink only accepts TaskFlow categories and allowlisted structured fields
 | 2002 database.not_ready / database.unreachable | Start MySQL and check configured host/port/credentials/network |
 | 2002 database.not_ready / database.schema_mismatch | Apply the reviewed matching release migration; never auto-delete unknown migration history |
 | 2002 database.not_ready / database.check_failed | Check restricted grants/configuration and migration health; raw database details remain private |
+| 2002 database.not_ready / database.configuration_invalid | Replace a shell command or malformed setting with a .NET MySQL connection string or supported mysql:// URL; do not paste private diagnostics |
 | 2000 api.failure / database.operation_failed | A database operation failed; use the trace plus readiness/controlled diagnostics |
 | 2000 api.failure / api.unhandled | Unexpected application failure, identified by exception type and trace |
 

@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-08",
+  "reportedFailure": "Render readiness returned database.check_failed; operator confirmed a mysql URL or shell command was used instead of a .NET connection string",
+  "change": "Normalize mysql/mysqls URLs using the MySQL driver connection builder, preserve escaped credentials, require VerifyFull for URLs, reject unsupported query options and shell commands without retaining raw parser errors",
+  "compatibility": "Existing .NET MySQL connection strings retain their explicit transport settings; API, EF startup and worker share the normalizer",
+  "diagnostics": "Invalid formats emit database.configuration_invalid in bounded internal logs/telemetry; public readiness remains generic 503",
+  "verification": {
+    "backend": {"passed": 321, "failed": 0, "skipped": 0, "database": "isolated MySQL schema removed after test run"},
+    "operations": {"passed": 35},
+    "releasePublish": "passed",
+    "cloudUrlSmoke": "Published local HTTPS API accepted a real disposable TiDB mysql URL; verified TLS readiness, static assets, deep links, JSON routing, anonymous access and CSRF bootstrap passed without account writes",
+    "secrets": "New implementation and test files passed redacted gitleaks scans"
+  },
+  "deployment": "Public Render restart and verification pending; no connected Render API access. A mysql shell command still requires operator replacement in the protected environment setting."
+}

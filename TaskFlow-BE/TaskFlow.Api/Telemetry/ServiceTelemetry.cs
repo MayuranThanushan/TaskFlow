@@ -72,7 +72,7 @@ public sealed class ServiceTelemetry : IDisposable
     private void Signal(string action, string outcome) => security.Add(1, new TagList { { "event.action", action }, { "event.outcome", outcome } });
     public void Readiness(bool? ready, string result, double seconds)
     {
-        if (result is not ("ready" or "database.unreachable" or "database.schema_mismatch" or "database.configuration_missing" or "database.check_failed" or "cancelled")) result = "database.check_failed";
+        if (result is not ("ready" or "database.unreachable" or "database.schema_mismatch" or "database.configuration_missing" or "database.configuration_invalid" or "database.check_failed" or "cancelled")) result = "database.check_failed";
         if (ready.HasValue) { Volatile.Write(ref readiness, ready.Value ? 1 : 0); Interlocked.Exchange(ref lastCompletedProbe, Stopwatch.GetTimestamp()); }
         TagList tags = new() { { "result", result } };
         readinessChecks.Add(1, tags); readinessDuration.Record(seconds, tags);

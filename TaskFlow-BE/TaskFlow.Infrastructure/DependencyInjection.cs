@@ -21,7 +21,7 @@ public static class DependencyInjection
             var connection = configuration.GetConnectionString("TaskFlow");
             if (string.IsNullOrWhiteSpace(connection))
                 throw new PersistenceConfigurationException();
-            options.UseMySQL(connection);
+            options.UseMySQL(TaskFlowConnectionString.Normalize(connection));
         });
         services.AddDataProtection();
         services.AddSingleton(sp => new AccountSecuritySettings(sp.GetService<IConfiguration>() ?? configuration, sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.EnvironmentName ?? "Production"));
