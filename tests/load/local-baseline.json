@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "local-project-baseline",
+  "groups": 2,
+  "usersPerGroup": 2,
+  "projectsPerGroup": 3,
+  "tasksPerProject": 20,
+  "concurrency": 8,
+  "requests": 8000,
+  "warmupRequestsPerWorker": 8,
+  "timeoutSeconds": 10,
+  "proposedBudgets": {
+    "readP95Milliseconds": 750,
+    "writeP95Milliseconds": 1000,
+    "unexpectedResponseRate": 0.01
+  }
+}

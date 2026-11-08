@@ -1,0 +1,87 @@
+{
+  "task": "SaaS-018",
+  "date": "2026-11-03",
+  "sourceBaseRevision": "a82c050960ea4fa32a5ca18065793453c6bd2086",
+  "workingChangesVerifiedBeforeCommit": true,
+  "status": "Local email abstraction, templates and private Development/Staging capture implemented; real-provider staging delivery and bounce integration remain open gates.",
+  "scope": "Windows isolated synthetic verification only. No real recipients contacted, no network transport, no production email, no customer/live database changes. Existing checkpoint worker remains metadata-only.",
+  "verifiedSourceSha256NormalizedLf": {
+    ".github/workflows/ci.yml": "5cdb0b9c754e047332f4da62b01de0f4e2d28d367b2a9778f20f05b1b1bbeb3d",
+    ".gitignore": "3b306e4a7df716e5ad8c95d1fec020f23823b1b20dddf2c999165c922ca3cd4b",
+    "Documents/Feature-Release-Roadmap.md": "55a32c53f9e89facf3556fc13afa881270429399d0d6dfa8233dee06698a4011",
+    "README.md": "b64a43756415514a15a73e5d6a87f7e7543a8648ac30d82126c0462aed703143",
+    "TaskFlow-BE/TaskFlow.Application/Features/Email/IEmailSender.cs": "0631cbc02493702849186ff1d533576b190894f35dd2290af011875eef6bd543",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/EmailCaptureCommand.cs": "4fe07c86dd6b50e4a5e33732f794f0f7067c621e64c29b0e6349ba2d0c1ca8e1",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/EmailTemplates.cs": "69828a654e80086061e3516d4cb1d25549ab0a37d1a8c28be332cc007ef94062",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/LocalEmailSender.cs": "13509577b2e590169cb0ec17ad8f5564b0f7bbf2488b45e6b78e0e2f8a3441fc",
+    "TaskFlow-BE/TaskFlow.Tests/EmailTests.cs": "cd940c57b8bb113a677f227d25eb3acd211574fa86f6034dce73befd9eb66ad4",
+    "TaskFlow-BE/TaskFlow.Worker/Program.cs": "13e6c1485c421e1fdda6495af4685080abe214ec43ea920a153c6d1b21f7630c",
+    "deploy/email-capture.request.json.example": "852debc4aca6fb821d56aa9da3b5d6e3ac27db9899bae9b66e89b9c6d37d8385",
+    "docs/saas/email-capture.md": "7310d0a93c78db6ec832a88c2dbf9a7fbe31981480fa7e60a55de72900a07118",
+    "docs/saas/outbox-workers.md": "e90db70bc6b2dc7b616685efc55e0f8598f265f649719024b74ac6422317d69e",
+    "docs/saas/tenant-control-inventory.json": "67449d25b1af7618a018da4471fa457813d6914d8c64c3c7570a7661f89edfad",
+    "scripts/verify_email_capture.py": "4e26e399fe0f75b4d8b396083b7ba23e44424e47de3a9db65e7025ac9bde6403"
+  },
+  "validation": {
+    "backend": {
+      "passed": 257,
+      "failed": 0,
+      "skipped": 0,
+      "newEmailCases": 28,
+      "database": "Dedicated disposable MySQL schema; removed after tests."
+    },
+    "operations": {
+      "passed": 34,
+      "failed": 0
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "workflowLint": "actionlint 1.7.12 passed locally",
+    "publishedWorker": {
+      "publishedWorker": true,
+      "databaseRequired": false,
+      "independentWorkerProcesses": 2,
+      "sameIdRestartDeduplicated": true,
+      "changedRecipientRejected": true,
+      "companiesIsolated": true,
+      "eightConcurrentRequestsAtLimitTwo": {
+        "captured": 2,
+        "rateLimited": 6
+      },
+      "stagingAllowlistChecked": true,
+      "productionDisabled": true,
+      "multipartParsedWithoutDefects": true,
+      "privateFieldsAbsentFromStatus": true,
+      "externalNetworkTransport": "none",
+      "temporaryPrivateArtifactsRemoved": true
+    },
+    "publishedWorkerSha256": "a9ec1f26801a43f70a047da8412bea5da8d6fe8830aa4d0e0c0d3bebe7aa04eb",
+    "httpInventory": {
+      "paths": 40,
+      "operations": 57,
+      "unchanged": true
+    },
+    "databaseMigrations": "Unchanged; no new migration for offline capture.",
+    "dependencies": "No new or changed third-party dependency/lockfile.",
+    "frontend": "No changes; frontend/browser suites not rerun for this release."
+  },
+  "implemented": [
+    "Recipient-bound IEmailSender contract with closed result codes and private-safe string representations.",
+    "HTML/plain-text company invitation, task-assignment and workspace-welcome preview templates; strict addresses, trusted origin and closed routes.",
+    "Explicit offline worker command with bounded private input, safe JSON status, no database or HTTP pipeline dependency.",
+    "Atomic local directory capture, MIME integrity validation, restart deduplication, conflict refusal and per-company OS locking/hourly limits.",
+    "Default-disabled mode, Development synthetic addresses, Staging exact allowlists/HTTPS, Production refusal.",
+    "Published-process synthetic verification added to CI; only safe status/count evidence uploaded."
+  ],
+  "acceptanceGates": [
+    "Hosted CI/CodeQL, Linux/container and selected-host ACL/local-filesystem checks not executed here.",
+    "No SMTP/provider adapter, API credentials, actual staging-recipient delivery or authenticated bounce/webhook integration.",
+    "No durable recipient-bound database email queue or automatic business-event-to-mail conversion.",
+    "Future workflow must recheck current recipient/company/project authorization, tokens, preferences, expiry and abuse controls.",
+    "Capture limits and deduplication are per local filesystem, not cross-host provider quota/fairness or power-loss durability guarantees."
+  ],
+  "guide": "docs/saas/email-capture.md",
+  "next": "SaaS-019 account verification, recovery/change and reauthentication; real mail delivery acceptance remains required before SaaS-023."
+}

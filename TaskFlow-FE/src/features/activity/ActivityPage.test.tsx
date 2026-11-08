@@ -8,7 +8,7 @@ import { createApiClient } from '../../api/client'
 import { profile, reply, server } from '../../test/server'
 import type { ActivityItem } from './ActivityPage'
 const projectId = '9007199254741111'; const path = '/projects/' + projectId + '/activity'
-const event = (details = 'Task created.', id = '9007199254741999'): ActivityItem => ({ id, projectId, actorUserId: '9007199254741888', taskId: '9007199254741777', actionType: 'TaskCreated', details, createdAtUtc: '2026-10-18T08:00:00Z' })
+const event = (details = 'Task created.', id = '9007199254741999'): ActivityItem => ({ id, projectId, actorUserId: '9007199254741888', taskId: '9007199254741777', actionType: 'TaskCreated', audit: { schemaVersion: 0, isLegacy: true, outcome: 'LegacyUnknown', correlationId: null, subjectType: null, subjectId: null, changes: [] }, details, createdAtUtc: '2026-10-18T08:00:00Z' })
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(route = path, events: ActivityItem[] = [], authenticated = true) {
   const auth = server(authenticated)

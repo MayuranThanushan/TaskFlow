@@ -1,16 +1,18 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosAdapter, AxiosInstance, AxiosRequestConfig, RawAxiosHeaders } from 'axios'
-import type { Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Registration } from './types'
+import type { AccountCapabilities, AccountSecurity, AccountToken, AccountReset, Credentials, CsrfToken, FieldErrors, Profile, ProfileUpdate, Registration } from './types'
 
 export class ApiError extends Error {
   readonly status?: number
   readonly fields: FieldErrors
+  readonly code?: string
 
-  constructor(message: string, status?: number, fields: FieldErrors = {}) {
+  constructor(message: string, status?: number, fields: FieldErrors = {}, code?: string) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.fields = fields
+    this.code = code
   }
 }
 
@@ -25,14 +27,19 @@ export function asApiError(error: unknown): ApiError {
       if (Array.isArray(value) && value.every(item => typeof item === 'string')) fields[key] = value
     }
   }
-  const message = status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
+  const code = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : undefined
+  const message = code === 'mfa.administration_required' ? 'Open Account security and confirm your identity with a fresh authenticator code before this company action.'
+    : code === 'quota.exceeded' ? 'Pilot capacity reached. Contact your company owner or operations team.'
+    : code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
+    : status === 428 ? 'Reload this record before making changes.'
+    : status === 401 ? 'Email or password is incorrect, or the account is temporarily locked.'
     : status === 409 ? 'An account with this email already exists. Sign in to continue.'
       : status === 429 ? 'Too many attempts. Please wait a minute before trying again.'
         : status === 403 ? 'You do not have permission to do that.'
           : status === 400 ? 'Please check the details below and try again.'
             : status ? 'TaskFlow could not complete the request. Please try again.'
               : 'We could not reach TaskFlow. Check your connection and try again.'
-  return new ApiError(message, status, fields)
+  return new ApiError(message, status, fields, code)
 }
 
 export class ApiClient {
@@ -43,7 +50,28 @@ export class ApiClient {
   private identityVersion = 0
   private readonly unauthorized = new Set<() => void>()
 
-  constructor(transport: AxiosInstance) { this.transport = transport }
+  private controller = new AbortController()
+  readonly resourceKey: string
+  private readonly workspaceId?: string
+  private readonly sessionClient?: ApiClient
+  constructor(transport: AxiosInstance, workspaceId?: string, sessionClient?: ApiClient) {
+    this.transport = transport
+    this.workspaceId = workspaceId
+    this.sessionClient = sessionClient
+    this.resourceKey = workspaceId ? 'workspace:' + workspaceId : 'legacy'
+  }
+
+  forWorkspace(id: string) {
+    if (!/^[1-9][0-9]*$/.test(id) || BigInt(id) > 9223372036854775807n) throw new ApiError('Invalid company.')
+    return new ApiClient(this.transport, id, this.sessionClient ?? this)
+  }
+
+  cancelRequests() { this.controller.abort(); this.controller = new AbortController() }
+
+  directory<T>(config: AxiosRequestConfig): Promise<T> {
+    if (!/^\/workspaces(?:\?|$|\/[1-9][0-9]*$)/.test(config.url ?? '')) throw new ApiError('Invalid company request.')
+    return (this.sessionClient ?? this).dispatch<T>(config, true, '/api/v2')
+  }
 
   onUnauthorized(listener: () => void) {
     this.unauthorized.add(listener)
@@ -72,9 +100,19 @@ export class ApiClient {
   }
 
   async request<T>(config: AxiosRequestConfig, notifyUnauthorized = true): Promise<T> {
+    if (this.workspaceId) {
+      if (!/^\/(projects|tasks|dashboard|activity|members|audit|ownership|leave|policy|invitations)(?:[/?]|$)/.test(config.url ?? '')) throw new ApiError('Invalid company resource.')
+      const signal = config.signal ? AbortSignal.any([config.signal as AbortSignal, this.controller.signal]) : this.controller.signal
+      return this.sessionClient!.dispatch<T>({ ...config, signal }, notifyUnauthorized, '/api/v2/workspaces/' + this.workspaceId)
+    }
+    return this.dispatch<T>(config, notifyUnauthorized, '/api/v1')
+  }
+
+  private async dispatch<T>(config: AxiosRequestConfig, notifyUnauthorized: boolean, baseURL: string): Promise<T> {
     // Relative API paths only: never attach cookies/CSRF tokens to a caller-supplied origin.
     if (!config.url?.startsWith('/') || config.url.startsWith('//') || config.url.includes('\\'))
       throw new ApiError('Invalid API request.')
+    if (config.signal?.aborted) throw new ApiError('The company changed. Please try again.')
     const identity = this.identityVersion
     const unsafe = !['get', 'head', 'options'].includes((config.method ?? 'get').toLowerCase())
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -82,8 +120,9 @@ export class ApiClient {
         const headers = AxiosHeaders.from(config.headers as RawAxiosHeaders | undefined)
         if (unsafe) headers.set('X-CSRF-TOKEN', await this.csrf())
         // A draft must not be sent under an identity that changed during token acquisition.
+        if (config.signal?.aborted) throw new ApiError('The company changed. Please try again.')
         if (identity !== this.identityVersion) throw new ApiError('Your account changed. Please try again.')
-        return (await this.transport.request<T>({ ...config, baseURL: "/api/v1", withCredentials: true, headers })).data
+        return (await this.transport.request<T>({ ...config, baseURL, withCredentials: true, headers })).data
       } catch (error) {
         const failure = asApiError(error)
         // Retry only an explicit CSRF rejection, never a network/server failure or an arbitrary write.
@@ -100,6 +139,14 @@ export class ApiClient {
     }
     throw new ApiError('Please try the request again.')
   }
+
+  accountCapabilities() { return this.request<AccountCapabilities>({ url: '/auth/capabilities' }, false) }
+  accountSecurity() { return this.request<AccountSecurity>({ url: '/auth/security' }) }
+  requestAccountMail(email: string, recovery: boolean) { return this.request<void>({ url: recovery ? '/auth/forgot-password' : '/auth/request-verification', method: 'post', data: { email } }, false) }
+  confirmEmail(link: AccountToken) { return this.request<void>({ url: '/auth/confirm-email', method: 'post', data: link }, false) }
+  resetPassword(values: AccountReset) { return this.request<void>({ url: '/auth/reset-password', method: 'post', data: values }, false) }
+  changePassword(currentPassword: string, newPassword: string, signal?: AbortSignal, code?: string) { return this.request<void>({ url: '/auth/change-password', method: 'post', signal, data: { currentPassword, newPassword, ...(code ? { code } : {}) } }) }
+  reauthenticate(currentPassword: string, signal?: AbortSignal, code?: string) { return this.request<void>({ url: '/auth/reauthenticate', method: 'post', signal, data: { currentPassword, ...(code ? { code } : {}) } }) }
 
   updateProfile(displayName: string) { return this.request<Profile>({ url: '/users/me', method: 'patch', data: { displayName } satisfies ProfileUpdate }) }
 
@@ -129,3 +176,5 @@ export function createApiClient(adapter?: AxiosAdapter) {
 }
 
 export const api = createApiClient()
+
+export function revisionHeaders(version?: string) { return version ? { "X-Expected-Version": version } : {} }

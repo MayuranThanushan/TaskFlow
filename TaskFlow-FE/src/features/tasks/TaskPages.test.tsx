@@ -9,11 +9,11 @@ import { profile, reply, server } from '../../test/server'
 import type { TaskItem } from './types'
 const projectId = '9007199254741111'; const taskId = '9007199254741999'; const memberId = '9007199254741888'
 const base = '/projects/' + projectId
-const item = (title = 'First task', id = taskId): TaskItem => ({ id, projectId, title, description: null, status: 'ToDo', priority: 'Medium', assigneeId: null, dueDateUtc: null, createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z' })
+const item = (title = 'First task', id = taskId): TaskItem => ({ id, projectId, title, description: null, status: 'ToDo', priority: 'Medium', assigneeId: null, dueDateUtc: null, version: '1', createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z' })
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeErrors: { title: ['Please choose a valid title.'] } as Record<string, string[]>, writeStatus: 200, projectOwnerId: profile.id, createStatus: 201, listWait: null as Promise<void> | null, listQueries: [] as string[], membersStatus: 200, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
+  const state = { tasks, posts: [] as Record<string, unknown>[], wait: null as Promise<void> | null, writes: [] as { path: string; method: string; data: Record<string, unknown> | undefined }[], writeWait: null as Promise<void> | null, writeErrors: { title: ['Please choose a valid title.'] } as Record<string, string[]>, writeStatus: 200, writeCode: undefined as string | undefined, revisions: [] as unknown[], projectOwnerId: profile.id, createStatus: 201, listWait: null as Promise<void> | null, listQueries: [] as string[], membersStatus: 200, listStatus: 200, detailStatus: 200, projectStatus: 200, currentProfile: { ...profile }, calls: [] as string[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
     if (config.url?.startsWith('/auth/')) return auth.adapter(config)
@@ -34,8 +34,8 @@ function setup(path = base + '/tasks', tasks: TaskItem[] = [], authenticated = t
       return reply(config, 200, { items: items.slice((page - 1) * pageSize, page * pageSize), page, pageSize, totalCount: items.length, totalPages: Math.ceil(items.length / pageSize) })
     }
     if (config.method === 'patch' || config.method === 'delete') {
-      const data = config.data ? JSON.parse(config.data) : undefined; state.writes.push({ path: path.pathname, method: config.method, data }); await state.writeWait
-      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { errors: state.writeErrors })
+      state.revisions.push(config.headers.get('X-Expected-Version')); const data = config.data ? JSON.parse(config.data) : undefined; state.writes.push({ path: path.pathname, method: config.method, data }); await state.writeWait
+      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { errors: state.writeErrors, code: state.writeCode })
       const found = state.tasks.find(task => '/tasks/' + task.id === path.pathname.replace(/\/status$/, ''))
       if (!found) return reply(config, 404)
       if (config.method === 'delete') { state.tasks = state.tasks.filter(task => task !== found); return reply(config, 204) }
@@ -218,4 +218,23 @@ describe('Task pages', () => {
     fireEvent(window, new Event('focus')); expect(await screen.findByRole('heading', { name: 'Task or project not available.' })).toBeVisible()
     await act(async () => { release() }); expect(screen.getByTestId('location')).toHaveTextContent(base + '/tasks/new'); expect(screen.queryByDisplayValue('Private draft')).not.toBeInTheDocument()
   })
+})
+
+
+it('rebases a task draft without overwriting newer priority or losing precise deadlines', async () => {
+  const original = item(); const state = setup('/tasks/' + original.id + '/edit', [original]), user = userEvent.setup()
+  const title = await screen.findByLabelText('Task title'); await user.clear(title); await user.type(title, 'My task draft')
+  state.tasks = [{ ...original, version: '2', priority: 'High', dueDateUtc: '2026-12-01T10:00:00.123456Z' }]
+  state.writeStatus = 409; state.writeCode = 'resource.conflict'
+  await user.click(screen.getByRole('button', { name: 'Save changes' }))
+  await screen.findByRole('region', { name: 'Resolve editing conflict' })
+  expect(title).toHaveValue('My task draft')
+  await user.click(screen.getByRole('button', { name: 'Compare latest version' }))
+  await screen.findByRole('button', { name: 'Keep my edits' })
+  await user.click(screen.getByRole('button', { name: 'Keep my edits' }))
+  expect(screen.getByLabelText('Priority', { exact: true })).toHaveValue('High')
+  state.writeStatus = 200
+  await user.click(screen.getByRole('button', { name: 'Save changes' }))
+  await screen.findByRole('heading', { name: 'My task draft' })
+  expect(state.revisions).toEqual(['1', '2']); expect(state.writes[1].data).toEqual({ title: 'My task draft' })
 })

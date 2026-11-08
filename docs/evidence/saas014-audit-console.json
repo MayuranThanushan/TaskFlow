@@ -1,0 +1,172 @@
+{
+  "task": "SaaS-014",
+  "date": "2026-11-01",
+  "sourceBaseRevision": "494b761dc0c20a0fb4502f8e2e0e3626bc382a4c",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local isolated MySQL, published Production HTTPS app and synthetic fixtures only. No live customer/development migration, hosted CI/CodeQL/container execution, selected-host deployment or completed tenant cutover claimed. All company preview flags remain default off.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "817d56cf646325296c0c8a26fba844283eb556d1e788a758f4d757c35b55a4e8",
+    "README.md": "6abca4ca0765177e936d5dc7744e1ebefc6f94596bf15102c7f475353912c746",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "928b7c71ec2b60ff0605746803ed5c04666a507abf1954ab979c01c2aac72ff0",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/WorkspaceAuditConsoleController.cs": "3e5085134c3744736ec47395eb39111e3c1544a645d0d39a80dcb01c9b0a6b50",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceAuditConsole.cs": "a924d59a0a6fcea6b4de388502e37a87fbd93b4ca0b64b2eee53a6e41e106230",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "f8efd78430fd765b340d1bc7d3d97cc9fd14b192a359c315a803cdd6fbb55e31",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceAuditConsole.cs": "7845682527d337c66769075cbefc305c19e600bb29956e650be00b129e8c59c1",
+    "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs": "00ab21586c5dfcee57b35b07ea360f6772abdf16181311fe1c21bfa6c0e2f668",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.AuditConsole.cs": "e963e13b941fbaff3bc77478ffaf7f3e38fa8a15dab143612a28582839c880a7",
+    "TaskFlow-FE/src/api/generated.d.ts": "36f38bf957e038a88dc975cf64523ac9b1a8b8a13032ac9f65e21ec7643b2c7f",
+    "TaskFlow-FE/src/features/companies/CompanyAuditPage.test.tsx": "a078db14ba4198ce12158db6e55eac0a9a2518a5bb9512c2aabf35d7e24dfaf6",
+    "TaskFlow-FE/src/features/companies/CompanyAuditPage.tsx": "33209eea40bd376fbd690e0278f754ab1c7d2a740235580c5192e0b0fa364697",
+    "TaskFlow-FE/src/features/companies/LifecyclePages.tsx": "a737b59083d16a115c74324835da15822b54ff78df9e9734b4021df977a9605c",
+    "TaskFlow-FE/src/workspace.css": "5d3d3379f66e6e30f68b8ed7fb329fde5bd273a7572c84e2296fb2375ac5c708",
+    "docs/contracts/README.md": "3e63bd90e8bcce6315b6fc972040765a8078c9c15d01f9c6964dd6c1027c5d73",
+    "docs/contracts/openapi.json": "647aa7917cc592f1b71ce926f6a0bee0effe8b5b0d50d1a071a7abdf311e79e0",
+    "docs/saas/audit-console.md": "91666426a0ba1e3910cdf6df7a9ba40bd2ef6b0cf12ec120413da3d0249ec017",
+    "docs/saas/permissions.md": "4342ec7f772539ab015feff4cf6730de3c27712c966e413c72eb6d91a1eb6155",
+    "docs/saas/structured-audit.md": "3a7e81ae79d1a9f9cd044920b2297578b1d4478dd794617a4518323a0f4df5c2",
+    "scripts/export_openapi.py": "b1b41f6f61d82c4e71af75c1df65736c9bf283de1241acd384b8fdf5fa7834ff",
+    "tests/browser/README.md": "018b47aa1854750b9929c7b2bff012d6a725347b7044b4e663f333c5cc6723d9",
+    "tests/browser/audit-console.cjs": "0e3cbc5d7064449c225f4ed17d1f9a6f8ae68c7ba87e4307aa43c6484ead6fc7"
+  },
+  "verification": {
+    "backendFull": {
+      "passed": 205,
+      "failed": 0,
+      "skipped": 0,
+      "report": "TestResults/saas014-backend/backend.trx"
+    },
+    "additionalTimestampRegression": {
+      "passed": 1,
+      "failed": 0,
+      "report": "TestResults/saas014-final/backend.trx",
+      "qualification": "Added after the full run; production backend source unchanged. Covers offset equivalence, microsecond inward rounding and maximum timestamp."
+    },
+    "frontend": {
+      "passed": 120,
+      "failed": 0,
+      "typecheck": true,
+      "lint": true,
+      "previewBuild": true,
+      "report": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 33,
+      "failed": 0,
+      "qualification": "Includes synthetic CodeQL-report validator tests, not an actual CodeQL analysis."
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "contract": {
+      "paths": 39,
+      "operations": 55,
+      "snapshotAndGeneratedTypesMatch": true,
+      "inventoryUpdated": true
+    },
+    "publishedHttps": {
+      "strictTls": true,
+      "productionAssetsAndDeepLinks": true,
+      "csrfAndSecureCookie": true,
+      "logoutAndCookieReplay": true,
+      "browserReports": {
+        "companies": {
+          "checks": [
+            "protected company return URL",
+            "atomic create with Owner role",
+            "two company switching",
+            "scoped project/task CRUD links",
+            "reload deep link",
+            "empty company isolation",
+            "mixed-company resource denied"
+          ],
+          "accessibilityLayoutScans": 8,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "lifecycle": {
+          "checks": [
+            "Viewer read-only controls",
+            "Editor upgrade",
+            "eligible assignment",
+            "suspension and immediate request denial",
+            "reactivation without assignment restoration",
+            "password-protected project transfer",
+            "password-protected company transfer",
+            "former owner departure",
+            "removed member denied",
+            "redacted retained audit"
+          ],
+          "accessibilityLayoutScans": 6,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "structured-audit": {
+          "checks": [
+            "versioned governance",
+            "safe task deltas",
+            "request correlation",
+            "private value redaction",
+            "expanded audit UI"
+          ],
+          "accessibilityLayoutScans": 2,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        },
+        "audit-console": {
+          "checks": [
+            "intersected URL filters",
+            "expanded safe deltas",
+            "authenticated JSON download",
+            "exact string IDs",
+            "private value redaction",
+            "deleted-only empty state"
+          ],
+          "accessibilityLayoutScans": 2,
+          "violations": 0,
+          "overflow": false,
+          "pageErrors": 0
+        }
+      },
+      "automatedAccessibilityQualification": "Automated scan results are not human accessibility certification."
+    },
+    "securityPrivileges": {
+      "exportedRecords": 17,
+      "runtimeSecurityPayloadReadDenied": true,
+      "runtimeSecurityUpdateDenied": true,
+      "runtimeGovernanceDeleteDenied": true,
+      "securityReaderProjectReadDenied": true,
+      "securityReaderUpdateDenied": true,
+      "sensitiveCanariesAbsent": true
+    }
+  },
+  "schema": "No new migration or grant required. Rehearsal applied all five existing migrations to owned disposable schemas; existing StructuredAudit migration remains a prerequisite. No populated-backup upgrade rerun claimed for this schema-unchanged release.",
+  "designDecision": "Bounded synchronous ready-on-request export tickets instead of a durable/background queue. No server-side audit file cache or job database. Durable delivery remains with SaaS-017 workers/outbox.",
+  "exportControls": {
+    "maximumRecords": 1000,
+    "ticketMinutes": 5,
+    "actorAndCompanyBound": true,
+    "currentAuthorizationRecheckedAtDownload": true,
+    "higherEventIdsExcludedAfterTicket": true,
+    "truncationExplicit": true,
+    "csrfProtectedPost": true,
+    "noStore": true,
+    "securityEventsExcluded": true,
+    "privateRawDetailsExcluded": true,
+    "qualification": "Current grants and state can reduce/change results; watermark is not an immutable transaction/content snapshot. Tickets are replayable until expiry, with authorization repeated each time."
+  },
+  "artifacts": {
+    "publishedApiSha256": "a3b0bd269c2fa0878fe3429bbdfdad6d9ef41016391c81999e03fc4f2a9bc827",
+    "publishedIndexSha256": "13a7d02b4d97409195353b065ce8a4beb877b2cba858873f7ececf984552028a"
+  },
+  "cleanup": "Only owned temporary HTTPS process, synthetic schemas and random runtime/reader accounts were removed. Existing user services/databases retained. No credentials, certificates, key rings, protected tickets or private NDJSON committed.",
+  "releaseGates": [
+    "Fresh hosted CI/security/preview-browser results.",
+    "Selected-host load/query plans, shared Data Protection keys, distributed rate controls, monitoring and recovery.",
+    "Human accessibility and privacy review, pilot quotas and coordinated tenant cutover."
+  ],
+  "next": "SaaS-015: expected-version conflicts and draft-preserving conflict resolution"
+}

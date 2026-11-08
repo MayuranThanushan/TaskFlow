@@ -13,8 +13,12 @@ public abstract class AuditableEntity : IAuditable
     public DateTime UpdatedAtUtc { get; set; }
 }
 
-public sealed class Project : AuditableEntity
+public interface IVersionedResource { long Version { get; set; } }
+
+public sealed class Project : AuditableEntity, IVersionedResource
 {
+    public long Version { get; set; } = 1;
+    public long? WorkspaceId { get; set; }
     public long OwnerId { get; set; }
     public string Name { get; set; } = "";
     public string? Description { get; set; }
@@ -23,15 +27,19 @@ public sealed class Project : AuditableEntity
 
 public sealed class ProjectMember
 {
+    public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
     public long UserId { get; set; }
     public MembershipRole Role { get; set; } = MembershipRole.Member;
     public DateTime JoinedAtUtc { get; set; }
+    public DateTime? RevokedAtUtc { get; set; }
     public Project Project { get; set; } = null!;
 }
 
-public sealed class TaskItem : AuditableEntity
+public sealed class TaskItem : AuditableEntity, IVersionedResource
 {
+    public long Version { get; set; } = 1;
+    public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
     public Project Project { get; set; } = null!;
     public long? AssigneeId { get; set; }
@@ -43,8 +51,16 @@ public sealed class TaskItem : AuditableEntity
     public DateTime? DeletedAtUtc { get; set; }
 }
 
-public sealed class ActivityLog
+public sealed class ActivityLog : IVersionedAudit
 {
+    public int SchemaVersion { get; set; }
+    public string? Outcome { get; set; }
+    public string? CorrelationId { get; set; }
+    public string? SubjectType { get; set; }
+    public string? SubjectId { get; set; }
+    public string? ChangesJson { get; set; }
+
+    public long? WorkspaceId { get; set; }
     public long Id { get; set; }
     public long ProjectId { get; set; }
     public Project Project { get; set; } = null!;
@@ -58,9 +74,10 @@ public sealed class ActivityLog
 
 public enum TaskState { ToDo, InProgress, Done }
 public enum TaskPriority { Low, Medium, High }
-public enum MembershipRole { Member }
+public enum MembershipRole { Member, Editor, Viewer }
 public enum ActivityAction
 {
     ProjectCreated, ProjectUpdated, ProjectDeleted, MemberAdded, MemberRemoved,
-    TaskCreated, TaskUpdated, TaskAssigned, TaskUnassigned, TaskStatusChanged, TaskDeleted
+    TaskCreated, TaskUpdated, TaskAssigned, TaskUnassigned, TaskStatusChanged, TaskDeleted,
+    MemberRoleChanged, ProjectOwnershipTransferred
 }

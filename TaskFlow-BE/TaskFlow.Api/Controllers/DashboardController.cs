@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow.Application.Features.Dashboard;
 namespace TaskFlow.Api.Controllers;
 
+[Authorize]
 [ApiController, Route("api/v1/dashboard")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class DashboardController(IDashboardService dashboard) : ControllerBase

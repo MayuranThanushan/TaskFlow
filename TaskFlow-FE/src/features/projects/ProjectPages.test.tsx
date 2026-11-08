@@ -10,11 +10,11 @@ import { profile, reply, server } from '../../test/server'
 import type { ProjectDetails } from './types'
 
 const project = (name = 'Launch', id = '9007199254741111'): ProjectDetails => ({ id, name, description: 'A useful project', ownerId: profile.id,
-  createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z', totalTasks: 8, completedTasks: 1, progressPercentage: 13 })
+  version: '1', createdAtUtc: '2026-10-18T08:00:00Z', updatedAtUtc: '2026-10-18T08:00:00Z', totalTasks: 8, completedTasks: 1, progressPercentage: 13 })
 function Location() { const location = useLocation(); const navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate(-1)}>Browser back</button></> }
 function setup(path = '/projects', projects: ProjectDetails[] = [], authenticated = true) {
   const auth = server(authenticated)
-  const state = { members: [{ userId: profile.id, displayName: profile.displayName, role: 'Owner', joinedAtUtc: '2026-10-18T08:00:00Z' }], memberStatus: 200, memberWait: null as Promise<void> | null, memberCalls: [] as InternalAxiosRequestConfig[], projects, listStatus: 200, createStatus: 201, writeStatus: 200, wait: null as Promise<void> | null,
+  const state = { members: [{ userId: profile.id, displayName: profile.displayName, role: 'Owner', joinedAtUtc: '2026-10-18T08:00:00Z' }], memberStatus: 200, memberWait: null as Promise<void> | null, memberCalls: [] as InternalAxiosRequestConfig[], projects, listStatus: 200, createStatus: 201, writeStatus: 200, writeCode: undefined as string | undefined, wait: null as Promise<void> | null,
     currentProfile: { ...profile }, posts: [] as object[], calls: [] as InternalAxiosRequestConfig[] }
   const client = createApiClient(async config => {
     if (config.url === '/auth/me') return reply(config, auth.state.authenticated ? 200 : 401, state.currentProfile)
@@ -37,7 +37,7 @@ function setup(path = '/projects', projects: ProjectDetails[] = [], authenticate
     }
     if (config.method === 'put' || config.method === 'delete') {
       await state.wait
-      if (state.writeStatus !== 200) return reply(config, state.writeStatus)
+      if (state.writeStatus !== 200) return reply(config, state.writeStatus, { code: state.writeCode })
       const found = state.projects.find(item => '/projects/' + item.id === url.pathname)
       if (!found) return reply(config, 404)
       if (found.ownerId !== state.currentProfile.id) return reply(config, 403)
@@ -266,5 +266,42 @@ describe('Project pages', () => {
     expect(await screen.findByRole('heading', { name: 'No projects match your search.' })).toBeVisible()
     await userEvent.click(screen.getByRole('link', { name: 'Reset' }))
     expect(await screen.findByRole('link', { name: 'Launch' })).toBeVisible()
+  })
+})
+
+
+describe('project revision conflicts', () => {
+  it('keeps the draft, compares latest and rebases untouched fields only after explicit review', async () => {
+    const original = { ...project(), version: '9007199254741111' }
+    const state = setup('/projects/' + original.id + '/edit', [original]), user = userEvent.setup()
+    const name = await screen.findByLabelText('Project name'); await user.clear(name); await user.type(name, 'My draft')
+    state.projects = [{ ...original, description: 'Latest server brief', version: '9007199254741112' }]
+    state.writeStatus = 409; state.writeCode = 'resource.conflict'
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('draft is kept')
+    expect(name).toHaveValue('My draft'); expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled()
+    expect(state.calls.filter(c => c.method === 'put')).toHaveLength(1)
+    await user.click(screen.getByRole('button', { name: 'Compare latest version' }))
+    await screen.findByText('Latest server brief')
+    await user.click(screen.getByRole('button', { name: 'Keep my edits' }))
+    expect(screen.getByLabelText(/Description/)).toHaveValue('Latest server brief')
+    expect(name).toHaveValue('My draft')
+    state.writeStatus = 200
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    await screen.findByRole('heading', { name: 'My draft' })
+    const puts = state.calls.filter(c => c.method === 'put')
+    expect(puts.map(c => c.headers.get('X-Expected-Version'))).toEqual(['9007199254741111', '9007199254741112'])
+    expect(JSON.parse(puts[1].data)).toEqual({ name: 'My draft', description: 'Latest server brief' })
+  })
+  it('retains a conflict draft when latest access is lost and offers no rebase', async () => {
+    const original = project(); const state = setup('/projects/' + original.id + '/edit', [original]), user = userEvent.setup()
+    const name = await screen.findByLabelText('Project name'); await user.clear(name); await user.type(name, 'Keep safely')
+    state.writeStatus = 409; state.writeCode = 'resource.conflict'
+    await user.click(screen.getByRole('button', { name: 'Save changes' })); await screen.findByRole('region', { name: 'Resolve editing conflict' })
+    state.projects = []
+    await user.click(screen.getByRole('button', { name: 'Compare latest version' }))
+    await screen.findByText(/Your draft has been kept/)
+    expect(name).toHaveValue('Keep safely'); expect(screen.queryByRole('button', { name: 'Keep my edits' })).not.toBeInTheDocument()
+    expect(state.calls.filter(c => c.method === 'put')).toHaveLength(1)
   })
 })

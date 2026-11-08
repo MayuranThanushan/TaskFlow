@@ -17,7 +17,7 @@ public sealed partial class ProjectApiTests
         Assert.Equal(HttpStatusCode.Created, response.StatusCode); var task = await Body(response);
         Assert.Equal("First", task.GetProperty("title").GetString()); Assert.Equal("ToDo", task.GetProperty("status").GetString()); Assert.Equal("Medium", task.GetProperty("priority").GetString());
         Assert.Equal(JsonValueKind.Null, task.GetProperty("description").ValueKind); Assert.Equal(JsonValueKind.Null, task.GetProperty("assigneeId").ValueKind); Assert.Equal(JsonValueKind.Null, task.GetProperty("dueDateUtc").ValueKind);
-        Assert.Equal(10, task.EnumerateObject().Count()); Assert.Equal(id, task.GetProperty("projectId").GetString());
+        Assert.Equal(11, task.EnumerateObject().Count()); Assert.Equal(id, task.GetProperty("projectId").GetString());
         Assert.Equal("/api/v1/tasks/" + task.GetProperty("id").GetString(), response.Headers.Location!.AbsolutePath);
         Assert.Equal(task.ToString(), (await Body(await owner.GetAsync(response.Headers.Location))).ToString());
         await Body(await host.MemberWriteAsync(owner, HttpMethod.Post, path + "/members", new { userId = host.Users[1].Id.ToString() }));

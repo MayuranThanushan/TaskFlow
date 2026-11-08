@@ -1,0 +1,154 @@
+{
+  "task": "SaaS-010",
+  "date": "2026-10-27",
+  "sourceBaseRevision": "bb564ff916a42472222896edc532690166561412",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local default-off scoped write preview, composite FK migration, transactional race/rollback tests and a populated synthetic backup upgrade. No live/customer DB migration or coordinated company cutover claimed.",
+  "verifiedSourceSha256NormalizedLf": {
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceWrites.cs": "34ed065f59f3bfbc1aea46c2aab8bf22f52f8c223e0e39afe10ae4d28b680782",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceWrites.cs": "461524b11bd8a4e5a39dba73d05bbb5ce69f54a5e664e0df07ba6a76db76c17f",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs": "4487fe8b7a0ecaa17e8ef83112bef726d9576b7e481f70341810c7a12a87f074",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "3d1b0c7b4819e06da501a0c32c39a0a5da8054f70da947d8f74325e4c7c7f74b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261027144903_WorkspaceReferences.cs": "6d7a5e48aa803009ea0b5600a2c577a1fdf386c2ae88d6bb930b9fe39e84b894",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/WorkspaceWritesController.cs": "6bb27f6f863aff349438f95bf5cebe5cce2ac88d35fa29b847964273f45781b8",
+    "TaskFlow-BE/TaskFlow.Api/Filters/WorkspaceWriteFilter.cs": "44630e7165bb2d60bce05e672905ff863cf785398a64e467a13a426dc17acbb7",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/TaskInputParser.cs": "0a758ac3baccb800569717edd722503ff130200743b7581f59e8722d24bed45a",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "0fc732bdf0c491f626d2e0fcf240e5e7578f313de46187f08f2771fa36543fc1",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractDocumentTransformer.cs": "d93a0bb741f7357d4efd4b1649f8186704f4aa5dfb50b316bd909aab95dcd5fb",
+    "TaskFlow-BE/TaskFlow.Api/appsettings.json": "1ceb119dc4dfb8c63a711937837a90329706927f057d5bd5d27e9890027faaa5",
+    "TaskFlow-BE/TaskFlow.Api/Extensions/ApiServiceExtensions.cs": "7e5ba19ac6f409aa1d82337718ad34daec91c3d4ffb2d8393377c0c51f06e5cb",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs": "b43c7338bfd79349a63c0f504a0f679f20de827731c3a5ac1669c3e4548867f0",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs": "61b78b548fafb46f9acba629f41b1b643c78ca3a6cea5e710b169836e6d6f25c",
+    "TaskFlow-BE/TaskFlow.Tests/WorkspaceBackfillTests.cs": "e688273a2c174e3a11cdafe09b4aebc25cbc11cc255015c5c0cbdcc0ffb30241",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "ab6255e024e272a6f77e58d501fc4d3f906cdc5df5d56609e89bfd9b1152441f",
+    "docs/contracts/openapi.json": "7056b751a3dec77f4cc4421590128d1be1c3aa775f3bdf5c2045163ea4a728be",
+    "TaskFlow-FE/src/api/generated.d.ts": "99dbc94fb3ba0b596f39d76de3b80f060552a5f8a13b1284b03a9e75b64ef7ba",
+    "TaskFlow-FE/src/api/contract.typecheck.ts": "76520f3d014cf93209360420a1a993c6e737b0bf065ac42f5db5713b43db3cf5",
+    "scripts/export_openapi.py": "4596eb8bf156f51bf979170b845bc7890909060c8a7cb1e7cca45cc56da29ff5"
+  },
+  "implementation": {
+    "scopedWrites": 9,
+    "admission": "Both WorkspaceReads and WorkspaceWrites flags required; defaults false; authenticated actor plus current active workspace membership",
+    "scope": "Server-derived actor/workspace/parent/activity references; no client-supplied scope fields",
+    "transactions": "Fresh scope/context; read committed; workspace -> actor membership -> project -> affected row locking; shared mutation/event boundary",
+    "gateTradeoff": "Conservative per-workspace serialization; no production throughput claim",
+    "migration": "20261027144903_WorkspaceReferences",
+    "sqlCompositeConstraints": 6,
+    "constraintModel": "Explicit migration SQL constraints during nullable compatibility; actual FK presence/rejection tested; EF nullable alternate keys are not used",
+    "nonNullScope": "Pending coordinated legacy route/UI cutover",
+    "assignment": "Active company plus project eligibility, membership-removal cleanup, no stale-assignment restoration",
+    "history": "Global actor/deleted-task assignee references preserved; new activity actor/scope server-derived"
+  },
+  "checks": {
+    "backend": {
+      "passed": 175,
+      "failed": 0,
+      "skipped": 0,
+      "newHttpMySqlCases": 9,
+      "trx": "TestResults/saas010-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 95,
+      "failed": 0,
+      "junit": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 29
+    },
+    "frontendLintTypecheckBuild": "Passed; JS/CSS output filenames unchanged",
+    "generatedContractDrift": "Passed",
+    "contract": {
+      "paths": 28,
+      "operations": 42,
+      "scopedWriteTypeAssertions": "Passed; request bodies exclude owner/workspace fields"
+    },
+    "dependencies": [
+      {
+        "source": "nuget",
+        "passed": true,
+        "blockingFindings": []
+      },
+      {
+        "source": "frontend",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "browser-tools",
+        "passed": true,
+        "blockingFindings": {}
+      },
+      {
+        "source": "contract-tools",
+        "passed": true,
+        "blockingFindings": {}
+      }
+    ],
+    "publishedBrowserJourneys": [
+      {
+        "script": "authentication.cjs",
+        "passed": true,
+        "durationMs": 3413
+      },
+      {
+        "script": "journeys.cjs",
+        "passed": true,
+        "durationMs": 27165
+      },
+      {
+        "script": "profile.cjs",
+        "passed": true,
+        "durationMs": 64565
+      },
+      {
+        "script": "review.cjs",
+        "passed": true,
+        "durationMs": 22046
+      }
+    ],
+    "publishedWritesAndUpgrade": {
+      "populatedBackupUpgrade": true,
+      "priorProjectRows": 35,
+      "priorTaskRows": 245,
+      "sixCompositeConstraints": true,
+      "migrationIdempotent": true,
+      "newBinaryReadinessBeforeUpgradeRejected": true,
+      "realSessionCsrfProtectedCrud": true,
+      "guestExplicitProjectGrant": true,
+      "foreignMemberAndAssigneeRejected": true,
+      "mixedCompanyIdRejected": true,
+      "atomicAssignmentCleanup": true,
+      "removedGuestWriteDenied": true,
+      "scopedHistoryAndSoftDeletion": true,
+      "scopedActivityRowsVerified": true
+    },
+    "publishedAccessibility": {
+      "scans": 30,
+      "violations": 0,
+      "overflow": 0,
+      "incompleteNeedsHumanReview": 4
+    },
+    "databaseCompatibility": "Original-backfill tests pass under all three migrations; prior read fixtures now expect structural violations to be rejected by SQL and continue testing NULL/logical-invalid data as appropriate",
+    "migrationModelDrift": "Passed; custom SQL constraints separately inspected in live tests",
+    "releaseBuildWarningsAsErrors": "Passed: zero warnings and errors",
+    "workflowActionlint": "Passed"
+  },
+  "publishedPayloadSha256": {
+    "apiAssembly": "8867ae5dcdc95ab6422b986ecf545f0b4174be1a21624a122054e3b884448df3",
+    "infrastructureAssembly": "2560495ca07a198dbe7052aab0679e8eacb4bea9ce3b33ee41e579e76025fec1"
+  },
+  "cleanup": {
+    "temporaryHostsStopped": true,
+    "ownedRestoredSchemaRemoved": true,
+    "restartCookieRemoved": true,
+    "privateArtifacts": "Restricted restored keys, connection settings and mapping manifest kept in ignored local operator storage; no IDs/cookies/credentials copied into tracked evidence"
+  },
+  "remaining": [
+    "Selected-host/hosted CI/CodeQL/container verification",
+    "Company creation/switching and workspace-aware UI/resource keys (SaaS-011)",
+    "Company/project lifecycle and Editor/Viewer roles (SaaS-012)",
+    "Coordinated v1 retirement and NOT NULL enforcement before company pilot",
+    "ExpectedVersion conflicts (SaaS-015), atomic quotas and full tenancy matrix (SaaS-016)",
+    "Pilot hot-company contention measurements before approving operating limits"
+  ]
+}

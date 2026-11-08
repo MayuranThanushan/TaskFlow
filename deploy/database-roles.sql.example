@@ -10,10 +10,65 @@ CREATE USER 'taskflow_backup'@'%' IDENTIFIED BY '<generated-backup-password>';
 GRANT SELECT, SHOW VIEW ON taskflow.* TO 'taskflow_backup'@'%';
 
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow'@'%';
-GRANT SELECT, INSERT, UPDATE ON taskflow.* TO 'taskflow'@'%';
--- Membership removal physically deletes the join row; other business entities remain retained.
+-- Explicit table grants keep both history tables append-only and migration history read-only.
+GRANT INSERT, UPDATE ON taskflow.AspNetUsers TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetRoles TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserClaims TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetRoleClaims TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserRoles TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserLogins TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.AspNetUserTokens TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Workspaces TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.WorkspaceMemberships TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Projects TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.ProjectMembers TO 'taskflow'@'%';
+GRANT INSERT, UPDATE ON taskflow.Tasks TO 'taskflow'@'%';
+GRANT INSERT ON taskflow.ActivityLogs TO 'taskflow'@'%';
+GRANT INSERT ON taskflow.WorkspaceAuditLogs TO 'taskflow'@'%';
+-- Security events have no browser reader. Runtime can append, never read or amend.
+GRANT SELECT ON taskflow.AspNetUsers TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetRoles TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetUserClaims TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetRoleClaims TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetUserRoles TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetUserLogins TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.AspNetUserTokens TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.Workspaces TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.WorkspaceMemberships TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.Projects TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.ProjectMembers TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.Tasks TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.ActivityLogs TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.WorkspaceAuditLogs TO 'taskflow'@'%';
+GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow'@'%';
+GRANT INSERT ON taskflow.SecurityEvents TO 'taskflow'@'%';
+-- EF's generated-key retrieval may read only Id, never security payload columns.
+GRANT SELECT (Id) ON taskflow.SecurityEvents TO 'taskflow'@'%';
+
+CREATE USER 'taskflow_security_audit'@'%' IDENTIFIED BY '<generated-private-security-audit-password>';
+GRANT SELECT ON taskflow.SecurityEvents TO 'taskflow_security_audit'@'%';
+-- Legacy membership removal physically deletes join rows; lifecycle writes retain revoked grants.
 -- Apply this grant only after migrations created the table.
 GRANT DELETE ON taskflow.ProjectMembers TO 'taskflow'@'%';
 -- Verify SHOW GRANTS before rollout. Never give the app the migration or backup credentials.
 -- A recovery operator needs schema CREATE/DDL/DML rights on one explicitly named, new
 -- taskflow_restore_* destination. Grant runtime access there only after recovery verification.
+
+-- PilotGates has one seeded admission row. This MySQL locking read needs UPDATE privilege;
+-- runtime never changes the Id and receives no INSERT/DELETE permission on this table.
+GRANT SELECT, UPDATE (Id) ON taskflow.PilotGates TO 'taskflow'@'%';
+
+-- Producer may append intent/work atomically, but cannot lease, acknowledge, replay or read payloads.
+GRANT INSERT, SELECT (Id) ON taskflow.OutboxEvents TO 'taskflow'@'%';
+GRANT INSERT, SELECT (Id, AvailableAtUtc) ON taskflow.OutboxDeliveries TO 'taskflow'@'%';
+
+-- SaaS-019: encrypted global account mail jobs. API can enqueue and cancel only.
+GRANT SELECT, INSERT ON taskflow.AccountEmailJobs TO 'taskflow'@'%';
+GRANT UPDATE (State, ProtectedPayload, LeaseToken, LeaseExpiresAtUtc, LastCode) ON taskflow.AccountEmailJobs TO 'taskflow'@'%';
+
+-- SaaS-020 invitation authority stays in API; all payloads are private.
+GRANT SELECT, INSERT, UPDATE ON taskflow.WorkspaceInvitations TO 'taskflow'@'%';
+GRANT INSERT, SELECT (Id) ON taskflow.InvitationTransitions TO 'taskflow'@'%';
+
+-- SaaS-022: private account MFA material; never grant workers/readers access.
+GRANT SELECT, INSERT, UPDATE ON taskflow.AccountMfa TO 'taskflow'@'%';

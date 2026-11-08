@@ -16,6 +16,7 @@ public sealed class AntiforgeryProblemFilter(IAntiforgery antiforgery) : IAsyncA
         try { await antiforgery.ValidateRequestAsync(context.HttpContext); }
         catch (AntiforgeryValidationException)
         {
+            context.HttpContext.Items["security.csrf_rejected"] = true;
             var problem = new ValidationProblemDetails(new Dictionary<string, string[]>
             {
                 ["csrf"] = ["A valid CSRF token is required. Refresh the token and retry."]

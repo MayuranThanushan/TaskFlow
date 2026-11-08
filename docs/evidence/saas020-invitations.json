@@ -1,0 +1,126 @@
+{
+  "task": "SaaS-020",
+  "date": "2026-11-05",
+  "sourceBaseRevision": "342fc8e2f4141be18c017df6eafab0f89461ad7a",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local isolated MySQL and published HTTPS Staging invitation API/capture only. No invitation UI, real recipients/provider, live database changes or tenant cutover.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "e09e62c343c1ffe6302e6c61e84686e4ed71e8447ed23074d0a9fa731407b3b6",
+    "README.md": "ac454f37ba908454bf7125d6972eeb133de97a33c0d5643acc416704740ac1ca",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs": "db00d10b762dbe815b063cb0865e4aaba166210bb6943ef5df928e8d86d7a426",
+    "TaskFlow-BE/TaskFlow.Api/Contracts/ContractSchemaTransformer.cs": "fc74528164e4e6e8035bb27d0107b336d956b57a1008d62a8e12689107703499",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/InvitationsController.cs": "8adf14ec7cc9fa206a336296e66376c1d1962f2dcac83a788f6698b357f4f7fb",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/GlobalExceptionHandler.cs": "febfa267e2949f01b7fa6560254d827e92e39affaf5cfea946942612c3987246",
+    "TaskFlow-BE/TaskFlow.Application/Features/Email/IEmailSender.cs": "523b88a47b63f6aed91ca67f7100254f02768f7291092814ddffcaacd1c06f4c",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceInvitations.cs": "4929f936c726cfba89031e9c10942d7498a58702cc4728b107f52698b2ec5e07",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/WorkspaceInvitation.cs": "27b506d4bd347b19fe6dae33fee5c8bbe1c4368ad1da87428770c29380c5f5dd",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "c9d5e85157dbc6face11b6ef6539381ae39b55f075363ab51efd6207c684c21c",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/EmailTemplates.cs": "debe7a57ee476fca6dc44792edb4e578c7ee0cf0c6039a93225f077216f19b2a",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Email/InvitationMailCapture.cs": "6055b8b1ecf6a4aa04c8ee96772f8f0f29fa210c3a5c322dc12b93c6dc59df10",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Outbox/OutboxEnqueue.cs": "906f18fe5bfefe5317a8b061329a603233fa9dbe723c01468c3318e117f6ea53",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/AuditCapture.cs": "628fedd9aadc5af729772c3c35960622f72721766d766de9ec52416e18f017fa",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/InvitationConfiguration.cs": "935a243964dd3cb6ce4a540461e5de22c9ffba7a83b03385b66ef8cc5bc19d19",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261105141627_WorkspaceInvitations.Designer.cs": "9402fa1aa01fe3ecbca5c38f7065b7c670b5352ad8a5a43656b4daa36b24b3d0",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261105141627_WorkspaceInvitations.cs": "6a18faf2cdb1ce334fa78e077691c5522553c294308feea6ca755e82fd79b002",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "e0be4c6f413bcbdf27fb6a63ab008a77f65ac7f2e8337b872edd2362a50f3f28",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "41c5c92699075ddb20b61b8fe1b0cdcca199bfc315e30863ab0df58e3e71623e",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/InvitationPolicy.cs": "99beb05313df015e3cbff6e17b21989bbaedeca8d3f549dcac84691a367e3d3e",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/PilotQuotas.cs": "bd97badbd769135411aa1e4757625e8a7b2fa73870abca313b1690b607c379ef",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceInvitations.cs": "e8fc0cdf72cf1e441eb9ad3f21f38257f5a1fb80a444bb7243a4c69b89b33116",
+    "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs": "37c71c06f761ef2d5c07786bcbffb73c568cf9c860f21406b94bbed5dbabbcd4",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs": "4c98fb2aa68122af96cdf79a9cdb50a46587130aac541bbbdd13bbfa190960a7",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "2013bcefd9aaead346262dcceaa7574cc20e4b7e719d5fa6ea90dca6b8948e2a",
+    "TaskFlow-BE/TaskFlow.Worker/Program.cs": "23880f35f9dab163024787d83d43ac3f314c9400d8a05bbc969b79986e5f3421",
+    "TaskFlow-FE/src/api/generated.d.ts": "9f4be628302b98bfd07f38ab447330656a930a792bfe140db2fca2184c18a392",
+    "deploy/database-roles.sql.example": "69dbfff3f26bd660737d0cee7bc78f301f1185ad700a2aede7e3d6f477ca0034",
+    "deploy/invitation-mail-roles.sql.example": "d6f2c0b921cf7c575bfbeb4759693c2c430079564ab5b7156b7cbf17c56f52b4",
+    "docs/contracts/README.md": "758b8d2c00c123e45e658f14371cde2ee5497fd370aa65090333532a6cbf44cd",
+    "docs/contracts/openapi.json": "74f77614007d750b8be87dff4010e9f1b25328272111c1bf01c05e79d2c7401a",
+    "docs/saas/invitations.md": "2eaf598a8a62cb0687ff03d9c3a715d06339313b560a0e995ead222df9c41d74",
+    "docs/saas/permissions.md": "4b78830e022e305b545e1456a16d8fa0dbefb41bcd39d72b7b69c12d32aed239",
+    "docs/saas/tenant-control-inventory.json": "9cedfd908c00b0e7713568ab3a507ddf5d3cc8f549d8faa30fe56e939d0829a7",
+    "scripts/backup_recovery.py": "af0585ff53b0dc8c8b8b7028b39f2a1a6a080049bc00f4d4dfd9df4111b6fe24",
+    "scripts/export_openapi.py": "52ca4abf460b524161c5f2fbeb1a2490cab73c83eeb7a9a4609d90c22247949d",
+    "tests/operations/test_release_operations.py": "efd84d21d76e25ab7163cba877d7ac10765d2442811baa000c28ecac795a380d"
+  },
+  "validation": {
+    "fullBackend": {
+      "passed": 280,
+      "failed": 0,
+      "skipped": 0,
+      "artifact": "TestResults/saas020-full/backend.trx"
+    },
+    "finalInvitationChecksAfterPermissionAndAuditReview": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "qualification": "Final policy composes company administration with private-project ownership; tests rerun after tightening and audit actor metadata correction."
+    },
+    "finalContractTests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "frontend": {
+      "passed": 132,
+      "failed": 0
+    },
+    "operations": {
+      "passed": 35,
+      "failed": 0
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "generatedContractAndFrontendTypecheckBuild": "passed; 53 paths / 71 operations",
+    "efPendingModelChanges": false,
+    "actionlint": "passed locally",
+    "publishedRestrictedRehearsal": {
+      "migrations": 10,
+      "restrictedProducerAndInvitationWorker": true,
+      "encryptedCaptureAndResend": true,
+      "oldTokenRejected": true,
+      "verifiedRecipientAcceptedOnce": true,
+      "projectViewerCompanyGuest": true,
+      "viewerWriteDenied": true,
+      "revocationCommitted": true,
+      "tokenAndPayloadErasedAfterAcceptance": true,
+      "workerAccountPrivateProjectAndAuthorityWritesDenied": true,
+      "appendOnlyJournalPrivilege": true,
+      "realRecipientsContacted": 0,
+      "freshTargetRecoveryRevokesPendingTokensAndMail": true,
+      "acceptedInvitationsPreservedOnRestore": true
+    },
+    "ownedTemporaryApiSchemaAndIdentitiesRemoved": true
+  },
+  "publishedArtifactsSha256": {
+    ".local/releases/saas020-api/TaskFlow.Api.dll": "a44e1f949b259f8444bf775d7a5fa7fa5b4e4040b8ceeb4082126b620c9d3f00",
+    ".local/releases/saas020-api/TaskFlow.Infrastructure.dll": "8eb446e6622475291216ac926b866d90529bbf474937c82805a6432b27a4234d",
+    ".local/releases/saas020-worker/TaskFlow.Worker.dll": "d08691239722544f42195ba56e8d62a20567d350bc67dca2908dcca4e917042f"
+  },
+  "implemented": [
+    "Company/project scoped manager metadata and intended-recipient token preview/accept API.",
+    "High-entropy SHA-256 single-use token with encrypted recipient-bound capture message; no token-return endpoint.",
+    "Company Owner/Admin plus current project ownership compose for project email invitations; no admin project override.",
+    "Company gate, current verified email/inviter checks, pending unique email and seat reservation, atomic grants/accept/audit.",
+    "Fixed expiry, bounded revision-bound resend/token rotation, revoke, effective invalidation and terminal secret clearing.",
+    "Append-only scoped journal and safe Invitation subjects in company audit/checkpoint queue.",
+    "Separate restricted capture identity, shared-key configuration, fenced leases/retries and negative grants.",
+    "Fresh-target restore atomically revokes restored pending invitation tokens and cancels obsolete account mail before key publication, with actual MySQL verification."
+  ],
+  "deploymentRequirements": [
+    "Apply tenth migration 20261105141627_WorkspaceInvitations and updated API grants before release, including when feature is off.",
+    "Enable Invitations:Enabled and all three workspace flags only for reviewed preview.",
+    "Capture worker requires its own restricted connection, private shared TaskFlow key ring and capture ACL/allowlist."
+  ],
+  "limitations": [
+    "No hosted CI/CodeQL, Linux/container or selected-host certification executed here.",
+    "Invitation management/accept screens and reserved-capacity presentation are SaaS-021.",
+    "No real mail provider, recipient sending, production activation or provider callback acceptance.",
+    "Expiry/invalidation may be effective before source state is materialized; grants and reservations always check current validity.",
+    "Active member policy totals remain active counts; valid pending invitations additionally reserve admission capacity.",
+    "Private retained recipient metadata requires selected-host retention/key-custody review; no automatic purge or distributed fairness promise."
+  ],
+  "guide": "docs/saas/invitations.md",
+  "next": "SaaS-021 invite/accept/manage-team UI"
+}

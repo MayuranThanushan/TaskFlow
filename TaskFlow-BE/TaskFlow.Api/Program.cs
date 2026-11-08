@@ -1,8 +1,10 @@
+using TaskFlow.Api.Telemetry;
 using TaskFlow.Api.Extensions;
 using TaskFlow.Api.Middleware;
 using TaskFlow.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+var workspaceMigration = TaskFlow.Api.Operations.WorkspaceMigrationCommand.IsRequested(args);
 if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secretsDirectory)
     builder.Configuration.AddKeyPerFile(source =>
     {
@@ -30,11 +32,26 @@ else
         options.IncludeScopes = false;
     });
 
+builder.Services.AddServiceTelemetry();
 builder.Services.AddApiFoundation();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSessionAuthentication(builder.Configuration, builder.Environment);
 
+if (workspaceMigration) builder.Logging.ClearProviders();
 var app = builder.Build();
+if (!workspaceMigration && app.Configuration.GetValue<bool>("Mfa:RequireForCompanyAdministrators")
+    && !new[] { "WorkspaceReads:Enabled", "WorkspaceWrites:Enabled", "WorkspaceLifecycle:Enabled" }.All(k => app.Configuration.GetValue<bool>(k)))
+    throw new InvalidOperationException("MFA administrator enforcement requires WorkspaceReads, WorkspaceWrites and WorkspaceLifecycle enabled; legacy company writes must be closed.");
+if (workspaceMigration)
+{
+    // Offline process only: no web listener, hosted exporters or request-serving application.
+    await using var scope = app.Services.CreateAsyncScope();
+    Environment.ExitCode = await TaskFlow.Api.Operations.WorkspaceMigrationCommand.ExecuteAsync(args,
+        scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Persistence.TaskFlowDbContext>());
+    await app.DisposeAsync();
+    return;
+}
+
 if (app.Configuration.GetValue("FileLogging:Enabled", app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Local")))
 {
     var logDirectory = app.Configuration["FileLogging:Directory"]
@@ -51,7 +68,9 @@ if (string.IsNullOrWhiteSpace(app.Configuration.GetConnectionString("TaskFlow"))
 var requireHttps = app.Configuration.GetValue("Transport:RequireHttps",
     !app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Local"));
 
+app.UseMiddleware<ServiceTelemetryMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<SecurityEventMiddleware>();
 app.UseExceptionHandler();
 app.UseStatusCodePages(async context =>
 {

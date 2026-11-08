@@ -70,6 +70,20 @@ class BackupSafetyTests(unittest.TestCase):
         args = self.args(mysql='mysql', defaults_file=str(self.root / 'client.cnf')); Path(args.defaults_file).write_text('[client]')
         with patch.object(recovery, 'query', return_value=['1']) as query, patch.object(recovery.subprocess, 'run', return_value=argparse.Namespace(returncode=0)), patch.object(recovery, 'schema_state', return_value={k:self.manifest[k] for k in ['tableCounts','migrations']}): recovery.restore(args)
         self.assertIn('SecurityStamp=UUID()', query.call_args.args[1]); self.assertEqual((self.root / 'restored-keys/key-example.xml').read_bytes(), b'<key />')
+    def test_restore_revokes_pending_invites_and_cancels_account_mail_before_publishing_keys(self):
+        self.manifest['tableCounts'].update({'WorkspaceInvitations': 2, 'AccountEmailJobs': 1, 'AccountMfa': 1}); self.save()
+        args = self.args(mysql='mysql', defaults_file=str(self.root / 'client.cnf')); Path(args.defaults_file).write_text('[client]')
+        def execute(_args, sql):
+            if sql.startswith('START TRANSACTION'):
+                self.assertFalse((self.root / 'restored-keys').exists())
+                self.assertIn("RecoveryHashes='[]'", sql); self.assertIn("PendingProtectedSecret=NULL", sql); self.assertIn("LastAcceptedStep=FLOOR", sql)
+                self.assertIn("State='Revoked'", sql); self.assertIn('TokenHash=NULL', sql); self.assertIn('PendingEmail=NULL', sql)
+                self.assertIn('ProtectedMessage=NULL', sql); self.assertIn('ProtectedPayload=NULL', sql)
+                self.assertIn("WHERE State='Pending'", sql); self.assertIn("WHERE State IN ('Pending','Leased')", sql)
+                self.assertTrue(sql.endswith('COMMIT'))
+            return ['1']
+        with patch.object(recovery, 'query', side_effect=execute) as query, patch.object(recovery.subprocess, 'run', return_value=argparse.Namespace(returncode=0)), patch.object(recovery, 'schema_state', return_value={k:self.manifest[k] for k in ['tableCounts','migrations']}): recovery.restore(args)
+        self.assertEqual(query.call_count, 3); self.assertTrue((self.root / 'restored-keys').exists())
     def test_backup_requires_quiesced_writers_before_database_access(self):
         args = argparse.Namespace(schema='taskflow_test_source', maintenance_confirmed=False)
         with patch.object(recovery, 'query') as query, self.assertRaises(recovery.RecoveryError): recovery.backup(args)

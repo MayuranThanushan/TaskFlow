@@ -1,0 +1,126 @@
+{
+  "task": "SaaS-013",
+  "date": "2026-10-29",
+  "sourceBaseRevision": "871c94f3d665db1e1338771db52c683093c16cca",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local isolated MySQL and HTTPS rehearsals. No live database migration, hosted CI/CodeQL, selected-host deployment or completed tenant cutover claimed. Company preview flags remain off.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "961ad2f74f83e3d904b8a7a99883cddd3d82a8dd764f4dc693c3dbc4a8d522d0",
+    "README.md": "e275e85637f53d4caa3094d328aaaa34e7acc2bec556fa2483043293193e01c8",
+    "TaskFlow-BE/TaskFlow.Api/Filters/AntiforgeryProblemFilter.cs": "7b12f2ec24167d2dd28e24c1799dcdde18846b48bdf1c685877029ae45590a27",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/GlobalExceptionHandler.cs": "b93f4f66c194fc7411b79fbbcebf405a4dba8710342fe1a38214991a5d0d85e8",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/ProblemResponses.cs": "1f66e9dcca69ce3817dd1946f7a86225379dcd6b036bfef8900c63c1ffc4fea2",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/RequestLoggingMiddleware.cs": "dba063f3ba16b560358044fddcb004f853c5fb7e1de9ed18acb9d112a5c0a919",
+    "TaskFlow-BE/TaskFlow.Api/Middleware/SecurityEventMiddleware.cs": "87df1d5f6da0b2b2c52562b48172bb3acc5239e5a2b6f8d7cef9bea232b50aed",
+    "TaskFlow-BE/TaskFlow.Api/Program.cs": "88f0c202eef9a00e475e6fa07f5c7bef79490ffe96b52c05f2147b7d0202aff0",
+    "TaskFlow-BE/TaskFlow.Application/Features/Activity/AuditMetadata.cs": "ce6dba19c88875ad1244f3609a3bed0e86e5e15d661ca38ea212a04155105027",
+    "TaskFlow-BE/TaskFlow.Application/Features/Activity/IActivityService.cs": "a1a6c99a38203c0a1b0f3b754de1ccc784cd1f583fcd3c4cd46e8932cde874d1",
+    "TaskFlow-BE/TaskFlow.Application/Features/Activity/ISecurityEvents.cs": "e9b823d34b5865ced4017010d7a266b31d4e4bd40181a1ec9dcaaeef1e674bef",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceLifecycle.cs": "30f48d46630a45046098de4e87475477638b72f0e59841a04ba3658c62f2d624",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/AuditRecords.cs": "8a7954e9fa0d227b368fccac350c8ce5b59371f4d9309766d4c66f1facae45c7",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Entities.cs": "e6237ab80c88fa1299299ee94a53bbf9372900883f13db066ac8301fa5355c7e",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Workspace.cs": "ad3896040ace5441c70fd81005247b4774d1199a1d2b8421b811ccf8a614917d",
+    "TaskFlow-BE/TaskFlow.Infrastructure/DependencyInjection.cs": "ff0d1e6e0253a2102f3cb47800ba1ebea5e3f7b09b0cee4d6a4b3a837513c51c",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Identity/AccountService.cs": "3f878c085aea1d7098309cd9cb800cfdb7c1c35c3aab42e5d3df2055bf078e56",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Identity/SecurityEvents.cs": "f5573fefe4a2775c18cb6b704895c2f03af71d6d28570861bc6ab65ef94505c2",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/AuditCapture.cs": "2a731bcc6fac4220d2ddb38d0b5d398087e66200415a7c27c09728f07f7a8282",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/AuditConfigurations.cs": "748b278e308ec4f042835b64d4b7cf9a811d32d3c76a3bf9f1f7ca6067892291",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261029150840_StructuredAudit.Designer.cs": "7189b566d023f5f2433d899e8e61305f5af4a171592849a645fe9faf7a79b55b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261029150840_StructuredAudit.cs": "7c21bbc415713dbe2f9dfb284a7224f47fa7d6cf47b4e34246de6ccddc6752e9",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "21cbc1a9bda992e5f0e8b26dc013b853556fca31b712af3974b8bf9ca2d23d77",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "6287de45d38db3e95601034b9c0edf94ade6a3ea75672d267e36bc1f42007f9b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/ActivityService.cs": "e1da3281e138bf3bb9504250fe1a6cba12fd6accf14d7e8a4cff330812264b79",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceLifecycle.cs": "cad62fde392ce6237f96dc92ae786490a56a84f81f0c9c8ecc383809bf19a93b",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceReads.cs": "99caf6056d0e7b0cd9cfabfbb25ba76abf05e70a7ebbb98261fcaed56d927a5c",
+    "TaskFlow-BE/TaskFlow.Tests/AuditMetadataTests.cs": "12b68b823a828e3f86a278f2d8cf461c78a1cfd322dd0c528a972b73274a8d25",
+    "TaskFlow-BE/TaskFlow.Tests/LoggingSafetyTests.cs": "1fcfc5756072adfe3a1ad203f223d7e7cbca5d719eaac5299bd3ddb8197487e7",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Activity.cs": "4a0532ea0afeb3819efe8fa37d3711ad85dcea951347435f9fb71dc23bd551e8",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.StructuredAudit.cs": "609b99d9bf57079dc2fdda52666279848376c5c0a27b1dd22bf81006d3ead7dd",
+    "TaskFlow-FE/src/api/generated.d.ts": "6f7ec1610e389bbb9d3b5bcf09e6aa8d38030ccb096b7b4c3586fdb614dcf014",
+    "TaskFlow-FE/src/components/AuditDetails.test.tsx": "c31106003f7e77ad103347bcedba773764a4ce0ec24eb2c19d6c7ad908ac93fa",
+    "TaskFlow-FE/src/components/AuditDetails.tsx": "f891d86e9346dd39ad10d24de7478a7f3bb024d3ff5be70a45a42c8bbce098b3",
+    "TaskFlow-FE/src/features/activity/ActivityPage.test.tsx": "449aa55ca763b3e9490a5072e70fe0290e3fe3b19bbb6a3305973a8e99750451",
+    "TaskFlow-FE/src/features/activity/ActivityPage.tsx": "c751cef5a60f46569ee60fbf6939a987c642430efb38a5c81f0e890efe589681",
+    "TaskFlow-FE/src/features/companies/LifecyclePages.tsx": "76e643b151caf371489d20dc646a89dd25fa258b02f5932487ff31c80eeeecf5",
+    "TaskFlow-FE/src/workspace.css": "9e24fdcfdf67389d644145783fba3d9174d214d81be47e6911cf768734fbab9b",
+    "deploy/database-roles.sql.example": "94c3fb23a3478ecdc340fdd7ab156701c7fef8d830cb1181f8bb5e693d5e9001",
+    "docs/contracts/README.md": "11dfe02a983b4a36c5a4edeeca190ea4b158256d5f6e4131ae3af91f297ef532",
+    "docs/contracts/openapi.json": "795b2ef4af0a99db512d89c6407b9c9518b2403fdf245c3cd894e8411f58833f",
+    "docs/saas/structured-audit.md": "0edf4fe5c6691bd442d8129ada92017ac48b30f0abfb4b2639bc0c0323c93348",
+    "scripts/export_security_events.py": "4be83b1106bf7b196972ea2702a93080be4703586ccf4914f5ebee6706772c69",
+    "tests/browser/README.md": "7aa4f00a67462a2e90c49473270e39207ace8f18c2fce65c33b0bb4d3393d816",
+    "tests/browser/structured-audit.cjs": "3d1d77fc714be44a5cac9e03207860553358f6f89e246593166e5ecd17c32aae",
+    "tests/operations/test_security_export.py": "5d867021607b2087ab3454c9d154143c0a01307426a07a04e18ae7fd77e4a08a"
+  },
+  "verification": {
+    "backendFull": {
+      "passed": 199,
+      "failed": 0,
+      "skipped": 0
+    },
+    "backendFinalLoggingRefinement": {
+      "passed": 4,
+      "failed": 0
+    },
+    "frontend": {
+      "passed": 116,
+      "failed": 0,
+      "typecheck": true,
+      "lint": true,
+      "productionBuild": true
+    },
+    "operations": {
+      "passed": 33
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "contract": {
+      "paths": 36,
+      "operations": 52,
+      "driftCheck": true
+    },
+    "efPendingModelChanges": false,
+    "actionlint": {
+      "passed": true,
+      "shellcheckAvailable": false
+    },
+    "browser": {
+      "legacyJourneys": 4,
+      "companyChecks": 7,
+      "lifecycleChecks": 10,
+      "structuredAuditChecks": 5,
+      "automatedAccessibilityLayoutScans": 46,
+      "violations": 0,
+      "overflow": 0,
+      "qualification": "Automated scans include incomplete checks requiring human review; not an accessibility certification. Published positive journeys precede the final failure-log-only correlation refinement, covered by four final backend tests."
+    }
+  },
+  "upgrade": {
+    "fromMigrations": 2,
+    "toMigrations": 5,
+    "projectsPreserved": 35,
+    "tasksPreserved": 245,
+    "auditScopeForeignKeys": 3,
+    "idempotentMigration": true
+  },
+  "securityPrivileges": {
+    "exportedRecords": 16,
+    "runtimeSecurityPayloadReadDenied": true,
+    "runtimeSecurityUpdateDenied": true,
+    "runtimeGovernanceDeleteDenied": true,
+    "securityReaderProjectReadDenied": true,
+    "securityReaderUpdateDenied": true,
+    "sensitiveCanariesAbsent": true
+  },
+  "legacyAudit": "Existing restored history retains schema version zero and null outcome/correlation; no invented historical deltas.",
+  "cleanup": "Only owned temporary schemas, accounts and preview process were removed. User development services and databases were retained. Private credentials, certificates and NDJSON exports are excluded.",
+  "releaseRequirements": [
+    "Apply migration 20261029150840_StructuredAudit before running this version, even with company flags off.",
+    "Rehearse runtime and security-reader grants, retention, monitoring, backup recovery and migration on the selected host.",
+    "Security rejection coalescing is bounded and process-local; distributed controls remain future work.",
+    "Account recovery and MFA workflows are not shipped by this release."
+  ],
+  "next": "SaaS-014: audit filters, deleted-resource review and bounded exports"
+}

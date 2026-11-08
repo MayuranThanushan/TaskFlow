@@ -23,6 +23,14 @@ public static class DependencyInjection
                 throw new PersistenceConfigurationException();
             options.UseMySQL(connection);
         });
+        services.AddDataProtection();
+        services.AddSingleton(sp => new AccountSecuritySettings(sp.GetService<IConfiguration>() ?? configuration, sp.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>()?.EnvironmentName ?? "Production"));
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceInvitations, TaskFlow.Infrastructure.Workspaces.WorkspaceInvitations>();
+        services.AddScoped<IAccountSecurity, AccountSecurityService>();
+        services.AddSingleton<MfaSettings>();
+        services.AddScoped<MfaService>();
+        services.AddScoped<IMfaService>(sp => sp.GetRequiredService<MfaService>());
+        services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
         services.AddIdentityCore<ApplicationUser>(options =>
         {
             options.User.RequireUniqueEmail = true;
@@ -33,14 +41,25 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = true;
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-        }).AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        }).AddDefaultTokenProviders().AddRoles<IdentityRole<long>>().AddEntityFrameworkStores<TaskFlowDbContext>().AddSignInManager();
+        services.AddOptions<IdentityOptions>().Configure<AccountSecuritySettings>((o, s) => o.SignIn.RequireConfirmedEmail = s.Enabled && s.RequireConfirmedEmail);
         services.AddScoped<TaskFlow.Application.Features.Tasks.ITaskService, TaskService>();
         services.AddScoped<TaskFlow.Application.Features.Dashboard.IDashboardService, DashboardService>();
         services.AddScoped<TaskFlow.Application.Features.Activity.IActivityService, ActivityService>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceReads, TaskFlow.Infrastructure.Workspaces.WorkspaceReads>();
+        services.AddScoped<ResourcePrecondition>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectMembersService, ProjectMembersService>();
         services.AddScoped<IProjectAccess, ProjectAccess>();
         services.AddScoped<IProjectTransactions, ProjectTransactions>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceTransactions, ProjectTransactions>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceWrites, TaskFlow.Infrastructure.Workspaces.WorkspaceWrites>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceDirectory, TaskFlow.Infrastructure.Workspaces.WorkspaceDirectory>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceLifecycle, TaskFlow.Infrastructure.Workspaces.WorkspaceLifecycle>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceAuditConsole, TaskFlow.Infrastructure.Workspaces.WorkspaceAuditConsole>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspacePolicy, TaskFlow.Infrastructure.Workspaces.WorkspaceLifecycle>();
+        services.AddSingleton<SecuritySignalWindow>();
+        services.AddScoped<TaskFlow.Application.Features.Activity.ISecurityEvents, SecurityEvents>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddSingleton<UnknownUserPasswordCheck>();
         return services;

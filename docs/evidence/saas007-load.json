@@ -1,0 +1,188 @@
+{
+  "task": "SaaS-007",
+  "status": "Local tooling and baseline verified; pilot sizing approval, named responders and selected-host measurements pending",
+  "date": "2026-10-26",
+  "sourceBaseRevision": "0445be092ee4bebb7b5c4caf8f6ee68df69d4078",
+  "workingChangesVerifiedBeforeCommit": true,
+  "verifiedSourceSha256NormalizedLf": {
+    "scripts/pilot_load.py": "dddcae16fa6a0a4230c29ec40fd566de2530d64fdd6aa64bfbc9cc55a3e6ca53",
+    "tests/load/local-baseline.json": "0c312f4bc4d54c6dfc2e10042fda098c1e9687774c4ad87ccf5cc452cdf4494e",
+    "tests/operations/test_pilot_load.py": "462d5175858a84f3dc9a033d9cbd0d212d25537a029c65228a7e098579d8127b",
+    "docs/saas/pilot-operating-profile.json": "1760674b4984e39a81c6879ffb352456f5c4068db147b33e74fb70319b252f09"
+  },
+  "application": {
+    "scope": "Published Production-mode app from SaaS-006; runtime source unchanged in this task",
+    "apiPayloadSha256": "b9b9228c1e02d2b2604290fdc6cf3ae6a1a75ddd844c735ccb8612ce8bddab01",
+    "database": "Portable MySQL 8.4.11; isolated disposable schema on loopback; client and app on same Windows machine",
+    "telemetryExport": "Disabled default; no production collector or host provisioned"
+  },
+  "load": {
+    "version": 1,
+    "measuredAtUtc": "2026-10-26T15:21:52.306899+00:00",
+    "scope": "Closed-loop real API project-group benchmark; not workspace isolation or production capacity certification",
+    "driver": {
+      "python": "3.13.9",
+      "os": "Windows",
+      "logicalProcessors": 16,
+      "sourceSha256NormalizedLf": "dddcae16fa6a0a4230c29ec40fd566de2530d64fdd6aa64bfbc9cc55a3e6ca53",
+      "connectionModel": "urllib HTTPS, new connection per request, TLS validation enabled, no automatic retries"
+    },
+    "fixture": {
+      "version": 1,
+      "name": "local-project-baseline",
+      "groups": 2,
+      "usersPerGroup": 2,
+      "projectsPerGroup": 3,
+      "tasksPerProject": 20,
+      "concurrency": 8,
+      "requests": 8000,
+      "warmupRequestsPerWorker": 8,
+      "timeoutSeconds": 10,
+      "proposedBudgets": {
+        "readP95Milliseconds": 750,
+        "writeP95Milliseconds": 1000,
+        "unexpectedResponseRate": 0.01
+      }
+    },
+    "fixtureSha256": "07dfdfa0b805141d2b200ca4f081713a0b67578d78776cb27538386fa6a229cd",
+    "setupSeconds": 9.119,
+    "measuredSeconds": 19.584,
+    "requestsPerSecond": 408.496,
+    "summary": {
+      "all": {
+        "count": 8000,
+        "p50Milliseconds": 17.646,
+        "p95Milliseconds": 33.93,
+        "p99Milliseconds": 42.197,
+        "unexpected": 0,
+        "statusCounts": {
+          "200": 8000
+        }
+      },
+      "byOperation": {
+        "activity": {
+          "count": 1000,
+          "p50Milliseconds": 18.144,
+          "p95Milliseconds": 33.17,
+          "p99Milliseconds": 43.691,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "dashboard": {
+          "count": 1000,
+          "p50Milliseconds": 17.674,
+          "p95Milliseconds": 33.544,
+          "p99Milliseconds": 39.74,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "filtered_tasks": {
+          "count": 1000,
+          "p50Milliseconds": 19.632,
+          "p95Milliseconds": 32.382,
+          "p99Milliseconds": 44.236,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "members": {
+          "count": 1000,
+          "p50Milliseconds": 17.02,
+          "p95Milliseconds": 32.248,
+          "p99Milliseconds": 40.991,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "project_detail": {
+          "count": 1000,
+          "p50Milliseconds": 14.789,
+          "p95Milliseconds": 32.848,
+          "p99Milliseconds": 38.586,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "projects": {
+          "count": 1000,
+          "p50Milliseconds": 16.883,
+          "p95Milliseconds": 31.731,
+          "p99Milliseconds": 39.892,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "task_detail": {
+          "count": 1000,
+          "p50Milliseconds": 14.261,
+          "p95Milliseconds": 26.298,
+          "p99Milliseconds": 36.317,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        },
+        "task_status": {
+          "count": 1000,
+          "p50Milliseconds": 25.114,
+          "p95Milliseconds": 39.805,
+          "p99Milliseconds": 51.494,
+          "unexpected": 0,
+          "statusCounts": {
+            "200": 1000
+          }
+        }
+      }
+    },
+    "database": {
+      "scope": "Server-global cumulative counter deltas, may include unrelated workloads",
+      "measured": true,
+      "delta": {
+        "Innodb_row_lock_time": 1875,
+        "Innodb_row_lock_waits": 269,
+        "lock_deadlocks": 0
+      }
+    },
+    "proposedBudgetFailures": [],
+    "budgetsEnforced": false,
+    "cleanup": "Synthetic accounts/data remain. Destroy only the dedicated disposable database through its lifecycle owner."
+  },
+  "verification": {
+    "operationsTests": {
+      "passed": 29,
+      "failed": 0
+    },
+    "realHttpPreflight": "Fresh synthetic users; each group sees exactly three projects; other-group project/task reads return 404 for all four accounts",
+    "productionSmoke": [
+      "Unmigrated readiness rejected",
+      "Initial migration and idempotent rerun passed",
+      "HTTPS shell/assets and CSRF-cookie authentication passed",
+      "Session persisted across restart; logout replay rejected",
+      "Production HTTP authentication policy passed",
+      "Temporary app stopped and disposable database dropped"
+    ],
+    "sourceHashMatchesDriverReport": true,
+    "newRuntimeOrFrontendChanges": false
+  },
+  "ownership": {
+    "team": "Designated developer or operations team, selected by user",
+    "primaryAndBackupResponders": "Pending named team members",
+    "externalAlertRouting": "Not configured"
+  },
+  "limitations": [
+    "19.584-second closed-loop local run; not a soak or maximum capacity test",
+    "Four accounts and two project groups, not company workspaces; no company-isolation claim",
+    "Small 120-task data set; provisional ten-company profile unmeasured",
+    "Server-global lock counters may include unrelated MySQL activity",
+    "No production ingress SLI, alert delivery, host backup schedule or RPO/RTO proof",
+    "Original CI repair still requires fresh hosted execution; no new hosted success claimed"
+  ]
+}

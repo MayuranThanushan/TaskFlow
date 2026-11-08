@@ -29,7 +29,7 @@ public class LoggingSafetyTests
         var failures = new CaptureLogger<GlobalExceptionHandler>();
         Assert.True(await new GlobalExceptionHandler(failures).TryHandleAsync(context,
             new InvalidOperationException("private-exception-canary", new Exception("private-inner-canary")), default));
-        Assert.Contains("InvalidOperationException", failures.Text); Assert.Contains("safe-trace", failures.Text);
+        Assert.Contains("InvalidOperationException", failures.Text); Assert.NotEqual("safe-trace", context.TraceIdentifier); Assert.Contains(context.TraceIdentifier, requests.Text); Assert.Contains(context.TraceIdentifier, failures.Text);
         var logged = requests.Text + failures.Text;
         foreach (var secret in new[] { "private-id-canary", "private-query-canary", "private-auth-canary", "private-cookie-canary", "private-csrf-canary", "private-body-canary", "private-exception-canary", "private-inner-canary" })
             Assert.DoesNotContain(secret, logged);

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "meter": "TaskFlow.Outbox",
+  "scope": "Checkpoint consumer only; observable queue samples are last-known and unavailable until sampled; not external mail delivery.",
+  "implemented": [
+    {
+      "name": "taskflow.worker.ready",
+      "unit": "{state}",
+      "dimensions": []
+    },
+    {
+      "name": "taskflow.worker.outbox.pending",
+      "unit": "{message}",
+      "dimensions": []
+    },
+    {
+      "name": "taskflow.worker.outbox.oldest.age",
+      "unit": "s",
+      "dimensions": []
+    },
+    {
+      "name": "taskflow.worker.delivery.attempts",
+      "unit": "{attempt}",
+      "dimensions": []
+    },
+    {
+      "name": "taskflow.worker.outbox.dead_letter",
+      "unit": "{message}",
+      "dimensions": []
+    }
+  ]
+}

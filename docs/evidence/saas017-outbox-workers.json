@@ -1,0 +1,190 @@
+{
+  "task": "SaaS-017",
+  "date": "2026-11-03",
+  "sourceBaseRevision": "25fdb5619f9aded6e99e546b9926e0814c347ef4",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Isolated local MySQL and published Production HTTPS synthetic rehearsals. No live/customer database migrations, hosted CI/CodeQL, container execution, selected-host certification or tenant cutover claimed. No external delivery adapter enabled.",
+  "verifiedSourceSha256NormalizedLf": {
+    "Documents/Feature-Release-Roadmap.md": "7c175f924481cd091820ebf5c9cee6f0cb664b644cd781646b577271929b7cfd",
+    "README.md": "aca420520b3644ab6ae39005b7507839f51e3a8f4e4075912f7cb6977ea2d429",
+    "TaskFlow-BE/TaskFlow.Domain/Entities/Outbox.cs": "49ab813dc97d397a0af2a9e3f22fc7f6a84cb4911bd3a73391394177cb79ed87",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Outbox/OutboxEnqueue.cs": "78950c132d5085665ed41f1153b093fd57711b36182cdab563a08c7bddfffcaf",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Outbox/OutboxPump.cs": "daff177f1f477f0298e6d12eb723ada5b0efaf21176cc1dc4710cd230ee653fb",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Outbox/OutboxStore.cs": "ab521052598305d56b4bcd5f9f9862daeed8981437472baafbab38e8b8c93305",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Configurations/OutboxConfigurations.cs": "9275efe82dd9a0ab6b17aeb61903d1c64941cc5fe31335c990696c9ef70d2a24",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261103143655_TransactionalOutbox.Designer.cs": "4770a87fb2cacbc683c1f40382b57388ebba569b3a41bb82878feb7a5bffc7df",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/20261103143655_TransactionalOutbox.cs": "b323fca00ebe698376a76aad3c70e018224027aa7d12f3209c04f70936093c8f",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/Migrations/TaskFlowDbContextModelSnapshot.cs": "95fbd62346e1bc980dafab2fabe929a526811f99ab4bd8f96187ea8f53367658",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Persistence/TaskFlowDbContext.cs": "1d32cdb2be4b1d9c2f6e10e452e900891cf9ed6a619fcef5428f1cab543b98f1",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Projects/ProjectTransactions.cs": "2d590fcf91ff9a4a5c5d8b5aaa049aeb4d84c1d810e57b72227887fd6e36efb9",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceDirectory.cs": "657d85e0c147ad63c59ddf98343341119caaca77c62a79fa0730f62dd27d27c9",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceLifecycle.cs": "3c1fa6bb8bb714117de9b3b22d782eb94c7083a155c1b266e19dad190977f999",
+    "TaskFlow-BE/TaskFlow.Tests/OutboxMetricsTests.cs": "161fc2709589609ceadb5626e0cedfeceb0e8cbef081bb288feb0b9e2926ff00",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Outbox.cs": "640d25aaa6c12e689088d2a8d826548a7426c7fd4a1652c699aed9ea3953e26f",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs": "3b2543ccab2460ee2552dd99d51a3f33e3cb9df7b6f90e90a9fdaff2e90e77ee",
+    "TaskFlow-BE/TaskFlow.Tests/TaskFlow.Tests.csproj": "d0430cbf439c896f013cdb12ee6e4492c47d9e263fa4adea6a4b335b31e0cbb4",
+    "TaskFlow-BE/TaskFlow.Worker/Program.cs": "37ddd3b004952fe3a661fe2eb16d34dc7de2ec826a9c07c0c2ea40b30cd359c3",
+    "TaskFlow-BE/TaskFlow.Worker/TaskFlow.Worker.csproj": "833247d71b4a162a33a11018a0c3c4a8f17c6c55b9b49257bfb92212691a6251",
+    "TaskFlow-BE/TaskFlow.Worker/packages.lock.json": "e71196a5647cb084a5baf52b520bae4eb0ce0ee3f7f5e53acf1e3c856960b4d8",
+    "TaskFlow.slnx": "baf542263d08c264c4990122e328876b67fa16308ae7348b6a26547b2f5cf9e2",
+    "compose.worker.yaml": "6ab86e8bbafaf5141c3d0f6af4ce157f739b13e23cbcadc2752b3281cab5815d",
+    "deploy/Dockerfile.worker": "f74f2a3f1dc09e1445d92c4bb57b5bcbb92be777a4f8a27f19ecf51037ce4d65",
+    "deploy/database-roles.sql.example": "a348488ed711ccb923619c14d501f83f81140a1b5fba0e18ca8f424ce8bdd666",
+    "deploy/worker-roles.sql.example": "f6a67d81f44eef95fa154e9b79eed8f91b28f1227bb497f29afed58a2f45dd27",
+    "docs/contracts/README.md": "9339a649acfa80eba5c185c369fe5b24d2ffeccdad6a84a38e40ab625cc5206a",
+    "docs/contracts/telemetry.json": "24503e90d84d7946fbb165d43f2a0ac50b95cf74fe5e3b39c876c74365b7a1ca",
+    "docs/contracts/worker-telemetry.json": "7369aa4db29dfd5d06355a2685d379898c6f3c971cf8b16133c11135a853f2e8",
+    "docs/observability.md": "fa184273c1e9ad017fd14ba6058bf8864ea9ee26e71191398e8f99f608d5ca3e",
+    "docs/saas/outbox-workers.md": "627b501b03fd21e57e22eb66f90659ba694c238e1acdf4ec1cef4fac4d93cc54",
+    "docs/saas/tenant-control-inventory.json": "fe2ead22a0d952ff72164ac415c0d7149b207322adce2fd877978603dfcb8bd0",
+    "tests/operations/test_tenant_control_inventory.py": "5199ae3217a7296263331ad39d968edef3496a6d2b7c4b5d286c37d2246d6b13"
+  },
+  "validation": {
+    "backend": {
+      "passed": 229,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 126,
+      "failed": 0
+    },
+    "operations": {
+      "passed": 34,
+      "failed": 0
+    },
+    "releaseBuild": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "efPendingModelChanges": false,
+    "httpInventory": {
+      "paths": 40,
+      "operations": 57,
+      "unchanged": true
+    },
+    "restrictedWorkerRehearsal": {
+      "committedEvents": 58,
+      "checkpointReceipts": 58,
+      "independentProcesses": 2,
+      "boundedRestartDrain": true,
+      "noDuplicateCheckpointReceipts": true,
+      "runtimePayloadReadDenied": true,
+      "runtimeLeaseWriteDenied": true,
+      "workerContentAndAccountReadDenied": true,
+      "sourceAndAttemptMutationDenied": true
+    },
+    "localPilotRegression": {
+      "concurrency": 8,
+      "roundsPerWorker": 50,
+      "requests": 480,
+      "expectedConflicts": 50,
+      "unexpected": 0,
+      "elapsedMs": 1581.6000000238419,
+      "p50Ms": 23.200000047683716,
+      "p95Ms": 41,
+      "maxMs": 75.90000009536743,
+      "scope": "Local closed-loop hot-company scoped API regression at the project cap; expected stale revisions are not retried. Not selected-host capacity, fairness or SLA certification."
+    },
+    "upgrade": {
+      "fromMigrations": 2,
+      "toMigrations": 8,
+      "projectsPreserved": 35,
+      "tasksPreserved": 245,
+      "auditScopeForeignKeys": 3,
+      "idempotentMigration": true,
+      "historicalOutboxEventsBeforeNewWrites": 0
+    },
+    "saas017-browser": {
+      "accessibilityReports": [
+        {
+          "report": "audit-console.json",
+          "scans": 2,
+          "violations": 0,
+          "overflow": 0
+        },
+        {
+          "report": "companies.json",
+          "scans": 8,
+          "violations": 0,
+          "overflow": 0
+        },
+        {
+          "report": "conflicts.json",
+          "scans": 4,
+          "violations": 0,
+          "overflow": 0
+        },
+        {
+          "report": "lifecycle.json",
+          "scans": 6,
+          "violations": 0,
+          "overflow": 0
+        },
+        {
+          "report": "pilot-policy.json",
+          "scans": 4,
+          "violations": 0,
+          "overflow": 0
+        },
+        {
+          "report": "structured-audit.json",
+          "scans": 2,
+          "violations": 0,
+          "overflow": 0
+        }
+      ]
+    },
+    "saas017-legacy-browser": {
+      "accessibilityReports": [
+        {
+          "report": "review.json",
+          "scans": 30,
+          "violations": 0,
+          "overflow": 0
+        }
+      ],
+      "journeys": [
+        {
+          "script": "authentication.cjs",
+          "passed": true,
+          "durationMs": 3411
+        },
+        {
+          "script": "journeys.cjs",
+          "passed": true,
+          "durationMs": 95582
+        },
+        {
+          "script": "profile.cjs",
+          "passed": true,
+          "durationMs": 3672
+        },
+        {
+          "script": "review.cjs",
+          "passed": true,
+          "durationMs": 23689
+        }
+      ]
+    },
+    "automatedAccessibilityScans": 56,
+    "automatedAccessibilityViolations": 0
+  },
+  "publishedArtifactsSha256": {
+    ".local/releases/saas017-worker/TaskFlow.Worker.dll": "d9cab35efd66040f2e3601e852af071d72182f266eeb6d69b27414e02bbcdd1d",
+    ".local/releases/saas017-default/TaskFlow.Api.dll": "2689471ebb00586ff89febdfa228dbed3f419c169c32415c1eb3fe25d873a660",
+    ".local/releases/saas017-browser/TaskFlow.Api.dll": "2689471ebb00586ff89febdfa228dbed3f419c169c32415c1eb3fe25d873a660"
+  },
+  "deploymentRequirements": [
+    "Apply eighth migration with migration identity before deployment.",
+    "Apply distinct producer and worker grants; provision private worker connection.",
+    "Worker remains opt-in. Configure supervisor, telemetry collection, alerts and recovery on selected host."
+  ],
+  "limitations": [
+    "Checkpoint metadata is not recipient-bound send authority; no email, webhook or inbox delivery.",
+    "External effects will require provider idempotency and current recipient authorization.",
+    "Ordering, per-tenant fairness, backlog/storage budgets and selected-host load remain open controls.",
+    "Automated accessibility scans do not complete manual keyboard, screen-reader or usability review."
+  ],
+  "next": "SaaS-018 email abstraction, templates and local capture"
+}

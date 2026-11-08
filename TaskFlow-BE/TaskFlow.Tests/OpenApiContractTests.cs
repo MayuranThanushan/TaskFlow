@@ -76,6 +76,8 @@ public class OpenApiContractTests
         Assert.Equal("createdAtUtc", query["sortBy"]!["schema"]!["default"]!.GetValue<string>());
         Assert.Equal(new[] { "name", "createdAtUtc", "updatedAtUtc" }, query["sortBy"]!["schema"]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()));
         Assert.Null(schemas["JsonElement"]);
+        Assert.Contains(schemas["WorkspaceMemberDto"]!["properties"]!["role"]!["enum"]!.AsArray(), value => value is null);
+        Assert.Contains(schemas["WorkspaceMemberDto"]!["properties"]!["state"]!["enum"]!.AsArray(), value => value is null);
     }
 
     [Fact]
@@ -83,17 +85,17 @@ public class OpenApiContractTests
     {
         var live = await Live();
         var paths = live["paths"]!.AsObject();
-        Assert.Equal(17, paths.Count);
+        Assert.Equal(58, paths.Count);
         var operations = paths.SelectMany(p => p.Value!.AsObject().Where(o => new[] { "get", "post", "put", "patch", "delete" }.Contains(o.Key)).Select(o => (Path: p.Key, Method: o.Key, Operation: o.Value!))).ToList();
-        Assert.Equal(24, operations.Count);
-        Assert.Equal(24, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
+        Assert.Equal(76, operations.Count);
+        Assert.Equal(76, operations.Select(o => o.Operation["operationId"]!.GetValue<string>()).Distinct().Count());
         foreach (var (path, method, operation) in operations)
         {
             var success = operation["responses"]!.AsObject().Where(r => r.Key.StartsWith('2')).ToList();
             Assert.Single(success);
-            if (success[0].Key != "204") Assert.NotNull(success[0].Value!["content"]);
+            if (success[0].Key is not ("204" or "202")) Assert.NotNull(success[0].Value!["content"]);
             Assert.NotNull(operation["responses"]!["500"]!["content"]!["application/problem+json"]);
-            bool anonymous = path.StartsWith("/api/v1/health/") || path is "/api/v1/auth/login" or "/api/v1/auth/register" or "/api/v1/auth/csrf";
+            bool anonymous = path.StartsWith("/api/v1/health/") || path is "/api/v1/auth/login" or "/api/v1/auth/register" or "/api/v1/auth/csrf" or "/api/v1/auth/capabilities" or "/api/v1/auth/forgot-password" or "/api/v1/auth/request-verification" or "/api/v1/auth/confirm-email" or "/api/v1/auth/reset-password";
             bool write = method is "post" or "put" or "patch" or "delete";
             var security = operation["security"]!.AsArray();
             Assert.Equal(!anonymous || write ? 2 : 0, security.Count);

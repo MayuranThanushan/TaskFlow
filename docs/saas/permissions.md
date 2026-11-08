@@ -1,6 +1,6 @@
 # Company and private-project permission contract
 
-Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); future implementation, not current authorization behavior.
+Status: adopted by [ADR 0005](../decisions/0005-commercial-saas-boundaries.md); implemented for the default-off scoped lifecycle preview in [SaaS-012](workspace-lifecycle.md). The matrix remains the target capability contract. Invitation API/lifecycle is implemented behind an additional default-off flag in [SaaS-020](invitations.md); invitation UI, custody recovery, billing/closure and MFA/SSO remain future work. Legacy routes are closed when lifecycle is enabled.
 
 All permissions require an authenticated global account and active membership in the addressed workspace. Suspension takes precedence over any project role. Missing membership means no company access. Roles in different companies never combine. No endpoint accepts a client-supplied effective role.
 
@@ -34,7 +34,7 @@ These roles apply only within the same workspace. Workspace Owner/Admin alone do
 | Grant/revoke Editor/Viewer to eligible company members | Yes | No | No | No |
 | Transfer project ownership | Yes, validated recipient | No | No | No |
 
-Company invitations are a company-admin action; a project owner can add only existing active company members initially. Future project-scoped invitations must compose both capabilities or request admin approval. Assignments require active same-company membership plus project access; Viewer assignment is rejected because the recipient cannot act on the task. Existing legacy collaborators become Editors, preserving assignment eligibility.
+Company invitations are a company-admin action; a project owner can add only existing active company members initially. SaaS-020 project email invitations compose both capabilities: the actor must be company Owner/Admin and the current project owner. No company-admin private-project override is granted. Assignments require active same-company membership plus project access; Viewer assignment is rejected because the recipient cannot act on the task. Existing legacy collaborators become Editors, preserving assignment eligibility.
 
 ## Departure, suspension and recovery
 
@@ -43,3 +43,9 @@ Normal project-owner departure requires transfer first. Company departure/remova
 An orphaned project is not automatically readable by Admin. Pilot recovery is an operator-reviewed, company-owner-authorized custody transfer using a separate capability, recorded reason, target, expiry and immutable audit. Do not ship a recovery endpoint until this workflow and its negative tests exist. A suspended sole project owner must not force reinstatement just to restore custody. Customer content remains inaccessible to support unless a separate explicit, time-limited break-glass grant authorizes it; ordinary support gets diagnostics only.
 
 Company audit readers can see governance action, stable entity ID, actor and outcome; titles, task bodies, comments, snapshots and deltas from private projects are redacted without current project read permission. Deleted-project governance review is a distinct restricted query, never a bypass on ordinary project routes. Global sign-in/security records are platform-restricted, not copied into every company a user belongs to.
+
+SaaS-014: the [company audit console](audit-console.md) requires an active Owner/Admin role. Its project source additionally checks current ownership/unrevoked grants and can retain access after project soft deletion; company administration alone is insufficient. Grant revocation or inactive company membership removes subsequent history access. Governance remains redacted and does not reveal private project deletion state. Export creation and download repeat the same policy, and tickets are bound to account/company with a five-minute expiry.
+
+SaaS-016: active Owner/Admin can read aggregate capacity and review policy, including private-project totals without identifiers/content. Only Owner can change settings, using current-password proof and a policy revision. Company export controls are rechecked on every ticket creation/download and grant no security-event access. Support role claims confer no company permission. See [pilot policy](pilot-policy.md).
+
+SaaS-022 adds a default-off, deployment-wide [administrator MFA policy](mfa.md): active company Owner/Admin scoped mutations require authenticator proof younger than five minutes. Recovery sign-in permits device restoration without privileged-action proof. Existing authorization/ownership boundaries are rechecked independently. Read-only navigation remains available.

@@ -1,6 +1,6 @@
 namespace TaskFlow.Application.Features.Projects;
 
-public enum ProjectRole { Owner, Member }
+public enum ProjectRole { Owner, Member, Viewer }
 public enum ProjectOperation { Read, ManageProject, ManageMembers, WriteTasks, DeleteTasks }
 public enum ProjectAccessDecision { Allowed, Unauthenticated, NotFound, Forbidden }
 
@@ -10,10 +10,11 @@ public static class ProjectAccessPolicy
     {
         if (actorId is null or <= 0) return ProjectAccessDecision.Unauthenticated;
         if (!Enum.IsDefined(operation)) throw new ArgumentOutOfRangeException(nameof(operation));
-        if (role is not (ProjectRole.Owner or ProjectRole.Member)) return ProjectAccessDecision.NotFound;
+        if (role is not (ProjectRole.Owner or ProjectRole.Member or ProjectRole.Viewer)) return ProjectAccessDecision.NotFound;
         return operation switch
         {
-            ProjectOperation.Read or ProjectOperation.WriteTasks => ProjectAccessDecision.Allowed,
+            ProjectOperation.Read => ProjectAccessDecision.Allowed,
+            ProjectOperation.WriteTasks => role == ProjectRole.Viewer ? ProjectAccessDecision.Forbidden : ProjectAccessDecision.Allowed,
             ProjectOperation.ManageProject or ProjectOperation.ManageMembers or ProjectOperation.DeleteTasks
                 => role == ProjectRole.Owner ? ProjectAccessDecision.Allowed : ProjectAccessDecision.Forbidden,
             _ => throw new ArgumentOutOfRangeException(nameof(operation))

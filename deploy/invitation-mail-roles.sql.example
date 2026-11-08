@@ -1,0 +1,12 @@
+-- Apply after migration ten; separate invitation capture identity and private key-ring ACL.
+CREATE USER 'taskflow_invitation_mail'@'%' IDENTIFIED BY '<generated-private-invitation-mail-password>';
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'taskflow_invitation_mail'@'%';
+GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow_invitation_mail'@'%';
+GRANT SELECT ON taskflow.WorkspaceInvitations TO 'taskflow_invitation_mail'@'%';
+GRANT SELECT (Id) ON taskflow.Workspaces TO 'taskflow_invitation_mail'@'%';
+GRANT SELECT (WorkspaceId, UserId, Role, State) ON taskflow.WorkspaceMemberships TO 'taskflow_invitation_mail'@'%';
+GRANT SELECT (Id, WorkspaceId, OwnerId, DeletedAtUtc) ON taskflow.Projects TO 'taskflow_invitation_mail'@'%';
+GRANT UPDATE (DeliveryState, Attempts, AvailableAtUtc, LeaseToken, LeaseExpiresAtUtc, LastCode, ProtectedMessage) ON taskflow.WorkspaceInvitations TO 'taskflow_invitation_mail'@'%';
+GRANT INSERT, SELECT (Id) ON taskflow.InvitationTransitions TO 'taskflow_invitation_mail'@'%';
+-- No token hash/role/recipient/source state changes; no membership writes, account/password
+-- reads, private project content, history changes/deletes or global account-mail access.

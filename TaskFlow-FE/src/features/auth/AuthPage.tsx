@@ -1,3 +1,5 @@
+import { useInvitation } from '../invitations/invitation-context'
+import { FieldError } from '../../components/Feedback'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -11,8 +13,12 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const { pending: invitation } = useInvitation()
   const state = (location.state ?? {}) as { returnTo?: unknown; notice?: string; registeredEmail?: string }
+  const destination = returnPath(state.returnTo ?? (invitation ? '/invitations/accept' : undefined))
   const [values, setValues] = useState({ displayName: '', email: state.registeredEmail ?? '', password: '' })
+  const [mfaMode, setMfaMode] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
   const [fields, setFields] = useState<FieldErrors>({})
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
@@ -33,6 +39,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     else if (registering && (values.password.length < 12 || !/[A-Z]/.test(values.password) || !/[a-z]/.test(values.password)
       || !/[0-9]/.test(values.password) || !/[^a-zA-Z0-9]/.test(values.password)))
       errors.password = ['Use at least 12 characters with uppercase, lowercase, a number, and a symbol.']
+    if (!registering && mfaMode === 'authenticator' && !/^[0-9]{6}$/.test(mfaCode.trim())) errors.code = ['Enter a six-digit authenticator code.']
+    if (!registering && mfaMode === 'recovery' && !mfaCode.trim()) errors.recoveryCode = ['Enter an unused recovery code.']
     setFields(errors)
     setError('')
     if (Object.keys(errors).length) {
@@ -47,17 +55,17 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       if (registering) {
         await auth.register({ ...credentials, displayName: values.displayName.trim() })
         navigate('/login', { replace: true, state: { registeredEmail: credentials.email,
-          returnTo: returnPath(state.returnTo), notice: 'Account created. Sign in to continue.' } })
+          returnTo: destination, notice: 'Account created. Sign in to continue.' } })
       } else {
-        await auth.signIn(credentials)
-        navigate(returnPath(state.returnTo), { replace: true })
+        await auth.signIn({ ...credentials, ...(mfaMode === 'authenticator' ? { code: mfaCode.trim() } : mfaMode === 'recovery' ? { recoveryCode: mfaCode.trim() } : {}) })
+        navigate(destination, { replace: true })
       }
     } catch (failure) {
       const problem = asApiError(failure)
       setFields(problem.fields)
       setError(problem.message)
       window.setTimeout(() => summary.current?.focus(), 0)
-    } finally { locked.current = false; setPending(false) }
+    } finally { locked.current = false; setPending(false); setMfaCode('') }
   }
 
   const field = (name: 'displayName' | 'email' | 'password', label: string, type = 'text') => <div className="form-field">
@@ -68,7 +76,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       aria-invalid={!!fields[name]?.length}
       aria-describedby={fields[name]?.length ? `${name}-error` : name === 'password' && registering ? 'password-hint' : undefined}
       onChange={event => { setValues(previous => ({ ...previous, [name]: event.target.value })); setFields(previous => ({ ...previous, [name]: [] })) }} />{name === 'password' && <button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide' : 'Show'}</button>}</div>
-    {!!fields[name]?.length && <p className="field-error" id={`${name}-error`}>{fields[name].join(' ')}</p>}
+    <FieldError id={`${name}-error`} errors={fields[name]} />
   </div>
 
   return <div className="auth-grid">
@@ -83,6 +91,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       <p className="eyebrow">{registering ? 'Start with a fresh page' : 'Good to see you again'}</p>
       <h1 id="form-title">{registering ? 'Create your account' : 'Sign in to TaskFlow'}</h1>
       <p className="muted">{registering ? 'A place to organize what matters.' : 'Pick up where you left off.'}</p>
+      {invitation && <p className="notice">Your invitation is kept in this tab. Sign in with the email that received it, or verify your new account and return to this tab.</p>}
       {notice && !error && <p className="notice" role="status">{notice}</p>}
       {error && <div className="error-summary" role="alert" tabIndex={-1} ref={summary}>{error}</div>}
       <form onSubmit={submit} noValidate aria-busy={pending}>
@@ -90,12 +99,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
           {registering && field('displayName', 'Your name')}
           {field('email', 'Email address', 'email')}
           {field('password', 'Password', 'password')}
+          {!registering && <><div className="form-field"><label htmlFor="mfa-signin-mode">Additional verification</label><select id="mfa-signin-mode" value={mfaMode} onChange={e => { setMfaMode(e.target.value); setMfaCode('') }}><option value="">Password only</option><option value="authenticator">Authenticator code</option><option value="recovery">Recovery code</option></select><p className="field-hint">If you enabled MFA, choose an authenticator or a one-use recovery code.</p></div>{mfaMode && <div className="form-field"><label htmlFor="mfa-signin-code">{mfaMode === 'recovery' ? 'Recovery code' : 'Authenticator code'}</label><input id="mfa-signin-code" name={mfaMode === 'recovery' ? 'recoveryCode' : 'code'} aria-invalid={!!fields[mfaMode === 'recovery' ? 'recoveryCode' : 'code']?.length} aria-describedby="mfa-signin-error" type={mfaMode === 'recovery' ? 'password' : 'text'} inputMode={mfaMode === 'authenticator' ? 'numeric' : 'text'} autoComplete={mfaMode === 'authenticator' ? 'one-time-code' : 'off'} maxLength={mfaMode === 'recovery' ? 64 : 6} value={mfaCode} onChange={e => setMfaCode(e.target.value)} /><FieldError id="mfa-signin-error" errors={fields[mfaMode === 'recovery' ? 'recoveryCode' : 'code']} /></div>}</>}
           {registering && <p id="password-hint" className="field-hint">At least 12 characters, with uppercase, lowercase, a number, and a symbol.</p>}
-          <button className="button primary submit" type="submit">{pending ? registering ? 'Creating account…' : 'Signing in…' : registering ? 'Create account' : 'Sign in'}</button>
+          <button className="button primary submit" type="submit">{pending ? registering ? 'Creating accountâ€¦' : 'Signing inâ€¦' : registering ? 'Create account' : 'Sign in'}</button>
         </fieldset>
       </form>
+      {!registering && <p className="form-actions"><Link to="/forgot-password">Forgot password?</Link><Link to="/request-verification">Verify your email</Link></p>}
       <p className="auth-switch">{registering ? 'Already have an account?' : 'New to TaskFlow?'}{' '}
-        <Link to={registering ? '/login' : '/register'} state={{ returnTo: returnPath(state.returnTo) }}>{registering ? 'Sign in' : 'Create an account'}</Link>
+        <Link to={registering ? '/login' : '/register'} state={{ returnTo: destination }}>{registering ? 'Sign in' : 'Create an account'}</Link>
       </p>
     </section>
   </div>

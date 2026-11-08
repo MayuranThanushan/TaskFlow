@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Profile } from '../../api/types'
@@ -35,6 +36,7 @@ function ProfileForm({ user }: { user: Profile }) {
   }
   return <section className="auth-card profile-card" aria-labelledby="profile-title">
     <p className="eyebrow">Your account</p><h1 id="profile-title">Profile</h1>
+    <p><Link to="/account-security">Manage account security</Link></p>
     <p className="muted">Choose the name your project teammates see.</p>
     <div className="profile-identity"><span className="profile-avatar" aria-hidden="true">{user.displayName.slice(0, 1).toUpperCase()}</span><div><p>Email address: {user.email}</p><p>Account ID: {user.id}</p><span className="badge badge-readonly">Account details are read-only</span></div></div>
     {error && <p className="error-summary" role="alert">{error}</p>}

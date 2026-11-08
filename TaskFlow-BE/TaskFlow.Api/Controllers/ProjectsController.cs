@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Claims;
@@ -6,6 +7,7 @@ using TaskFlow.Application.Features.Projects;
 
 namespace TaskFlow.Api.Controllers;
 
+[Authorize]
 [ApiController, Route("api/v1/projects")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class ProjectsController(IProjectService projects) : ControllerBase

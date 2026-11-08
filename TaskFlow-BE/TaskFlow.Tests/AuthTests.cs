@@ -216,14 +216,14 @@ public partial class AuthTests(MySqlFixture fixture)
         private readonly WebApplicationFactory<Program> factory;
         public AuthClock Clock { get; } = new();
 
-        public AuthHost(MySqlFixture fixture, FailStampUpdate? failure = null, bool requireHttps = true, string environment = "Testing")
+        public AuthHost(MySqlFixture fixture, FailStampUpdate? failure = null, bool requireHttps = true, string environment = "Testing", bool emailFlows = false, bool requireConfirmed = false, bool mfa = false, bool requireMfa = false)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment(environment);
                 builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-                    new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["Transport:RequireHttps"] = requireHttps.ToString() }));
+                    new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["Transport:RequireHttps"] = requireHttps.ToString(), ["AccountSecurity:EmailFlowsEnabled"] = emailFlows.ToString(), ["AccountSecurity:RequireConfirmedEmail"] = requireConfirmed.ToString(), ["Mfa:Enabled"] = mfa.ToString(), ["Mfa:RequireForCompanyAdministrators"] = requireMfa.ToString(), ["WorkspaceReads:Enabled"] = mfa.ToString(), ["WorkspaceWrites:Enabled"] = mfa.ToString(), ["WorkspaceLifecycle:Enabled"] = mfa.ToString(), ["Invitations:Enabled"] = mfa.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -233,6 +233,8 @@ public partial class AuthTests(MySqlFixture fixture)
                 });
             });
         }
+
+        public IServiceProvider Services => factory.Services;
 
         public string Email()
         {
@@ -252,6 +254,11 @@ public partial class AuthTests(MySqlFixture fixture)
             await factory.DisposeAsync();
             // HTTP requests span scopes, so only this host's synthetic accounts are cleaned up.
             await using var context = fixture.CreateContext();
+            var owned = context.Users.Where(user => emails.Contains(user.Email!)).Select(user => user.Id);
+            await context.AccountEmailJobs.Where(j => owned.Contains(j.UserId)).ExecuteDeleteAsync();
+            await context.AccountMfa.Where(j => owned.Contains(j.UserId)).ExecuteDeleteAsync();
+            await context.WorkspaceMemberships.Where(m => owned.Contains(m.UserId)).ExecuteDeleteAsync();
+            await context.Workspaces.Where(w => w.LegacyOwnerId != null && owned.Contains(w.LegacyOwnerId.Value)).ExecuteDeleteAsync();
             await context.Users.Where(user => emails.Contains(user.Email!)).ExecuteDeleteAsync();
         }
     }

@@ -1,0 +1,1467 @@
+{
+  "release": "SaaS-022",
+  "date": "2026-11-07",
+  "scope": "Current identity, opt-in company APIs and MFA/admin policy, checkpoint worker and local/staging encrypted mail capture. Local evidence only; provider delivery, hosting and tenant cutover remain gated.",
+  "operations": [
+    {
+      "operationId": "Activity_List",
+      "method": "GET",
+      "path": "/api/v1/projects/{projectId}/activity",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Auth_Login",
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "controls": [
+        "Global identity only; no company grant inferred from login or support claims",
+        "Cookie/session security; CSRF for writes; allowlisted self-profile/authentication fields"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Profile.cs"
+      ]
+    },
+    {
+      "operationId": "Auth_Logout",
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "controls": [
+        "Global identity only; no company grant inferred from login or support claims",
+        "Cookie/session security; CSRF for writes; allowlisted self-profile/authentication fields"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Profile.cs"
+      ]
+    },
+    {
+      "operationId": "Auth_Me",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "controls": [
+        "Global identity only; no company grant inferred from login or support claims",
+        "Cookie/session security; CSRF for writes; allowlisted self-profile/authentication fields"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Profile.cs"
+      ]
+    },
+    {
+      "operationId": "Auth_Register",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "controls": [
+        "Global identity only; no company grant inferred from login or support claims",
+        "Cookie/session security; CSRF for writes; allowlisted self-profile/authentication fields"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Profile.cs"
+      ]
+    },
+    {
+      "operationId": "Csrf_Token",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Dashboard_Get",
+      "method": "GET",
+      "path": "/api/v1/dashboard",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Health_Live",
+      "method": "GET",
+      "path": "/api/v1/health/live",
+      "controls": [
+        "Public safe liveness/readiness DTO; no credentials/tenant content"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs"
+      ]
+    },
+    {
+      "operationId": "Health_Ready",
+      "method": "GET",
+      "path": "/api/v1/health/ready",
+      "controls": [
+        "Public safe liveness/readiness DTO; no credentials/tenant content"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs"
+      ]
+    },
+    {
+      "operationId": "ProjectMembers_Add",
+      "method": "POST",
+      "path": "/api/v1/projects/{projectId}/members",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "ProjectMembers_List",
+      "method": "GET",
+      "path": "/api/v1/projects/{projectId}/members",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "ProjectMembers_Remove",
+      "method": "DELETE",
+      "path": "/api/v1/projects/{projectId}/members/{userId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Projects_Create",
+      "method": "POST",
+      "path": "/api/v1/projects",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Projects_Delete",
+      "method": "DELETE",
+      "path": "/api/v1/projects/{projectId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Projects_Get",
+      "method": "GET",
+      "path": "/api/v1/projects/{projectId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Projects_List",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Projects_Update",
+      "method": "PUT",
+      "path": "/api/v1/projects/{projectId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_Create",
+      "method": "POST",
+      "path": "/api/v1/projects/{projectId}/tasks",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_Delete",
+      "method": "DELETE",
+      "path": "/api/v1/tasks/{taskId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_Get",
+      "method": "GET",
+      "path": "/api/v1/tasks/{taskId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_List",
+      "method": "GET",
+      "path": "/api/v1/projects/{projectId}/tasks",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_SetStatus",
+      "method": "PATCH",
+      "path": "/api/v1/tasks/{taskId}/status",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Tasks_Update",
+      "method": "PATCH",
+      "path": "/api/v1/tasks/{taskId}",
+      "controls": [
+        "Legacy resource authorization and transaction gates",
+        "Lifecycle mode uniformly closes legacy resources with 404",
+        "Unversioned/unscoped legacy compatibility remains outside pilot quota guarantees"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "Users_Update",
+      "method": "PATCH",
+      "path": "/api/v1/users/me",
+      "controls": [
+        "Global identity only; no company grant inferred from login or support claims",
+        "Cookie/session security; CSRF for writes; allowlisted self-profile/authentication fields"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.cs",
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Profile.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceAuditConsole_Download",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/audit/console/exports/download",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Owner/Admin; project source requires explicit current project grant including retained history",
+        "Bounded filters/pages; protected actor/company ticket; download rechecks policy and grants"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceAuditConsole_Export",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/audit/console/exports",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Owner/Admin; project source requires explicit current project grant including retained history",
+        "Bounded filters/pages; protected actor/company ticket; download rechecks policy and grants"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceAuditConsole_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/audit/console",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Owner/Admin; project source requires explicit current project grant including retained history",
+        "Bounded filters/pages; protected actor/company ticket; download rechecks policy and grants"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_Audit",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/audit",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_Leave",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/leave",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_Members",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/members",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_ProjectRole",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_Role",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/members/{userId}/role",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_State",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/members/{userId}/state",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_TransferCompany",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/ownership",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceLifecycle_TransferProject",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/ownership",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Lifecycle gate; Owner/role invariants; current-password proof for sensitive ownership",
+        "Atomic membership cleanup, seat reactivation quota and append-only governance audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspacePolicy_Get",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/policy",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Owner/Admin aggregate capacity read; Owner-only proof/revision-controlled update",
+        "No automatic purge; bounded review values; immutable safe policy audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspacePolicy_Update",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/policy",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Owner/Admin aggregate capacity read; Owner-only proof/revision-controlled update",
+        "No automatic purge; bounded review values; immutable safe policy audit"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Activity",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/activity",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Dashboard",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/dashboard",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Members",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Project",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_ProjectActivity",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/activity",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Projects",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Task",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Tasks",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Workspace",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Explicit project/task parent scope including SQL/soft-delete-filter propagation",
+        "Bounded allowlisted paging/filtering and safe DTO projections"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Workspaces",
+      "method": "GET",
+      "path": "/api/v2/workspaces",
+      "controls": [
+        "Authenticated global identity; server-derived actor; no company grant inferred from support claims",
+        "GET lists only active affiliations with the read preview gate; POST creates a separate company with both read/write gates",
+        "POST requires CSRF and fleet/current-owner admission under PilotGates; no access to an existing company is granted",
+        "All preview gates default off; operator-controlled pilot onboarding and R2 verification remain launch requirements"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_AddMember",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_CreateProject",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/projects",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_CreateTask",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_CreateWorkspace",
+      "method": "POST",
+      "path": "/api/v2/workspaces",
+      "controls": [
+        "Authenticated global identity; server-derived actor; no company grant inferred from support claims",
+        "GET lists only active affiliations with the read preview gate; POST creates a separate company with both read/write gates",
+        "POST requires CSRF and fleet/current-owner admission under PilotGates; no access to an existing company is granted",
+        "All preview gates default off; operator-controlled pilot onboarding and R2 verification remain launch requirements"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_DeleteProject",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_DeleteTask",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_RemoveMember",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_Status",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/status",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_UpdateProject",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_UpdateTask",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}",
+      "controls": [
+        "Authenticated server-derived actor",
+        "Explicit workspace route; active database membership; default-off preview gates",
+        "No company-admin private-project content override",
+        "Current grants rechecked; no-store responses",
+        "Transaction workspace gate; private project operation policy; composite scope constraints",
+        "CSRF for mutations; fixed pilot admission quotas; expected revisions for edits/status/delete"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Capabilities",
+      "method": "GET",
+      "path": "/api/v1/auth/capabilities",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Security",
+      "method": "GET",
+      "path": "/api/v1/auth/security",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_RequestVerification",
+      "method": "POST",
+      "path": "/api/v1/auth/request-verification",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ForgotPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ConfirmEmail",
+      "method": "POST",
+      "path": "/api/v1/auth/confirm-email",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ResetPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ChangePassword",
+      "method": "POST",
+      "path": "/api/v1/auth/change-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Reauthenticate",
+      "method": "POST",
+      "path": "/api/v1/auth/reauthenticate",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Invitations_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Resend",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Revoke",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Preview",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Accept",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Mfa_Status",
+      "method": "GET",
+      "path": "/api/v1/auth/mfa",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Setup",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/setup",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Confirm",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/confirm",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_RecoveryCodes",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/recovery-codes",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Disable",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/disable",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    }
+  ],
+  "nonHttpEntryPoints": [
+    {
+      "entry": "ProjectTransactions and WorkspaceLifecycle",
+      "controls": [
+        "Server actor/scope; shared company/project gates; current grants; business/audit transaction; resource/policy revisions; scoped allocation quotas"
+      ]
+    },
+    {
+      "entry": "EF IgnoreQueryFilters / raw SQL paths",
+      "controls": [
+        "Explicit workspace/project/task-parent/grant predicates; manually constrained scope FKs",
+        "Current-model metadata/backfill only with exact compiled/applied migrations"
+      ]
+    },
+    {
+      "entry": "WorkspaceDirectory / PilotGates",
+      "controls": [
+        "Seeded singleton row locking read; fleet/current-owner admission in same insert transaction",
+        "SELECT and UPDATE(Id) only; runtime never seeds/deletes the gate"
+      ]
+    },
+    {
+      "entry": "WorkspaceMigrationCommand / WorkspaceBackfill",
+      "controls": [
+        "Offline maintenance only; compiled/applied migration equality; protected checksummed manifests; scope/access reconciliation; no public listener"
+      ]
+    },
+    {
+      "entry": "Company export tickets",
+      "controls": [
+        "Data Protection; actor/company binding; five-minute expiry; 1000 records; current grant/policy check per download",
+        "No server-side export file/job; no security records in company DTOs"
+      ]
+    },
+    {
+      "entry": "Security exporter / backup-recovery / logs",
+      "controls": [
+        "Separate operations identities and bounded exports; no company security-event endpoint",
+        "Restricted private artifacts; synthetic restore rehearsal; selected-host ACL/retention gates remain"
+      ]
+    },
+    {
+      "entry": "Frontend resource keys and drafts",
+      "controls": [
+        "Captured account/company client; cancellation and ignored late responses; unmount private drafts on account/company change",
+        "No silent replay on quota/conflict; explicit review/confirmation"
+      ]
+    },
+    {
+      "entry": "Future external delivery/mail/invites/files/billing/support grants",
+      "controls": [
+        "Not implemented; the metadata checkpoint worker adds no recipient-bound external delivery",
+        "Require new scope/recipient/authorization/quota/artifact review before enabling each future release"
+      ]
+    },
+    {
+      "entry": "SaaS-017 OutboxEnqueue / OutboxStore / TaskFlow.Worker",
+      "controls": [
+        "Scoped ID-only intent and initial checkpoint work append inside approved business transactions; no historical/legacy-v1 notification backfill",
+        "Composite actor/project/task/event/delivery scope constraints; producer cannot read event payloads or lease rows",
+        "Separate metadata-only worker identity; database-clock leases, fenced acknowledgements, bounded retry/replay, append-only transitions",
+        "Checkpoint receipt is not external delivery; future recipient-bound consumers must recheck current authorization and use provider idempotency keys"
+      ]
+    },
+    {
+      "entry": "SaaS-018 offline email preview command",
+      "controls": [
+        "No HTTP entry or automatic checkpoint-to-mail conversion; operator filesystem authority only.",
+        "Development/Staging capture only, default disabled, Production refused; exact staged recipient allowlist.",
+        "ID-only private receipts, strict templates/links, safe status output, per-workspace local capture lock/quota and deduplication.",
+        "Real provider, recipient authorization, global account mail and bounce delivery remain future gates."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/EmailTests.cs",
+        "scripts/verify_email_capture.py",
+        "docs/saas/email-capture.md"
+      ]
+    },
+    {
+      "entry": "SaaS-019 restricted account-mail capture worker",
+      "controls": [
+        "Explicit global recipient-bound encrypted jobs, separate from company checkpoint facts.",
+        "Development/Staging only; shared private Data Protection ring and separate DB worker identity.",
+        "Short SKIP LOCKED claims, fencing/expiry, bounded retries and terminal encrypted-payload clearing.",
+        "Current API token validation and security-stamp revocation remain authoritative; local capture never grants company access."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "tests/browser/account-security.cjs",
+        "docs/saas/account-security.md"
+      ]
+    },
+    {
+      "entry": "SaaS-020 restricted invitation capture worker",
+      "controls": [
+        "Recipient-bound protected invite messages and current inviter/project authority recheck.",
+        "Shared workspace gate and fenced delivery row; no locks during capture; bounded retries.",
+        "Separate grants: no source authority, membership/account/private-project content/history mutation.",
+        "Local/staging capture only; no real provider or invitation UI."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "deploy/invitation-mail-roles.sql.example"
+      ]
+    }
+  ],
+  "threatCases": [
+    {
+      "case": "TEN-01",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-02",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-03",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-04",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-05",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-06",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-07",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-08",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-09",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-10",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-11",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-12",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-13",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-14",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-15",
+      "status": "deferred-feature",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-16",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "Invitation API/UI local recipient, expiry, replay, revoke and inviter controls are implemented in SaaS-020/021. Real staging onboarding delivery and tenant acceptance remain SaaS-023 gates."
+    },
+    {
+      "case": "TEN-17",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-18",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-19",
+      "status": "deferred-feature",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-20",
+      "status": "implemented-locally",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-21",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-22",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-23",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    },
+    {
+      "case": "TEN-24",
+      "status": "partially-implemented-future-gates-open",
+      "qualification": "See threat catalog and release evidence; this mapping does not replace executable tests or close hosting/cutover/future-feature gates."
+    }
+  ],
+  "invitationUi": {
+    "controls": [
+      "Fragment stripped into per-tab memory; no persistent token storage",
+      "Verified intended-recipient preview and explicit committed acceptance",
+      "Company administration plus project ownership for project invitation management",
+      "Revision confirmation, single-flight writes and reserved-seat display"
+    ],
+    "evidenceSources": [
+      "TaskFlow-FE/src/features/invitations/Invitations.test.tsx",
+      "tests/browser/invitations.cjs",
+      "docs/evidence/saas021-invitation-ui.json"
+    ]
+  },
+  "mfaPolicy": {
+    "controls": [
+      "Default-off enrollment and company administrator requirement",
+      "Existing MFA sign-in always enforced regardless of enrollment rollout flag",
+      "Five-minute authenticator proof for active Owner/Admin scoped writes; account recovery paths remain available",
+      "Restore invalidates recovery hashes and pending enrollments without disabling the active authenticator",
+      "A stamped recovery session can begin authenticator restoration with current password for five minutes, including after its final recovery code; it never grants administrator proof"
+    ],
+    "evidenceSources": [
+      "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+      "tests/operations/test_release_operations.py",
+      "TaskFlow-BE/TaskFlow.Tests/MfaConfigurationTests.cs"
+    ]
+  }
+}

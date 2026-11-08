@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
+using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Api.Middleware;
 
@@ -7,7 +8,9 @@ public sealed class RequestLoggingMiddleware(RequestDelegate next, ILogger<Reque
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
+        var traceId = AuditCorrelation.Current();
+        context.TraceIdentifier = traceId;
+        using var auditCorrelation = AuditCorrelation.Begin(traceId);
         context.Response.OnStarting(() =>
         {
             context.Response.Headers["X-Trace-Id"] = traceId;

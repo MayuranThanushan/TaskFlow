@@ -1,0 +1,125 @@
+{
+  "task": "SaaS-006 and CI repair",
+  "date": "2026-10-26",
+  "sourceBaseRevision": "0970d024ffd2bd34cc9c4f099b151e4d73e88dfb",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Local Windows MySQL, Vite synthetic review and freshly published HTTPS app with real API journeys against an isolated disposable database. Original hosted CodeQL artifacts inspected; new hosted analysis not executed.",
+  "verifiedSourceSha256NormalizedLf": {
+    ".github/workflows/ci.yml": "9f01bc7270bd80ac2e44884647aca7a1e636896f40288414a848777b820c1f9b",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/ActivityController.cs": "899522a721cadb423303484a9ea4515069f5085121197d9be3ad68a10d2d1acc",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/DashboardController.cs": "f9fb7c7ee4dc8e1e150174a5cd14345e17783f3ea388b6deb298433c60f289f1",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/ProjectMembersController.cs": "1edba5539a2bbf8f890f0d2cddc35fae37af097ef7c5d107de4c60706371d362",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/ProjectsController.cs": "634b08fc1b96a8538e83cc367d59b5e71f155fe26036e416071a4905b17d9478",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/TasksController.cs": "4ae2b17ada42a4d354bf71961a960044bc4131b7c2f3f25f9344bcad75bec74a",
+    "TaskFlow-BE/TaskFlow.Api/Controllers/UsersController.cs": "e573f5593e25750929e0b47909be8b9c403cfa46403e003f58804ebeb5a79ff4",
+    "TaskFlow-FE/src/App.tsx": "0888b9779e84fd7ad14b13f8e5b5e12640d6a31b08745a24a233dcc8dc9fcd8a",
+    "TaskFlow-FE/src/components/Workspace.tsx": "92464cfbe69463c53cc9862614586921fa216aa5c573d4b62771c9cddd59eb0e",
+    "TaskFlow-FE/src/features/activity/ActivityPage.tsx": "eea9c34168573461dadef4ac128bd05c4b2fb93dc7ebbcd7338a1c69cd24db29",
+    "TaskFlow-FE/src/features/auth/AuthPage.tsx": "93b0c2a88f61a164fb3ec48384d1a6b71aa55eca9f833a4fc3385e6dcdd5921b",
+    "TaskFlow-FE/src/features/dashboard/DashboardPage.tsx": "2050661e4c6df83239bfd172224cb3e121ed4e367464a9c441846097ea8e3621",
+    "TaskFlow-FE/src/features/projects/ProjectMembers.tsx": "b710fc6a517a81bd5e918e5c0a2ae16235fee2418435f16557ccd91a89a87fb8",
+    "TaskFlow-FE/src/features/projects/ProjectPages.tsx": "e763c91de126e24b499df9163f8da377c4f4051ff99a2a531d4280a9fda0332e",
+    "TaskFlow-FE/src/features/tasks/TaskPages.tsx": "5fb72673b4d356b7747fcac432c0c8b14223f171ba13c604de6dc137be8f6f7a",
+    "scripts/verify_codeql.py": "1433b9628f0fe91f73b89c4fe71301c03ab99074e95dc4bbbc6ca210bbfbf130",
+    "tests/operations/test_ci_security.py": "b7c4379caa2f5df834b6b0f0917e0f59abc3fdee8c150491cbdded0802670cfe",
+    "TaskFlow-FE/src/components/Feedback.tsx": "1e87231094bef566876572b17a17df3320b7652c57c0dcc30acb6a1ee027bc26",
+    "TaskFlow-FE/src/features/activity/ActivityHub.tsx": "2beb1272940c3ce8b303a3ab9c10375faa1fa615caaedf75f386fe85067206d0",
+    "TaskFlow-FE/src/hooks/use-api-resource.ts": "fed62e3ec1ac4e108a3e6f0f78a3edeb9cf3b6babe8480b6f25e57d6530910e2"
+  },
+  "ciInvestigation": {
+    "runUrl": "https://github.com/MayuranThanushan/TaskFlow/actions/runs/40340119870",
+    "originalReports": [
+      {
+        "language": "csharp",
+        "originalSarifSha256": "cd23695de50c63fbdefd62cc23aa3d5fc74c89753130790192941b2a552ad8b8",
+        "validatorOutcome": "High/critical CodeQL finding: cs/web/missing-function-level-access-control"
+      },
+      {
+        "language": "javascript",
+        "originalSarifSha256": "edeadbbab0d0a9b2a038d53183eeb37e36c50ff0eb60380b0d08c8339ea83458",
+        "validatorOutcome": "pass"
+      },
+      {
+        "language": "python",
+        "originalSarifSha256": "f90a11f635d8dd4cbab4c5ba7a37b9c43173a3c8da08ca2c72baad1f630548a7",
+        "validatorOutcome": "pass"
+      }
+    ],
+    "codeqlResolution": "Support query-pack extension rule descriptors, reject unresolved or inconsistent references and invalid severity; retain >=7 blocker.",
+    "controllers": "Explicit Authorize on all six private resource controllers; existing global filter and service access policies retained.",
+    "csharpBuild": "Pinned SDK, locked restore and traced manual Release build.",
+    "artifactAction": "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 (v7.0.2, node24)",
+    "hostedRerun": "Required after push; original C# findings are still rejected as expected, no fresh CodeQL clearance claimed.",
+    "remainingMediumFinding": "cs/log-forging in RequestLoggingMiddleware; review before customer release."
+  },
+  "checks": {
+    "backend": {
+      "passed": 148,
+      "failed": 0,
+      "skipped": 0,
+      "trx": "TestResults/ci-fix-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 95,
+      "failed": 0,
+      "junit": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 24
+    },
+    "actionlint": "1.7.12, shellcheck unavailable and disabled",
+    "frontendTypecheckLintBuild": "passed",
+    "generatedContractDrift": "passed",
+    "syntheticUi": {
+      "scans": 42,
+      "violations": 0,
+      "overflow": 0
+    },
+    "publishedBrowserJourneys": [
+      {
+        "script": "authentication.cjs",
+        "passed": true,
+        "durationMs": 3519
+      },
+      {
+        "script": "journeys.cjs",
+        "passed": true,
+        "durationMs": 28492
+      },
+      {
+        "script": "profile.cjs",
+        "passed": true,
+        "durationMs": 64802
+      },
+      {
+        "script": "review.cjs",
+        "passed": true,
+        "durationMs": 23040
+      }
+    ],
+    "publishedAccessibility": {
+      "scans": 30,
+      "violations": 0,
+      "overflow": 0,
+      "incompleteNeedsHumanReview": 4
+    },
+    "productionSmoke": [
+      "unmigrated readiness 503",
+      "clean migration and idempotent rerun",
+      "HTTPS and static assets",
+      "CSRF rejection and secure-cookie login",
+      "persisted session across restart",
+      "logout/revoked-cookie replay rejection",
+      "HTTP authentication rejection",
+      "request body/query/header canaries absent from production logs",
+      "temporary host stopped and disposable schema removed"
+    ]
+  },
+  "remaining": [
+    "Fresh hosted full workflow and CodeQL results on changed revision",
+    "Medium logging finding triage",
+    "Selected-host SaaS-005 verification",
+    "SaaS-007 representative pilot load and measured operating objectives",
+    "Multi-company runtime enforcement remains SaaS-008 onward"
+  ]
+}

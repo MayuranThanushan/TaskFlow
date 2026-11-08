@@ -93,11 +93,11 @@ public sealed class ProjectService(TaskFlowDbContext database, IProjectTransacti
         var dto = Map(row.Project);
         var percentage = row.Total == 0 ? 0 : (int)Math.Round(row.Completed * 100m / row.Total, MidpointRounding.AwayFromZero);
         return new ProjectDetailsDto(dto.Id, dto.Name, dto.Description, dto.OwnerId, dto.CreatedAtUtc, dto.UpdatedAtUtc,
-            row.Total, row.Completed, percentage);
+            row.Total, row.Completed, percentage, dto.Version);
     }
 
     private static long RequireActor(long? actorId) => actorId is > 0 ? actorId.Value
         : throw new ProjectAccessException(ProjectAccessDecision.Unauthenticated);
-    private static ProjectDto Map(Project project) => new(project.Id.ToString(CultureInfo.InvariantCulture), project.Name,
-        project.Description, project.OwnerId.ToString(CultureInfo.InvariantCulture), project.CreatedAtUtc, project.UpdatedAtUtc);
+    internal static ProjectDto Map(Project project) => new(project.Id.ToString(CultureInfo.InvariantCulture), project.Name,
+        project.Description, project.OwnerId.ToString(CultureInfo.InvariantCulture), project.CreatedAtUtc, project.UpdatedAtUtc, project.Version.ToString(CultureInfo.InvariantCulture));
 }

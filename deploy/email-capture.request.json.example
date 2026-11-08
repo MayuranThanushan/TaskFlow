@@ -1,0 +1,9 @@
+{
+  "workspaceId": 1,
+  "messageId": "01800000000000000000000000000001",
+  "recipient": "teammate@example.test",
+  "template": "CompanyInvitation",
+  "displayName": "Alex",
+  "companyName": "Example Company",
+  "invitationToken": "preview-only-synthetic-token-never-redeem"
+}

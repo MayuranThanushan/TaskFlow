@@ -45,10 +45,20 @@ services:
       context: .
       dockerfile: deploy/Dockerfile
       target: app
+      args:
+        VITE_WORKSPACES_ENABLED: ${VITE_WORKSPACES_ENABLED:-false}
+        VITE_WORKSPACE_LIFECYCLE_ENABLED: ${VITE_WORKSPACE_LIFECYCLE_ENABLED:-false}
+        VITE_INVITATIONS_ENABLED: ${VITE_INVITATIONS_ENABLED:-false}
     restart: unless-stopped
     depends_on:
       mysql: {condition: service_healthy}
     environment:
+      WorkspaceReads__Enabled: ${TASKFLOW_WORKSPACE_READS_ENABLED:-false}
+      WorkspaceWrites__Enabled: ${TASKFLOW_WORKSPACE_WRITES_ENABLED:-false}
+      WorkspaceLifecycle__Enabled: ${TASKFLOW_WORKSPACE_LIFECYCLE_ENABLED:-false}
+      Invitations__Enabled: ${TASKFLOW_INVITATIONS_ENABLED:-false}
+      Mfa__Enabled: ${TASKFLOW_MFA_ENABLED:-false}
+      Mfa__RequireForCompanyAdministrators: ${TASKFLOW_MFA_REQUIRE_ADMINISTRATORS:-false}
       AllowedHosts: ${TASKFLOW_HOST:?Set the public hostname without scheme or port}
       Kestrel__Certificates__Default__Path: /run/secrets/tls.pfx
     ports:

@@ -1,6 +1,6 @@
 # Tenant threat model and acceptance catalog
 
-Status: design acceptance criteria for [ADR 0005](../decisions/0005-commercial-saas-boundaries.md). All cases below are **planned, not executed**. Existing MVP tests do not establish company isolation.
+Status: design acceptance criteria for [ADR 0005](../decisions/0005-commercial-saas-boundaries.md). This is the original acceptance catalog; [SaaS-016 control inventory](tenant-control-inventory.json) now maps implemented local tests and deferred controls explicitly. Local default-off preview evidence does not complete selected-host acceptance or tenant cutover.
 
 Assets: private project/task content, identity/session secrets, membership/ownership, business audit, exports/files, billing and recovery snapshots. Trust boundaries: browser/API, global identity/company authorization, application/MySQL, API/worker/provider, company/support, runtime/migration/retention identities. Threat actors include outsiders, malicious members, admins exceeding authority, compromised sessions, replaying workers and mistaken operators. Database administrator compromise is outside application row isolation; restrict and audit infrastructure access separately.
 
@@ -19,7 +19,7 @@ Fixture: companies A/B; Alice owns A, Bob owns B; Sam is Editor in A and Viewer 
 | TEN-09 | Caller requests stale version of inaccessible resource | Access denial before conflict details; authorized stale edit gets 409 with draft preserved | 015 |
 | TEN-10 | Switch A to B while reads/writes complete late | No A data rendered in B; write retains captured A context and is never retargeted | 011 |
 | TEN-11 | Missing context, pooled service, raw SQL or IgnoreQueryFilters path | Fail closed; explicit scope on every query/mutation; no singleton tenant leakage | 009/010 |
-| TEN-12 | Read deleted project via ordinary route or old v1 tenant endpoint | Ordinary resource 404; retired authenticated v1 route uniform 410; identity endpoints remain usable | 009/011/014 |
+| TEN-12 | Read deleted project via ordinary route or old v1 tenant endpoint | Ordinary resource 404; lifecycle-retired authenticated v1 resource routes uniformly 404 (implemented privacy-preserving retirement; original proposed 410 superseded); identity endpoints remain usable | 009/011/014 |
 | TEN-13 | Read company export after permission removal; tamper with export/object ID | Read/download reauthorizes; no other company's artifact/content; bounded export | 014/040 |
 | TEN-14 | Mutation fails after audit/outbox insertion; worker replays event | No success event for rollback; committed business/audit/outbox atomic; consumer dedup | 013/017 |
 | TEN-15 | Recipient removed before queued notification/mail is delivered | Recheck eligibility before send/read; suppress unauthorized queued content | 023/029 |

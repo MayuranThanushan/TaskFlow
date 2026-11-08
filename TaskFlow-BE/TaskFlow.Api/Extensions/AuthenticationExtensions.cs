@@ -79,6 +79,9 @@ public static class AuthenticationExtensions
                 {
                     PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true
                 }));
+            options.AddPolicy("governance", context => RateLimitPartition.GetFixedWindowLimiter(
+                context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is { } actor ? "actor:" + actor : "ip:" + (context.Connection.RemoteIpAddress?.ToString() ?? "unknown"),
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
             options.OnRejected = async (context, token) =>
             {
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry))

@@ -7,6 +7,47 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces/{workspaceId}/invitations": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview": {"post"},
+    "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept": {"post"},
+    "/api/v2/workspaces/{workspaceId}/policy": {"get", "put"},
+    "/api/v2/workspaces/{workspaceId}/audit/console": {"get"},
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports": {"post"},
+    "/api/v2/workspaces/{workspaceId}/audit/console/exports/download": {"post"},
+    "/api/v2/workspaces/{workspaceId}/members": {"get"},
+    "/api/v2/workspaces/{workspaceId}/audit": {"get"},
+    "/api/v2/workspaces/{workspaceId}/members/{userId}/role": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/members/{userId}/state": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/leave": {"post"},
+    "/api/v2/workspaces/{workspaceId}/ownership": {"post"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/ownership": {"post"},
+    "/api/v2/workspaces/{workspaceId}": {"get"},
+    "/api/v2/workspaces": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/status": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members/{userId}": {"delete", "put"},
+    "/api/v2/workspaces/{workspaceId}/projects": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}": {"get", "put", "delete"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}": {"get", "patch", "delete"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/members": {"get", "post"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/activity": {"get"},
+    "/api/v2/workspaces/{workspaceId}/activity": {"get"},
+    "/api/v2/workspaces/{workspaceId}/dashboard": {"get"},
+    "/api/v1/auth/capabilities": {"get"},
+    "/api/v1/auth/security": {"get"},
+    "/api/v1/auth/forgot-password": {"post"},
+    "/api/v1/auth/request-verification": {"post"},
+    "/api/v1/auth/confirm-email": {"post"},
+    "/api/v1/auth/reset-password": {"post"},
+    "/api/v1/auth/change-password": {"post"},
+    "/api/v1/auth/reauthenticate": {"post"},
+    "/api/v1/auth/mfa": {"get"},
+    "/api/v1/auth/mfa/setup": {"post"},
+    "/api/v1/auth/mfa/confirm": {"post"},
+    "/api/v1/auth/mfa/recovery-codes": {"post"},
+    "/api/v1/auth/mfa/disable": {"post"},
     "/api/v1/auth/csrf": {"get"},
     "/api/v1/auth/register": {"post"}, "/api/v1/auth/login": {"post"},
     "/api/v1/auth/me": {"get"}, "/api/v1/auth/logout": {"post"},
@@ -62,7 +103,7 @@ def main():
         print("OpenAPI snapshot matches live API.")
     else:
         args.output.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
-        print("Exported 17 paths / 24 operations to", args.output)
+        print(f"Exported {len(EXPECTED)} paths / {sum(len(methods) for methods in EXPECTED.values())} operations to", args.output)
 
 if __name__ == "__main__":
     main()

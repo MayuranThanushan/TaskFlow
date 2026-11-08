@@ -9,6 +9,19 @@ namespace TaskFlow.Infrastructure.Persistence;
 public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock)
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
+    private readonly AuditCapture auditCapture = new();
+    public DbSet<AccountMfa> AccountMfa => Set<AccountMfa>();
+    public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();
+    public DbSet<InvitationTransition> InvitationTransitions => Set<InvitationTransition>();
+    public DbSet<AccountEmailJob> AccountEmailJobs => Set<AccountEmailJob>();
+    public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
+    public DbSet<OutboxDelivery> OutboxDeliveries => Set<OutboxDelivery>();
+    public DbSet<OutboxAttempt> OutboxAttempts => Set<OutboxAttempt>();
+    public DbSet<PilotGate> PilotGates => Set<PilotGate>();
+    public DbSet<SecurityEvent> SecurityEvents => Set<SecurityEvent>();
+    public DbSet<WorkspaceAuditLog> WorkspaceAuditLogs => Set<WorkspaceAuditLog>();
+    public DbSet<Workspace> Workspaces => Set<Workspace>();
+    public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
@@ -24,6 +37,20 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         base.OnModelCreating(builder);
         builder.UseCollation("utf8mb4_0900_ai_ci");
         builder.ApplyConfigurationsFromAssembly(typeof(TaskFlowDbContext).Assembly);
+        builder.Entity<AccountMfa>().HasKey(m => m.UserId);
+        builder.Entity<AccountMfa>().HasOne<ApplicationUser>().WithOne().HasForeignKey<AccountMfa>(m => m.UserId);
+        builder.Entity<AccountMfa>().Property(m => m.ProtectedSecret).HasMaxLength(2048);
+        builder.Entity<AccountMfa>().Property(m => m.PendingProtectedSecret).HasMaxLength(2048);
+        builder.Entity<AccountMfa>().Property(m => m.RecoveryHashes).HasMaxLength(2048);
+        builder.Entity<PilotGate>().HasKey(g => g.Id);
+        builder.Entity<PilotGate>().HasData(new PilotGate { Id = 1 });
+        builder.Entity<Workspace>().Property(w => w.PolicyVersion).HasDefaultValue(1L).IsConcurrencyToken();
+        builder.Entity<Workspace>().Property(w => w.AuditRetentionDays).HasDefaultValue(365);
+        builder.Entity<Workspace>().Property(w => w.DeletedContentRetentionDays).HasDefaultValue(30);
+        builder.Entity<Workspace>().Property(w => w.LegalHold).HasDefaultValue(true).HasSentinel(true);
+        builder.Entity<Workspace>().Property(w => w.AuditExportsEnabled).HasDefaultValue(true).HasSentinel(true);
+        builder.Entity<Project>().Property(p => p.Version).IsConcurrencyToken().HasDefaultValue(1L);
+        builder.Entity<TaskItem>().Property(t => t.Version).IsConcurrencyToken().HasDefaultValue(1L);
         foreach (var foreignKey in builder.Model.GetEntityTypes().SelectMany(entity => entity.GetForeignKeys()))
             foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
     }
@@ -31,13 +58,17 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         PrepareChanges();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        var hadAudit = ChangeTracker.Entries().Any(e => e.State == EntityState.Added && e.Entity is IVersionedAudit);
+        var result = base.SaveChanges(acceptAllChangesOnSuccess);
+        auditCapture.Saved(hadAudit); return result;
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         PrepareChanges();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var hadAudit = ChangeTracker.Entries().Any(e => e.State == EntityState.Added && e.Entity is IVersionedAudit);
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        auditCapture.Saved(hadAudit); return result;
     }
 
     private void PrepareChanges()
@@ -46,14 +77,24 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         var now = clock.GetUtcNow().UtcDateTime;
         foreach (var entry in ChangeTracker.Entries().ToList())
         {
-            if (entry.Entity is ActivityLog && entry.State is EntityState.Modified or EntityState.Deleted)
+            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)
                 throw new InvalidOperationException("Projects and tasks require explicit soft deletion.");
             if (entry.State is not (EntityState.Added or EntityState.Modified)) continue;
 
+            if (entry.Entity is WorkspaceAuditLog audit && entry.State == EntityState.Added) audit.CreatedAtUtc = now;
+            if (entry.Entity is SecurityEvent security && entry.State == EntityState.Added) security.CreatedAtUtc = now;
             switch (entry.Entity)
             {
+                case Workspace workspace:
+                    workspace.Name = TextRules.Required(workspace.Name, 150, nameof(workspace.Name));
+                    break;
+                case WorkspaceMembership membership:
+                    if (!Enum.IsDefined(membership.Role) || !Enum.IsDefined(membership.State))
+                        throw new ArgumentException("Unsupported workspace membership.");
+                    if (entry.State == EntityState.Added) membership.JoinedAtUtc = now;
+                    break;
                 case Project project:
                     project.Name = TextRules.Required(project.Name, 150, nameof(project.Name));
                     project.Description = TextRules.Optional(project.Description, 10_000, nameof(project.Description));
@@ -79,6 +120,16 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
                     break;
             }
 
+            if (entry.Entity is IVersionedResource resource)
+            {
+                if (entry.State == EntityState.Added) resource.Version = 1;
+                else
+                {
+                    var original = (long)entry.Property(nameof(IVersionedResource.Version)).OriginalValue!;
+                    if (original == long.MaxValue) throw new TaskFlow.Application.Features.Projects.ResourceVersionException(409, "resource.version_exhausted");
+                    resource.Version = checked(original + 1);
+                }
+            }
             if (entry.Entity is IAuditable auditable)
             {
                 if (entry.State == EntityState.Added) auditable.CreatedAtUtc = now;
@@ -86,5 +137,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
                 auditable.UpdatedAtUtc = now;
             }
         }
+        ChangeTracker.DetectChanges();
+        auditCapture.Prepare(this);
     }
 }

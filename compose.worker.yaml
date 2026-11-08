@@ -1,0 +1,28 @@
+# Opt in only after applying migrations and the separate worker grants.
+# docker compose -f compose.deploy.yaml -f compose.worker.yaml --profile worker up -d worker
+services:
+  worker:
+    image: taskflow-worker:${TASKFLOW_RELEASE_TAG:-local}
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.worker
+    profiles: [worker]
+    restart: unless-stopped
+    depends_on:
+      mysql: {condition: service_healthy}
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      TASKFLOW_SECRETS_DIRECTORY: /run/secrets
+    secrets:
+      - source: worker_connection
+        target: ConnectionStrings__TaskFlow
+    networks: [database]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 384m
+    cpus: 1
+secrets:
+  worker_connection:
+    file: ${TASKFLOW_DEPLOY_SECRETS_DIR:-.secrets}/worker_connection

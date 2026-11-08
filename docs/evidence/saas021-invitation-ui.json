@@ -1,0 +1,200 @@
+{
+  "task": "SaaS-021",
+  "date": "2026-11-05",
+  "sourceBaseRevision": "c7a4c66a0e572bc120c5360393506241f251e356",
+  "workingChangesVerifiedBeforeCommit": true,
+  "scope": "Default-off invitation onboarding and company/project management UI; isolated local HTTPS Staging capture only.",
+  "verifiedSourceSha256NormalizedLf": {
+    ".env.deploy.example": "92821fd89f5f6184f3b5977b8bc4c2224b457cac265e20d3c2144d242e5e852a",
+    "Documents/Feature-Release-Roadmap.md": "3d8ac78ecd51edf64e25719e7e3a7928dd5f0b0ddb32e0ec02b44cc7fe894d97",
+    "README.md": "9b505d16a8c952616bed64d5ca7c0ab97e27ec887eddcba22f0ba4e57abb7692",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspaceInvitations.cs": "6e636196c667fcf4d54daf37f5a3539a2a17ef01e29d7b50a1af34500bf87d74",
+    "TaskFlow-BE/TaskFlow.Application/Features/Workspaces/IWorkspacePolicy.cs": "d733a34101ced3be2f7410e75e8232c3b3d4aaab25553088845c60cd5679afe1",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceInvitations.cs": "9dd85ee01ba1fe4f590a532b43862b31f292bf72ea32509d5e7306bb8c9aa0d9",
+    "TaskFlow-BE/TaskFlow.Infrastructure/Workspaces/WorkspaceLifecycle.Policy.cs": "8f2d890d870e54bc51928e409104ad44b53df09a8e2637cd9f0e96afdd2be7ac",
+    "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs": "852d45319be8166a4a071dba8fc4a3d052324456ef50ee38b460b32658c9bb30",
+    "TaskFlow-FE/.env.example": "2ba14b08a7751f50d0b50ba1edc24bbdb2914c376ffaefbb10e70f577660af28",
+    "TaskFlow-FE/src/App.tsx": "8f1c2d7c595a791176cdbddc96ce4f4dacdb2a75ac2a34bd50988ea74b485c0e",
+    "TaskFlow-FE/src/api/client.ts": "9cb747de12af034d60760a73862d7e74905d788126c2be8a7ac8e3a723bbb03e",
+    "TaskFlow-FE/src/api/generated.d.ts": "fd1c4ddf98ecc19eedf88d784c339f2e1f44ed779c317c48ffe6c602f670bda5",
+    "TaskFlow-FE/src/features/auth/AuthPage.tsx": "f1cce499f059c75bb1efdcd4f6ec9f31f9cf5c64c3c3cb45ee49204496bb2171",
+    "TaskFlow-FE/src/features/auth/RouteGates.tsx": "3a31818bbf25f66ff3b56650aadd6008253ebc3ff19e14ba4b0d1ec9d801fe87",
+    "TaskFlow-FE/src/features/auth/navigation.ts": "3c9ab618fb7e1dfd1790bc2a408f2a905689c7fe9dcb1b2ef51cbfe5df4d0631",
+    "TaskFlow-FE/src/features/companies/CompanyPages.tsx": "9b239ee561c7d5b9dc949fc7d4d8f3157bb568bececbb931f87550b7f8f971bf",
+    "TaskFlow-FE/src/features/companies/CompanyPolicyPage.test.tsx": "86f6bd4122d5bdb1452cececeb4130c979a83b1e99bb1c8e1adacd6cc28dd94c",
+    "TaskFlow-FE/src/features/companies/CompanyPolicyPage.tsx": "1fedb71df417792e032dda048f6906124ef2a0437ef03b9b0894480e35f7c0fb",
+    "TaskFlow-FE/src/features/companies/LifecyclePages.tsx": "fc49dc39cec7dabe46e818db5ffea92867ccd39a14b883886f95ca88c36dca88",
+    "TaskFlow-FE/src/features/companies/company-context.ts": "928fc0b522d55b53dceab3ffc3b151f4dc04351794c10ba29bd3b0e6802de7b3",
+    "TaskFlow-FE/src/features/invitations/InvitationAcceptPage.tsx": "1f076a99714175c843729e632a7894a2995f35302a42871826d1e7e935d19ff3",
+    "TaskFlow-FE/src/features/invitations/InvitationManager.tsx": "7d43008cdb223a53c291501b5710a54c7a06a069cf3d1ec5716c347a73b5f918",
+    "TaskFlow-FE/src/features/invitations/InvitationProvider.tsx": "1887e99efe9d76c631b995655d7ffb164f17a5aac8b0c73bf85b6e713dba1211",
+    "TaskFlow-FE/src/features/invitations/Invitations.test.tsx": "55175995f2521b30d0e1967d9faeb72ff3c02323d30e95124d685a55d5fe73b6",
+    "TaskFlow-FE/src/features/invitations/invitation-context.ts": "63d13770433be4ba0775c41b369f972fd7917795b1d9d133f927c2fccc574c83",
+    "TaskFlow-FE/src/features/projects/ProjectPages.tsx": "aa27134e670d4adad8f9ba5cae42ca7de46e71de62575483036865abe50c0fa6",
+    "TaskFlow-FE/src/workspace.css": "0a480f4070c83deb667eab25381b00645385839c78bebbb0c2ac719a48d85bf5",
+    "compose.deploy.yaml": "492870b23c1f108346ed825157c742ea72c8a85d019297977b0abd50a10127d3",
+    "deploy/Dockerfile": "7428d4704f0c8f9e2cf432f3385c89240766971ee87cf89658584c893ac51093",
+    "docs/contracts/README.md": "00fa29972c3e34a5572cd6ff187737583b8353eba7fac073c098b625549a5e1d",
+    "docs/contracts/openapi.json": "dd824024b45ca9249fba618a85d9b8bf1571ef05b81a8f8e7522222a708e5754",
+    "docs/saas/invitation-ui.md": "6c16c07ff34fc52a9675fe74bfafa4c3e837f4fc7c3ad8e5eea22149a38a737e",
+    "docs/saas/invitations.md": "968e157bad38f416b901d47f17a613818fd0033e697b20f75560b8e50bd5ca74",
+    "docs/saas/tenant-control-inventory.json": "f00136cb7f825ccdea67a0b349b5e16bb9116aa21861739d4ff5f509aac38f33",
+    "tests/browser/invitations.cjs": "b21382d62f43ec23e3a35faa93f5c7cc9dbdae814cada033ce8fd06b2be07725"
+  },
+  "validation": {
+    "backend": {
+      "passed": 280,
+      "failed": 0,
+      "skipped": 0,
+      "artifact": "TestResults/saas021-backend/backend.trx"
+    },
+    "frontend": {
+      "passed": 146,
+      "failed": 0,
+      "artifact": "TaskFlow-FE/test-results/junit.xml"
+    },
+    "operations": {
+      "passed": 35,
+      "failed": 0
+    },
+    "frontendLintTypecheckAndBuild": true,
+    "defaultAndInvitationEnabledBuilds": true,
+    "composeConfigurationSyntax": true,
+    "browser": {
+      "checks": [
+        "company creation, explicit revoke and keyboard cancellation",
+        "project role choices, reserved capacity, resend cooldown and explicit token rotation",
+        "wrong account, signup/sign-in return, new-tab verification, explicit preview and accepted Guest/Viewer access",
+        "replay/missing-link recovery, fragment clearing and no browser token storage"
+      ],
+      "accessibility": [
+        {
+          "name": "company-empty",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "company-empty",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "project-pending",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "project-pending",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "wrong-account",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "wrong-account",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "verification-required",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "verification-required",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "scope-preview",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "scope-preview",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "accepted",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "accepted",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "used-link",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "used-link",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "missing-link",
+          "width": 1440,
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "name": "missing-link",
+          "width": 320,
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "errors": []
+    },
+    "publishedRehearsal": {
+      "publishedHttpsUi": true,
+      "migrations": 10,
+      "invitationAndAccountCaptureIdentitiesSeparate": true,
+      "signupAndVerificationInBrowser": true,
+      "acceptedGuestViewer": true,
+      "tokenAndPayloadErased": true,
+      "noExternalRecipients": true,
+      "handoffs": 3
+    }
+  },
+  "schema": {
+    "migrations": 10,
+    "newMigrations": 0,
+    "paths": 53,
+    "operations": 71
+  },
+  "remainingGates": [
+    "Hosted CI and CodeQL execution",
+    "Container execution and selected-host verification",
+    "Real email provider and production sending",
+    "Manual assistive-technology review",
+    "Mandatory tenant cutover"
+  ],
+  "artifactsSha256": {
+    ".local/releases/saas021-api/TaskFlow.Api.dll": "50467d6f776fd2d4dc10e502bf421e595628cd90adfe96ed015b9851ceff9518",
+    ".local/releases/saas021-api/TaskFlow.Infrastructure.dll": "2d56764baa681ffd23ea416e1ada4a1684f8982487a2b7fb3209b875ecc4b647",
+    ".local/releases/saas021-api/wwwroot/index.html": "f8d1494d1a77217fe3331debd353bfa69f6539b1adf847c49a59955c558adff0",
+    ".local/releases/saas021-worker/TaskFlow.Worker.dll": "7f2b6342adede8b7caabde3d4c6d860b004a257dc41443b70db823a10a84c1d4"
+  }
+}

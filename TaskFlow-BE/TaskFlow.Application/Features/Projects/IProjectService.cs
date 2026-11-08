@@ -1,8 +1,8 @@
 namespace TaskFlow.Application.Features.Projects;
 
-public sealed record ProjectDto(string Id, string Name, string? Description, string OwnerId, DateTime CreatedAtUtc, DateTime UpdatedAtUtc);
+public sealed record ProjectDto(string Id, string Name, string? Description, string OwnerId, DateTime CreatedAtUtc, DateTime UpdatedAtUtc, string Version = "1");
 public sealed record ProjectDetailsDto(string Id, string Name, string? Description, string OwnerId,
-    DateTime CreatedAtUtc, DateTime UpdatedAtUtc, int TotalTasks, int CompletedTasks, int ProgressPercentage);
+    DateTime CreatedAtUtc, DateTime UpdatedAtUtc, int TotalTasks, int CompletedTasks, int ProgressPercentage, string Version = "1");
 public sealed record ProjectPage(IReadOnlyList<ProjectDto> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 public sealed record ProjectListOptions(int Page = 1, int PageSize = 20, string? Search = null,
     string SortBy = "createdAtUtc", string SortDirection = "desc");

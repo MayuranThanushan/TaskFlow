@@ -42,3 +42,27 @@ node tests/browser/workspace.cjs
 ```
 
 This separate review intercepts every /api/v1 request with synthetic in-memory fixtures. It does not create real accounts or modify the development database. It accepts only localhost/127.0.0.1 origins (optional TASKFLOW_UI_ORIGIN), uses installed Edge, and generates screenshots plus TestResults/workspace-ui/review.json. It covers 42 route/viewport scans at 320/390/768/1440, axe WCAG A/AA checks, page overflow, owner/member controls, task/project CRUD UI, inline status, keyboard confirmation cancellation/table scrolling, profile, password visibility, form focus and current-page audit JSON download. This validates UI interactions, not backend authorization, database transactions, production CSP or deployed-host behavior; use the published-app suite above for those.
+
+## Company preview journey
+
+With a disposable HTTPS instance whose frontend was built with VITE_WORKSPACES_ENABLED=true and both backend WorkspaceReads/WorkspaceWrites flags enabled, use the same synthetic owner settings and run `node tests/browser/companies.cjs`. This creates two companies and scoped projects/tasks, checks switching/deep links/foreign-company denials and performs eight desktop/mobile accessibility/overflow scans. It writes companies.json and screenshots under the selected output directory. It is an explicit preview check, separate from the default v1 runner; caller cleanup still owns the entire disposable database and temporary host.
+
+## Company lifecycle journey
+
+Build the isolated app with both VITE_WORKSPACES_ENABLED and VITE_WORKSPACE_LIFECYCLE_ENABLED true and enable all three backend workspace flags. Run companies.cjs first, then lifecycle.cjs with TASKFLOW_LIFECYCLE_COMPANY_ID, TASKFLOW_LIFECYCLE_MEMBER_ID, TASKFLOW_LIFECYCLE_MEMBER_EMAIL and TASKFLOW_LIFECYCLE_MEMBER_PASSWORD for a synthetic Member fixture in Browser Alpha. This affiliation is provisioned only in the disposable test DB; it is not an invitation bypass shipped to users. The journey checks Viewer/Editor controls, assignment, suspension/reactivation, password-protected project/company transfers, departure, retained redacted audit and six desktop/mobile accessibility scans. It creates and changes data. Caller cleanup owns its test schema/services. Run the default four v1 journeys separately with lifecycle and UI flags disabled. Hosted lifecycle CI remains a separate gate.
+
+## Structured audit journey
+
+After companies.cjs and lifecycle.cjs in the same disposable instance, run `node tests/browser/structured-audit.cjs` with the same lifecycle fixture settings. The transferred company/project Owner verifies versioned governance, a safe priority delta, matching mutation correlation, withheld private title values and expanded audit details at desktop/mobile sizes. Reports go to structured-audit.json. Provision the app with the runtime grant template and a distinct SELECT-only SecurityEvents reader; run the bounded operator exporter separately and verify negative SQL privileges. These fixture accounts/exports must never use customer data.
+
+## Audit console preview
+
+After the company/lifecycle/structured-audit journeys, run `node tests/browser/audit-console.cjs` in the same disposable HTTPS instance and with the same lifecycle fixture settings. It exercises combined URL filters, expanded safe changes, an actual authenticated JSON download, string IDs, sensitive-value exclusion and deleted-only empty state, plus two desktop/mobile accessibility/overflow scans. It writes audit-console.json and screenshots; the browser-owned temporary download is not committed. API tests separately cover deleted private-project history, revoked grants, suspension, export caps/watermarks and expired/foreign tickets. Hosted lifecycle/console CI remains a separate gate.
+
+## Two-editor conflict preview
+
+Run `node tests/browser/conflicts.cjs` after companies.cjs, lifecycle.cjs, structured-audit.cjs and audit-console.cjs with the same disposable HTTPS lifecycle fixture and new migration applied. It opens two real editor tabs, verifies 409 for stale project/task saves, preserves drafts, compares latest, rebases untouched fields, explicitly resaves, and rejects stale task deletion/status. Four desktop/mobile accessibility/overflow scans cover comparison panels; conflicts.json records results. Run the default v1 journeys separately with workspace flags disabled. Client code must send the revision loaded into the UI, never fetch a revision just before replaying a write.
+
+## Pilot policy and scoped load preview
+
+After the company/lifecycle/audit/conflicts journeys, fill Browser Alpha to exactly 20 active projects in the same disposable schema, using its transferred Owner as the project owner; keep the Retained project draft/task fixture from conflicts.cjs. Run `node tests/browser/pilot-policy.cjs` with the same lifecycle settings. It checks confirmed password-protected policy changes, reload, safe policy audit, denial of an earlier export ticket, disabled download UI and a retained project draft after quota rejection. Four desktop/mobile accessibility scans accompany pilot-policy.json. pilot-load.json records a bounded eight-worker/480-request read/status workload with expected stale conflicts, without replay. This is local hot-company regression evidence, not selected-host capacity/fairness certification. Caller cleanup owns all synthetic data and services. Default-off legacy journeys must be run separately.

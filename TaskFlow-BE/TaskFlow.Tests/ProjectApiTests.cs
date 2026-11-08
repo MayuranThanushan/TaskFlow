@@ -40,7 +40,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         Assert.Equal(host.Users[0].Id.ToString(), project.GetProperty("ownerId").GetString());
         Assert.Equal(JsonValueKind.String, project.GetProperty("id").ValueKind);
         Assert.EndsWith("Z", project.GetProperty("createdAtUtc").GetString());
-        Assert.Equal(6, project.EnumerateObject().Count());
+        Assert.Equal(7, project.EnumerateObject().Count());
         Assert.EndsWith("/api/v1/projects/" + project.GetProperty("id").GetString(), response.Headers.Location!.ToString());
         Assert.Equal(HttpStatusCode.OK, (await owner.GetAsync(response.Headers.Location)).StatusCode);
         await using var database = fixture.CreateContext();
@@ -140,7 +140,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         var detail = await Body(await owner.GetAsync("/api/v1/projects/" + id));
         Assert.Equal(id.ToString(), detail.GetProperty("id").GetString());
         Assert.Equal(8, detail.GetProperty("totalTasks").GetInt32()); Assert.Equal(1, detail.GetProperty("completedTasks").GetInt32()); Assert.Equal(13, detail.GetProperty("progressPercentage").GetInt32());
-        Assert.Equal(9, detail.EnumerateObject().Count());
+        Assert.Equal(10, detail.EnumerateObject().Count());
     }
 
     [MySqlFact, Trait("Category", "MySql")]
@@ -325,13 +325,18 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         private readonly WebApplicationFactory<Program> factory;
         public List<ApplicationUser> Users { get; } = [];
         public FixedClock Clock { get; } = new();
-        public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors)
+        public ProjectHost(MySqlFixture fixture, params IInterceptor[] interceptors) : this(fixture, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, params IInterceptor[] interceptors) : this(fixture, workspaceReads, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, params IInterceptor[] interceptors) : this(fixture, workspaceReads, workspaceWrites, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, params IInterceptor[] interceptors)
+            : this(fixture, workspaceReads, workspaceWrites, lifecycle, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -340,6 +345,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
                 });
             });
         }
+        public IServiceProvider Services => factory.Services;
         public async Task InitializeAsync()
         {
             await using var scope = factory.Services.CreateAsyncScope(); var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -373,12 +379,25 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(method, path) { Content = body is null ? null : JsonContent.Create(body) };
+            // Existing scenarios use a deliberate fresh read; conflict tests send explicit captured revisions separately.
+            if (path.StartsWith("/api/v2/", StringComparison.Ordinal) && method != HttpMethod.Post
+                && System.Text.RegularExpressions.Regex.IsMatch(path, @"/(projects|tasks)/[0-9]+(?:/status)?$"))
+            {
+                var loaded = await client.GetAsync(path.EndsWith("/status", StringComparison.Ordinal) ? path[..^7] : path);
+                if (loaded.IsSuccessStatusCode) request.Headers.Add("X-Expected-Version", (await loaded.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("version").GetString());
+            }
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async Task<HttpResponseMessage> TaskRawAsync(HttpClient client, string path, string body)
         {
             var token = (await client.GetFromJsonAsync<JsonElement>("/api/v1/auth/csrf")).GetProperty("requestToken").GetString();
             using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+            if (path.StartsWith("/api/v2/", StringComparison.Ordinal))
+            {
+                var loaded = await client.GetAsync(path.EndsWith("/status", StringComparison.Ordinal) ? path[..^7] : path);
+                if (loaded.IsSuccessStatusCode && (await loaded.Content.ReadFromJsonAsync<JsonElement>()).TryGetProperty("version", out var version))
+                    request.Headers.Add("X-Expected-Version", version.GetString());
+            }
             request.Headers.Add("X-CSRF-TOKEN", token); return await client.SendAsync(request);
         }
         public async ValueTask DisposeAsync()
@@ -386,10 +405,24 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await factory.DisposeAsync(); await using var database = fixture.CreateContext(); var ids = Users.Select(user => user.Id).ToArray();
             var projects = await database.Projects.IgnoreQueryFilters().Where(project => ids.Contains(project.OwnerId)).Select(project => project.Id).ToArrayAsync();
             await using var transaction = await database.Database.BeginTransactionAsync();
+            var invites = await database.WorkspaceInvitations.Where(i => ids.Contains(i.InviterUserId)).Select(i => i.Id).ToArrayAsync();
+            await database.InvitationTransitions.Where(a => invites.Contains(a.InvitationId)).ExecuteDeleteAsync();
+            await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();
+            var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
+            var deliveries = database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).Select(d => d.Id);
+            await database.OutboxAttempts.Where(a => deliveries.Contains(a.DeliveryId)).ExecuteDeleteAsync();
+            await database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).ExecuteDeleteAsync();
+            await database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).ExecuteDeleteAsync();
+            await database.WorkspaceAuditLogs.Where(a => ids.Contains(a.ActorUserId) || ids.Contains(a.TargetUserId)).ExecuteDeleteAsync();
             await database.ActivityLogs.IgnoreQueryFilters().Where(activity => projects.Contains(activity.ProjectId)).ExecuteDeleteAsync();
             await database.Tasks.IgnoreQueryFilters().Where(task => projects.Contains(task.ProjectId)).ExecuteDeleteAsync();
             await database.ProjectMembers.IgnoreQueryFilters().Where(member => projects.Contains(member.ProjectId)).ExecuteDeleteAsync();
             await database.Projects.IgnoreQueryFilters().Where(project => projects.Contains(project.Id)).ExecuteDeleteAsync();
+            var workspaces = await database.Workspaces.Where(w => (w.LegacyOwnerId != null && ids.Contains(w.LegacyOwnerId.Value)) || database.WorkspaceMemberships.Any(m => m.WorkspaceId == w.Id && ids.Contains(m.UserId) && m.Role == WorkspaceRole.Owner)).Select(w => w.Id).ToArrayAsync();
+            await database.WorkspaceAuditLogs.Where(a => workspaces.Contains(a.WorkspaceId)).ExecuteDeleteAsync();
+            await database.WorkspaceMemberships.Where(m => workspaces.Contains(m.WorkspaceId)).ExecuteDeleteAsync();
+            await database.Workspaces.Where(w => workspaces.Contains(w.Id)).ExecuteDeleteAsync();
+            await database.AccountEmailJobs.Where(j => ids.Contains(j.UserId)).ExecuteDeleteAsync();
             await database.Users.Where(user => ids.Contains(user.Id)).ExecuteDeleteAsync(); await transaction.CommitAsync();
         }
     }

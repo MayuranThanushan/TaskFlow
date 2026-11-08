@@ -38,9 +38,10 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             operation.Parameters.Add(new OpenApiParameter { Name = "X-CSRF-TOKEN", In = ParameterLocation.Header, Required = true,
                 Description = "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.", Schema = new OpenApiSchema { Type = JsonSchemaType.String, MinLength = 1 } });
         }
-        if (controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus")
+        if (controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus"
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateTask" or "Status")
         {
-            var bodyType = action.ActionName == "Update" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
+            var bodyType = action.ActionName is "Update" or "UpdateTask" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
             var schema = await context.GetOrCreateSchemaAsync(bodyType, null, cancellationToken);
             if (context.Document!.Components?.Schemas?.ContainsKey(bodyType.Name) != true) context.Document.AddComponent(bodyType.Name, schema);
             operation.RequestBody = new OpenApiRequestBody { Required = true, Content = new Dictionary<string, OpenApiMediaType>
@@ -58,7 +59,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             if (name is "page" or "pageSize") schema.Default = JsonValue.Create(name == "page" ? 1 : 20);
             if (name == "sortBy")
             {
-                ContractSchemaTransformer.SetEnum(schema, controller == typeof(ProjectsController) ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc"]);
+                ContractSchemaTransformer.SetEnum(schema, (controller == typeof(ProjectsController) || controller == typeof(WorkspaceReadsController) && action.ActionName == "Projects") ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc"]);
                 schema.Default = JsonValue.Create("createdAtUtc");
             }
             if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create("desc"); }
@@ -71,18 +72,49 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)
                 ? "Collection queries reject unsupported/repeated parameters; filters combine with AND. Paging defaults to 1/20, maximum pageSize 100; offset must fit Int32. " : "") +
+            (controller == typeof(WorkspaceReadsController) ? "Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. " : "") +
+            (controller == typeof(WorkspaceWritesController) && action.ActionName == "CreateWorkspace" ? "Company creation preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false), a validated session and CSRF. Creates a new company and its active Owner membership atomically. Name is the only writable field; no query parameters or legacy-owner mappings. This does not grant access to existing companies. " : controller == typeof(WorkspaceWritesController) ? "Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. " : "") +
             (write ? "Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. " : "") +
             (health ? "Readiness 503 uses the health DTO, not Problem Details." : "Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.");
+        if (controller == typeof(WorkspaceLifecycleController) || controller == typeof(WorkspaceAuditConsoleController) || controller == typeof(WorkspacePolicyController)) operation.Description += " Lifecycle preview requires all three WorkspaceReads/WorkspaceWrites/WorkspaceLifecycle flags. Enabling lifecycle closes legacy v1 resource APIs. Owner invariants, active membership and private-project ownership are rechecked under the workspace gate. Ownership changes require current-password proof; company audit contains stable IDs and no private project titles/content.";
+        if (controller == typeof(WorkspaceAuditConsoleController)) operation.Description += " Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants.";
+        bool versionedWrite = controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
+            || controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus" or "Delete"
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateProject" or "DeleteProject" or "UpdateTask" or "Status" or "DeleteTask";
+        if (versionedWrite)
+        {
+            operation.Parameters ??= [];
+            operation.Parameters.Add(new OpenApiParameter { Name = "X-Expected-Version", In = ParameterLocation.Header,
+                Required = controller == typeof(WorkspaceWritesController), Schema = new OpenApiSchema { Type = JsonSchemaType.String, Pattern = "^[1-9][0-9]{0,18}$" },
+                Description = "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft." });
+        }
+        if (controller == typeof(AccountSecurityController)) operation.Description += " Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled.";
+        if (controller == typeof(WorkspacePolicyController)) operation.Description += " Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected.";
+        if (controller == typeof(InvitationsController)) operation.Description += " Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. The invitation UI ships separately in SaaS-021; no real mail provider is enabled.";
         var failures = new HashSet<int> { 500 };
+        if (controller == typeof(MfaController))
+        {
+            operation.Description += " Optional MFA enrollment requires Mfa:Enabled and verified email; existing enrolled accounts always require a second factor at sign-in even if enrollment is later disabled. Setup is session/stamp-bound for ten minutes. Authenticator secrets are encrypted; ten 128-bit recovery codes are returned only on confirmation/rotation and retained only as hashes. TOTP and recovery consumption are serialized and reject replay. Recovery sign-in does not grant privileged-action proof. Mutations require current password and applicable factor. Successful credential changes invalidate other sessions; disable invalidates all sessions.";
+            if (write) failures.Add(429);
+        }
+        if (context.Description.RelativePath?.StartsWith("api/v2/workspaces", StringComparison.Ordinal) == true && write)
+        { failures.Add(403); operation.Description += " Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available."; }
+        if (controller == typeof(InvitationsController)) { failures.Add(403); failures.Add(404); failures.Add(409); }
+        if (controller == typeof(WorkspaceWritesController) && action.ActionName is "CreateWorkspace" or "CreateProject" or "CreateTask") failures.Add(409);
+        if (versionedWrite) { failures.Add(409); if (controller == typeof(WorkspaceWritesController)) failures.Add(428); }
         if (!health)
         {
             failures.Add(400);
+            if (controller == typeof(AccountSecurityController) && action.ActionName is "RequestVerification" or "ForgotPassword" or "ConfirmEmail" or "ResetPassword") failures.Add(503);
+            if (action.EndpointMetadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any()) failures.Add(429);
+            if (controller == typeof(WorkspaceLifecycleController) || controller == typeof(WorkspaceAuditConsoleController) || controller == typeof(WorkspacePolicyController)) { failures.Add(403); failures.Add(404); failures.Add(409); }
             if (!anonymous || action.ActionName == "Login") failures.Add(401);
             if (controller == typeof(ProjectsController) && action.ActionName is "Get" or "Update" or "Delete"
-                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController)) failures.Add(404);
+                || controller == typeof(TasksController) || controller == typeof(ProjectMembersController) || controller == typeof(ActivityController) || controller == typeof(WorkspaceReadsController) || controller == typeof(WorkspaceWritesController)) failures.Add(404);
             if (controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
                 || controller == typeof(TasksController) && action.ActionName == "Delete"
                 || controller == typeof(ProjectMembersController) && action.ActionName != "List") failures.Add(403);
+            if (controller == typeof(WorkspaceWritesController)) { failures.Add(403); if (action.ActionName is "AddMember" or "RemoveMember") failures.Add(409); }
             if (controller == typeof(UsersController) || controller == typeof(AuthController) && action.ActionName == "Register"
                 || controller == typeof(ProjectMembersController) && action.ActionName != "List") failures.Add(409);
             if (controller == typeof(AuthController) && action.ActionName is "Login" or "Register") failures.Add(429);

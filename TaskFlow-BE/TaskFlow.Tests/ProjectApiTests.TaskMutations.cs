@@ -25,7 +25,7 @@ public sealed partial class ProjectApiTests
         foreach (var field in new[] { "description", "assigneeId", "dueDateUtc" }) Assert.Equal(JsonValueKind.Null, cleared.GetProperty(field).ValueKind);
         foreach (var status in new[] { "Done", "ToDo", "InProgress" })
         {
-            var response = await Body(await host.MemberWriteAsync(owner, HttpMethod.Patch, path + "/status", new { status })); Assert.Equal(status, response.GetProperty("status").GetString()); Assert.Equal(3, response.EnumerateObject().Count());
+            var response = await Body(await host.MemberWriteAsync(owner, HttpMethod.Patch, path + "/status", new { status })); Assert.Equal(status, response.GetProperty("status").GetString()); Assert.Equal(4, response.EnumerateObject().Count());
         }
         host.Clock.Now = host.Clock.Now.AddMinutes(1);
         var before = await Body(await owner.GetAsync(path));

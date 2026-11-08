@@ -8,6 +8,11 @@ namespace TaskFlow.Tests;
 public sealed class ProjectAccessPolicyTests
 {
     [Theory]
+    [InlineData(ProjectRole.Viewer, ProjectOperation.Read, ProjectAccessDecision.Allowed)]
+    [InlineData(ProjectRole.Viewer, ProjectOperation.WriteTasks, ProjectAccessDecision.Forbidden)]
+    [InlineData(ProjectRole.Viewer, ProjectOperation.DeleteTasks, ProjectAccessDecision.Forbidden)]
+    [InlineData(ProjectRole.Viewer, ProjectOperation.ManageMembers, ProjectAccessDecision.Forbidden)]
+    [InlineData(ProjectRole.Viewer, ProjectOperation.ManageProject, ProjectAccessDecision.Forbidden)]
     [InlineData(ProjectRole.Owner, ProjectOperation.Read, ProjectAccessDecision.Allowed)]
     [InlineData(ProjectRole.Owner, ProjectOperation.ManageProject, ProjectAccessDecision.Allowed)]
     [InlineData(ProjectRole.Owner, ProjectOperation.ManageMembers, ProjectAccessDecision.Allowed)]

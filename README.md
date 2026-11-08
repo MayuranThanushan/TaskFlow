@@ -2,6 +2,28 @@
 
 Private projects, membership, tasks, dashboard progress, activity history and profiles. Follow this checklist in order to run the application manually on Windows. Commands use PowerShell and the existing D:\TaskFlow workspace.
 
+## Print the startup checklist or run with visible commands
+
+To print the complete manual commands with this checkout's paths, without starting services, installing dependencies or applying migrations:
+
+```powershell
+Set-Location D:\TaskFlow
+./scripts/Start-Local.ps1 -PrintCommandsOnly
+# Include the company/team/invitation preview flags:
+./scripts/Start-Local.ps1 -PrintCommandsOnly -EnableSaasPreview
+```
+
+Copy the generated **Terminal A**, **Terminal B** and **Terminal C** sections separately. Each section shows its working directory, settings and commands. The private database connection is loaded by reference; its value is never printed.
+
+To have the helper run the steps while printing the commands and directories:
+
+```powershell
+Set-Location D:\TaskFlow
+./scripts/Start-Local.ps1 -EnableSaasPreview
+```
+
+Normal execution saves the manual checklist at `.local/runtime/startup-commands.ps1` and prints each command before running it. Read that file section by section; do not execute the whole checklist as a single script, because the API and frontend run in separate foreground terminals. Use `-SkipDatabase` with either mode for your own development MySQL, after configuring `ConnectionStrings__TaskFlow` privately in the API terminal. Mail workers are configured separately; this option enables the company/invitation UI and APIs, not email sending. Existing Vite must be restarted to inherit changed preview flags. Keep the checklist below for fully manual startup without the helper.
+
 ## 1. Stop the old backend before building
 
 - [ ] In the terminal running the API, press **Ctrl+C**. Also stop Vite with Ctrl+C if you want to restart the frontend. Keep MySQL running.
@@ -31,7 +53,7 @@ Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
 
 ## 2. Check the required tools
 
-- [ ] Open **Terminal A** in D:\TaskFlow. Check installed tools: .NET SDK 10.0.400 or its allowed compatible patch, Node 22.15.0 and npm 11.3.0. Full version details: [toolchain](docs/toolchain.md).
+- [ ] Open **Terminal A** in D:\TaskFlow. Check installed tools: .NET SDK 10.0.400 or its allowed compatible patch, Node 22.23.4 and npm 11.3.0. Full version details: [toolchain](docs/toolchain.md).
 
 ```powershell
 Set-Location D:\TaskFlow
@@ -195,4 +217,4 @@ The implemented MVP is locally verified. Container execution, hosted CI and sele
 
 ## Next product releases
 
-The target for future releases is multi-company SaaS. The [gap assessment](Documents/Product-Gap-Assessment.md) documents 25 findings; the [feature roadmap](Documents/Feature-Release-Roadmap.md) sequences 51 tasks for workspaces, audit, invitations, notifications, Kanban and later commercial/enterprise capabilities. Read the [architecture proposal](docs/saas-architecture.md) before implementation. These are planned changes, not shipped features. SaaS-001 is complete as a design task: [company boundaries and permissions](docs/decisions/0005-commercial-saas-boundaries.md), [migration contract](docs/saas/migration-cutover.md) and [security acceptance cases](docs/saas/tenant-threat-model.md). SaaS-002 adds [delivery/security checks and release gates](docs/ci-release-gates.md); hosted execution and repository protection still need verification. SaaS-003 adds [typed API contracts and drift verification](docs/contracts/README.md). Next implementation task: SaaS-004 service metrics and trace export.
+The target for future releases is multi-company SaaS. The [gap assessment](Documents/Product-Gap-Assessment.md) documents 25 findings; the [feature roadmap](Documents/Feature-Release-Roadmap.md) sequences 51 tasks for workspaces, audit, invitations, notifications, Kanban and later commercial/enterprise capabilities. Read the [architecture proposal](docs/saas-architecture.md) before implementation. These are planned changes, not shipped features. SaaS-001 is complete as a design task: [company boundaries and permissions](docs/decisions/0005-commercial-saas-boundaries.md), [migration contract](docs/saas/migration-cutover.md) and [security acceptance cases](docs/saas/tenant-threat-model.md). SaaS-002 adds [delivery/security checks and release gates](docs/ci-release-gates.md); hosted execution and repository protection still need verification. SaaS-003 adds [typed API contracts and drift verification](docs/contracts/README.md). SaaS-004 adds [service metrics and opt-in trace export](docs/observability.md). SaaS-005 selected-host verification awaits hosting; SaaS-006 [shared UI modularization](docs/shared-ui.md) is implemented and verified locally. SaaS-007 adds [repeatable load verification and a draft pilot operating plan](docs/pilot-operations.md), with an 8,000-request local baseline. Pilot sizing approval, named responders and selected-host measurements remain open. SaaS-008 adds [workspace schema expansion and offline legacy backfill](docs/saas/workspace-expansion.md). Tenant context, mandatory scope and v2 cutover remain pending. SaaS-009 adds [default-off workspace-scoped read APIs](docs/saas/workspace-reads.md). SaaS-010 adds [scoped writes and composite references](docs/saas/workspace-writes.md), also disabled by default. SaaS-011 adds [company creation, switching and scoped navigation](docs/saas/company-navigation.md), with the company UI disabled by default. Mandatory scope and coordinated cutover remain pending. SaaS-012 [company/project lifecycle and redacted governance audit](docs/saas/workspace-lifecycle.md) is implemented behind a third default-off flag. SaaS-013 [versioned business audit and restricted security events](docs/saas/structured-audit.md) is implemented and verified locally on 29 October 2026. SaaS-014 [audit console and bounded exports](docs/saas/audit-console.md) is implemented locally on 1 November 2026. SaaS-015 [resource revisions and conflict resolution](docs/saas/resource-versions.md) is implemented locally on 2 November 2026. Apply the sixth migration before running this release. SaaS-016 [atomic pilot quotas and review policies](docs/saas/pilot-policy.md) is implemented locally on 2 November 2026. Apply the seventh migration and review runtime grants before this release. SaaS-017 [transactional outbox and checkpoint worker](docs/saas/outbox-workers.md) is implemented locally on 3 November 2026. Apply the eighth migration and separate producer/worker grants; the worker is opt-in and sends no email. SaaS-018 [email abstraction, templates and private local/staging capture](docs/saas/email-capture.md) is implemented locally on 3 November 2026. Real-provider staging delivery and bounce integration remain gated; production email is disabled. SaaS-019 [account verification, recovery/change and reauthentication](docs/saas/account-security.md) is implemented locally on 4 November 2026. Apply migration nine and API/account-mail grants; email flows remain a default-off local/staging preview. SaaS-020 [company/project invitation API and lifecycle](docs/saas/invitations.md) is implemented locally on 5 November 2026. Apply migration ten and invitation grants; the invitation API remains default off and mail uses local/staging capture. SaaS-021 [invitation onboarding and team-management UI](docs/saas/invitation-ui.md) is implemented locally on 5 November 2026, including verified-recipient preview, signup/login handoff, confirmed resend/revoke and reserved-seat visibility. The UI remains default off. SaaS-022 [MFA, recovery codes and privileged-action policy](docs/saas/mfa.md) is implemented locally on 7 November 2026. Apply migration eleven and API-only MFA grants; enrollment and administrator enforcement remain independently default off. Next is SaaS-023 onboarding delivery, abuse controls and tenant acceptance.

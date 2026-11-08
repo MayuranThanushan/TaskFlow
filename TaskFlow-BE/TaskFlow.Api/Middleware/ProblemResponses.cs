@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -16,7 +15,7 @@ public static class ProblemResponses
     public static ProblemDetails Enrich(HttpContext context, ProblemDetails problem)
     {
         problem.Type ??= "about:blank";
-        problem.Extensions["traceId"] = Activity.Current?.Id ?? context.TraceIdentifier;
+        problem.Extensions["traceId"] = context.TraceIdentifier;
         return problem;
     }
 

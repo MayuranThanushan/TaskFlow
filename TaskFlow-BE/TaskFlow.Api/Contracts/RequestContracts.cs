@@ -26,6 +26,7 @@ public sealed class ApiProblem
     public string Title { get; set; } = null!;
     public int Status { get; set; }
     public string TraceId { get; set; } = null!;
+    public string? Code { get; set; }
     public string? Detail { get; set; }
     public string? Instance { get; set; }
     public Dictionary<string, string[]>? Errors { get; set; }

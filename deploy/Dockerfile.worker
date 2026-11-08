@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble AS build
+WORKDIR /src
+COPY global.json Directory.Build.props ./
+COPY TaskFlow-BE/ TaskFlow-BE/
+RUN dotnet restore TaskFlow-BE/TaskFlow.Worker --locked-mode
+RUN dotnet publish TaskFlow-BE/TaskFlow.Worker -c Release --no-restore -o /out /p:UseAppHost=false
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.11-noble
+WORKDIR /app
+COPY --from=build /out/ ./
+ENV DOTNET_ENVIRONMENT=Production TASKFLOW_SECRETS_DIRECTORY=/run/secrets
+USER $APP_UID
+ENTRYPOINT ["dotnet", "TaskFlow.Worker.dll"]
