@@ -25,6 +25,7 @@ def main():
     parser.add_argument('origin', help='HTTPS origin without a path')
     parser.add_argument('--ca-file', help='Public PEM CA/certificate for a private test origin')
     parser.add_argument('--register', action='store_true', help='Create the supplied disposable smoke account')
+    parser.add_argument('--public-only', action='store_true', help='Check public routing and security without credentials or account changes')
     phase = parser.add_mutually_exclusive_group()
     phase.add_argument('--keep-session', metavar='FILE', help='Save a sensitive session file for a restart check')
     phase.add_argument('--resume-session', metavar='FILE', help='Verify a saved session after restart, then log out')
@@ -35,6 +36,8 @@ def main():
         parser.error('Supply an HTTPS origin without path, credentials, query or fragment.')
     if args.register and args.resume_session:
         parser.error('--register cannot be combined with --resume-session')
+    if args.public_only and (args.register or args.keep_session or args.resume_session):
+        parser.error('--public-only cannot be combined with registration or session persistence')
     context = ssl.create_default_context(cafile=args.ca_file)
     jar = http.cookiejar.LWPCookieJar()
     if args.resume_session:
@@ -101,6 +104,12 @@ def main():
         require(status == 404 and 'application/problem+json' in headers.get('Content-Type', ''), 'A server miss returned SPA HTML: ' + path)
         require(json.loads(body).get('traceId'), 'API problem lacks trace ID.')
     print('HTTPS, readiness, production assets, deep links, caching and JSON API routing passed.', flush=True)
+
+    if args.public_only:
+        require(request('/api/v1/auth/me')[0] == 401, 'Anonymous current-user request must return 401.')
+        require(bool(token()), 'Public CSRF bootstrap failed.')
+        print('Anonymous access and CSRF bootstrap passed; no account changes performed.', flush=True)
+        return
 
     if args.resume_session:
         profile()

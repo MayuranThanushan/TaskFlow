@@ -52,6 +52,10 @@ Remove-Item Env:ConnectionStrings__TaskFlow
 
 ## 4. Create the web service
 
+Prepared branch: [`hosting/free-render`](https://github.com/MayuranThanushan/TaskFlow/tree/hosting/free-render). [Open its Render deployment form](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2FMayuranThanushan%2FTaskFlow%2Ftree%2Fhosting%2Ffree-render) after completing the database and key steps. Review the selected owner, branch and Free plan before submitting. The form does not constitute an already running deployment. The branch-specific link follows [Render's deployment shortcut documentation](https://render.com/docs/deploy-to-render).
+
+The [Linux image workflow](https://github.com/MayuranThanushan/TaskFlow/actions/runs/42466013949) was submitted on 8 November 2026, but GitHub refused to start the job because the account is locked due to a billing issue. No Docker step ran. No payment details or billing settings were changed. Resolve the lock with GitHub support without adding paid resources, then rerun the workflow. It builds the combined image, checks non-root execution and frontend assets, generates temporary private keys inside a disposable container, and checks startup refusal without secrets. It publishes no image, cache, artifact or cloud resource.
+
 - [ ] Review and push the hosting changes to an owner-controlled repository branch. Import [render.yaml](../render.yaml) as a Render Blueprint using that branch. Confirm the service says **Free** and no other resources are proposed.
 - [ ] Set `ConnectionStrings__TaskFlow` to the application identity's verified-TLS connection and set the protected key ring. The manifest intentionally leaves both secrets unset.
 - [ ] Keep automatic deployments off until the pilot is verified. No database migrations run during web startup.
@@ -60,6 +64,37 @@ Remove-Item Env:ConnectionStrings__TaskFlow
 The opt-in Render ingress adapter accepts the HTTPS scheme only for the exact managed hostname and Render platform identity. It ignores forwarded host and client-IP headers. It relies on Render Free's public-edge-only ingress; do not reuse this mode for exposed container ports, private ingress or custom domains. Authentication limits conservatively aggregate by ingress socket peer until a trusted client-IP path is verified; assess this constraint before broader use.
 
 ## 5. Verify before inviting users
+
+From `D:\TaskFlow`, set the actual assigned origin and warm the sleeping service, then run credential-free checks:
+
+```powershell
+$taskflowOrigin = 'https://YOUR-SERVICE.onrender.com'
+Invoke-WebRequest "$taskflowOrigin/api/v1/health/ready" -UseBasicParsing -TimeoutSec 120 | Select-Object StatusCode
+python scripts/smoke_deployment.py $taskflowOrigin --public-only
+```
+
+These checks perform GET/HEAD requests only and do not create accounts. For the authenticated restart/logout check, create a synthetic account in the browser, then enter its credentials privately and save a new session file:
+
+```powershell
+$taskflowSmokeCredential = Get-Credential -Message 'Synthetic pilot account only'
+try {
+    $env:TASKFLOW_SMOKE_EMAIL = $taskflowSmokeCredential.UserName
+    $env:TASKFLOW_SMOKE_PASSWORD = $taskflowSmokeCredential.GetNetworkCredential().Password
+    python scripts/smoke_deployment.py $taskflowOrigin --keep-session .local/free-hosting/hosted-session.cookies
+    if ($LASTEXITCODE -ne 0) { throw 'Hosted authentication checks failed.' }
+} finally {
+    Remove-Item Env:TASKFLOW_SMOKE_EMAIL, Env:TASKFLOW_SMOKE_PASSWORD -ErrorAction SilentlyContinue
+    $taskflowSmokeCredential = $null
+}
+```
+
+Restrict access to the saved cookie file. Restart the service in Render without replacing its key secret, warm readiness again, then run:
+
+```powershell
+python scripts/smoke_deployment.py $taskflowOrigin --resume-session .local/free-hosting/hosted-session.cookies
+```
+
+The successful resume check logs out, rejects the saved cookie and removes the file. If verification fails, remove the private cookie file after investigating; never upload it as evidence. This script verifies transport/authentication; perform the two-company CRUD checks below separately.
 
 - [ ] Confirm HTTPS readiness at `/api/v1/health/ready`, frontend deep links and secure session/CSRF cookies on the public origin.
 - [ ] Register two synthetic accounts; test company isolation, project/task CRUD, stale edit conflicts and owner-only deletion.

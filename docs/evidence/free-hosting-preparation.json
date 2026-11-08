@@ -6,9 +6,11 @@
   "verification": {
     "backend": {"passed": 311, "failed": 0, "skipped": 0, "database": "isolated local MySQL schema removed after tests"},
     "operations": {"passed": 35},
+    "publicOnlySmoke": "Passed against the local published HTTPS API and disposable TiDB: readiness, assets, deep links, cache/security policy, JSON misses, anonymous rejection and CSRF bootstrap. Not a public-origin result.",
     "hostingAndTransportFocused": {"passed": 19},
     "renderBlueprint": "validated against official Render JSON schema",
     "entrypoint": "bash syntax check passed",
+    "hostedContainerWorkflow": {"url": "https://github.com/MayuranThanushan/TaskFlow/actions/runs/42466013949", "result": "Blocked before any step: GitHub account locked due to billing issue. No Docker execution or payment changes.", "branch": "hosting/free-render"},
     "secretScan": "new hosting, operations, deploy/render and scripts directories passed redacted gitleaks scan",
     "publishedApi": "Release publish passed after aligning EF Design with the existing 10.0.11 database stack",
     "cloudDatabase": {
