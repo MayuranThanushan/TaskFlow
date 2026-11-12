@@ -331,12 +331,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, params IInterceptor[] interceptors)
             : this(fixture, workspaceReads, workspaceWrites, lifecycle, false, interceptors) { }
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, params IInterceptor[] interceptors)
+            : this(fixture, workspaceReads, workspaceWrites, lifecycle, invitations, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, bool notifications, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString() }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString(), ["Notifications:Enabled"] = notifications.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -409,6 +411,7 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await database.InvitationTransitions.Where(a => invites.Contains(a.InvitationId)).ExecuteDeleteAsync();
             await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();
             var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
+            await database.UserNotifications.Where(n => ids.Contains(n.RecipientUserId) || events.Contains(n.EventId)).ExecuteDeleteAsync();
             var deliveries = database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).Select(d => d.Id);
             await database.OutboxAttempts.Where(a => deliveries.Contains(a.DeliveryId)).ExecuteDeleteAsync();
             await database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).ExecuteDeleteAsync();

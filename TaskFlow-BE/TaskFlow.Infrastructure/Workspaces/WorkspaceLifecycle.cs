@@ -67,7 +67,7 @@ public sealed partial class WorkspaceLifecycle(IServiceScopeFactory scopes, Task
         var actor = await Member(db, context, context.ActorId, token);
         if (actor.State != WorkspaceMembershipState.Active) Missing();
         await change(db, actor);
-        TaskFlow.Infrastructure.Outbox.OutboxEnqueue.Capture(db);
+        await TaskFlow.Infrastructure.Outbox.OutboxEnqueue.CaptureAsync(db, token);
         await db.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
     }

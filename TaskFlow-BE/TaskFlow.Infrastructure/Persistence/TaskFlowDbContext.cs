@@ -3,13 +3,16 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TaskFlow.Domain.Entities;
 using TaskFlow.Infrastructure.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace TaskFlow.Infrastructure.Persistence;
 
-public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock)
+public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options, TimeProvider clock, IConfiguration? configuration = null)
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+    public bool NotificationsEnabled => configuration?.GetValue<bool>("Notifications:Enabled") == true;
     public DbSet<AccountMfa> AccountMfa => Set<AccountMfa>();
     public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();
     public DbSet<InvitationTransition> InvitationTransitions => Set<InvitationTransition>();
@@ -79,6 +82,8 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         {
             if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
+            if (entry.Entity is UserNotification && (entry.State == EntityState.Deleted || entry.State == EntityState.Modified && entry.Properties.Any(p => p.IsModified && p.Metadata.Name != nameof(UserNotification.ReadAtUtc))))
+                throw new InvalidOperationException("Only notification read state is mutable.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)
                 throw new InvalidOperationException("Projects and tasks require explicit soft deletion.");
             if (entry.State is not (EntityState.Added or EntityState.Modified)) continue;

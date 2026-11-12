@@ -17,7 +17,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .UseCollation("utf8mb4_0900_ai_ci")
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>
@@ -729,6 +729,55 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.UserNotification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ReadAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("RecipientUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId", "EventId");
+
+                    b.HasIndex("WorkspaceId", "RecipientUserId", "EventId")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "RecipientUserId", "Id");
+
+                    b.HasIndex("WorkspaceId", "RecipientUserId", "ReadAtUtc", "Id");
+
+                    b.ToTable("UserNotifications", t =>
+                        {
+                            t.HasCheckConstraint("CK_UserNotifications_Kind", "Kind = 'TaskAssigned'");
+                        });
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.Workspace", b =>
                 {
                     b.Property<long>("Id")
@@ -1279,6 +1328,24 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.UserNotification", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entities.OutboxEvent", "Event")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "EventId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entities.Workspace", b =>

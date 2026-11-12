@@ -72,3 +72,8 @@ GRANT INSERT, SELECT (Id) ON taskflow.InvitationTransitions TO 'taskflow'@'%';
 
 -- SaaS-022: private account MFA material; never grant workers/readers access.
 GRANT SELECT, INSERT, UPDATE ON taskflow.AccountMfa TO 'taskflow'@'%';
+
+-- SaaS-024: recipient inbox metadata; no title snapshots or email credentials.
+-- Only ReadAtUtc is mutable through the runtime account. No worker grant is added.
+GRANT SELECT, INSERT ON taskflow.UserNotifications TO 'taskflow'@'%';
+GRANT UPDATE (ReadAtUtc) ON taskflow.UserNotifications TO 'taskflow'@'%';

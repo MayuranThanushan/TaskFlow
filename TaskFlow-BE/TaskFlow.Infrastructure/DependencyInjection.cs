@@ -16,6 +16,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<TaskFlow.Application.Features.Notifications.IUserNotifications, TaskFlow.Infrastructure.Notifications.UserNotifications>();
         services.AddDbContext<TaskFlowDbContext>(options =>
         {
             var connection = configuration.GetConnectionString("TaskFlow");

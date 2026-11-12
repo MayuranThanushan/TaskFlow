@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-12",
+  "release": "SaaS-024",
+  "status": "implemented and verified locally; default off; not publicly deployed",
+  "scope": "Recipient-bound in-app TaskAssigned notifications, transactional source materialization and list/count/read-state API. Inbox UI and preferences remain SaaS-025.",
+  "verification": {
+    "backend": {"passed": 359, "failed": 0, "skipped": 0, "notificationTests": 8, "database": "isolated local MySQL schema removed after test run"},
+    "operations": {"passed": 35},
+    "contract": {"paths": 61, "operations": 79, "liveContractTestsAfterFinalAmendment": 4, "generatedTypes": "regenerated and frontend typecheck passed"},
+    "publishedHttpsApi": {"passed": true, "checks": 5, "database": "separate disposable schema with restricted runtime identity; schema and temporary identities removed", "details": ["twelve migrations and readiness", "recipient-only assignment notification and atomic source records", "read/unread and visible counts", "runtime retarget/delete denied while read-state writes permitted", "revoked access hides titles/counts and blocks writes"]},
+    "build": "Debug and isolated Release API builds/publish passed without warnings"
+  },
+  "rollout": {"migration": "20261112153116_UserNotifications", "migrationNumber": 12, "flag": "Notifications:Enabled=false", "grants": "UserNotifications SELECT/INSERT and UPDATE(ReadAtUtc) only", "externalWorkers": "none added", "productionAndRenderActivation": "unchanged; disabled"},
+  "limitations": ["Only task-assignment events supported initially", "No historical notification backfill or event retargeting", "Inbox UI, bulk read and preferences remain SaaS-025", "No automatic notification purge", "Existing scoped administrator MFA policy applies to read-state writes when enabled", "Selected-host migration/performance, CI/container execution and commercial acceptance remain external gates", "SendGrid real-delivery and authenticated bounce/complaint gates remain open and separate"]
+}

@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-022",
-  "date": "2026-11-07",
-  "scope": "Current identity, opt-in company APIs and MFA/admin policy, checkpoint worker and local/staging encrypted mail capture. Local evidence only; provider delivery, hosting and tenant cutover remain gated.",
+  "release": "SaaS-024",
+  "date": "2026-11-12",
+  "scope": "Current identity/company/MFA and staged SendGrid controls plus default-off recipient in-app assignment notifications. Local evidence only; public hosting, provider delivery and tenant cutover remain gated.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -1207,6 +1207,51 @@
         "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
         "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
       ]
+    },
+    {
+      "operationId": "Notifications_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications",
+      "controls": [
+        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
+        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
+        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
+        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "docs/saas/notifications.md"
+      ]
+    },
+    {
+      "operationId": "Notifications_Count",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/unread-count",
+      "controls": [
+        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
+        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
+        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
+        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "docs/saas/notifications.md"
+      ]
+    },
+    {
+      "operationId": "Notifications_SetRead",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/{notificationId}",
+      "controls": [
+        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
+        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
+        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
+        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "docs/saas/notifications.md"
+      ]
     }
   ],
   "nonHttpEntryPoints": [
@@ -1312,6 +1357,14 @@
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
         "deploy/invitation-mail-roles.sql.example"
+      ]
+    },
+    {
+      "entry": "NotificationMaterializer",
+      "controls": [
+        "Recipient bound to a new TaskAssigned event in the existing company business/outbox transaction",
+        "Active company/project membership; self-action suppression; no historical retargeting or title snapshots",
+        "Unique company/recipient/event key and composite parent/recipient references; source failure rolls back notification too"
       ]
     }
   ],

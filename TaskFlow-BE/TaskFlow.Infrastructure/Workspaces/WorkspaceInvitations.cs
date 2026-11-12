@@ -47,7 +47,7 @@ public sealed class WorkspaceInvitations(IServiceScopeFactory scopes, IDataProte
             var invitation = await db.WorkspaceInvitations.SingleAsync(i => i.Id == transition.InvitationId && i.WorkspaceId == c.WorkspaceId, token);
             db.WorkspaceAuditLogs.Add(new() { WorkspaceId = c.WorkspaceId, ActorUserId = transition.ActorUserId, TargetUserId = transition.ActorUserId, ProjectId = invitation.ProjectId, Action = "Invitation" + transition.Action, SubjectId = Id(invitation.Id) });
         }
-        TaskFlow.Infrastructure.Outbox.OutboxEnqueue.Capture(db);
+        await TaskFlow.Infrastructure.Outbox.OutboxEnqueue.CaptureAsync(db, token);
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token); return result;
     }
     public Task<InvitationPage> ListAsync(WorkspaceWriteContext c, long? project, int page, int size, CancellationToken token) => Write<InvitationPage>(c, async (db, now) =>

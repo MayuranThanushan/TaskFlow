@@ -30,7 +30,7 @@ public sealed class WorkspaceDirectory(TaskFlowDbContext database) : IWorkspaceD
         });
         await database.SaveChangesAsync(token);
         database.WorkspaceAuditLogs.Add(new WorkspaceAuditLog { WorkspaceId = workspace.Id, ActorUserId = actorId, TargetUserId = actorId, Action = "CompanyCreated", ToRole = "Owner" });
-        TaskFlow.Infrastructure.Outbox.OutboxEnqueue.Capture(database);
+        await TaskFlow.Infrastructure.Outbox.OutboxEnqueue.CaptureAsync(database, token);
         await database.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
         return new(workspace.Id.ToString(CultureInfo.InvariantCulture), workspace.Name, WorkspaceRole.Owner.ToString());

@@ -6,6 +6,8 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 ## Release sequence
 
+SaaS-024 adds the local [recipient notification foundation](../docs/saas/notifications.md) on 12 November 2026, with assignment materialization, list/count and read/unread APIs behind a default-off flag. Migration twelve and new grants are required. Inbox UI/preferences remain SaaS-025; hosted acceptance is not claimed.
+
 SaaS-023 local implementation adds [SendGrid staging and onboarding abuse controls](../docs/saas/onboarding-acceptance.md) on 12 November 2026. Real inbox delivery, authenticated bounce/complaint ingestion and selected-host acceptance remain open; R2 is not production-certified.
 
 | Release | Outcome | Main scope | Release gate |

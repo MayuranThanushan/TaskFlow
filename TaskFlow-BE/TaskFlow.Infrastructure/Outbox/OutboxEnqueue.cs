@@ -12,19 +12,20 @@ public static class OutboxEnqueue
             or "Company.CompanyMemberReactivated" or "Company.CompanyMemberRemoved" or "Company.CompanyMemberLeft"
             or "Company.CompanyOwnershipTransferred" or "Company.ProjectRoleChanged" or "Company.ProjectOwnershipTransferred"
             or "Company.ProjectMemberAdded" or "Company.ProjectMemberRemoved" or "Company.CompanyPolicyChanged" or "Company.InvitationCreated" or "Company.InvitationResent" or "Company.InvitationRevoked" or "Company.InvitationAccepted";
-    public static void Capture(TaskFlowDbContext db)
+    public static async Task CaptureAsync(TaskFlowDbContext db, CancellationToken token = default)
     {
         if (db.Database.CurrentTransaction is null) throw new InvalidOperationException("Outbox requires the business transaction.");
         foreach (var row in db.ChangeTracker.Entries<ActivityLog>().Where(e => e.State == EntityState.Added).Select(e => e.Entity).ToArray())
-            if (row.WorkspaceId is { } workspace) Add(db, workspace, row.ActorUserId, row.ProjectId, row.TaskId, "Project." + row.ActionType);
+            if (row.WorkspaceId is { } workspace) await Add(db, workspace, row.ActorUserId, row.ProjectId, row.TaskId, "Project." + row.ActionType, token);
         foreach (var row in db.ChangeTracker.Entries<WorkspaceAuditLog>().Where(e => e.State == EntityState.Added).Select(e => e.Entity).ToArray())
-            Add(db, row.WorkspaceId, row.ActorUserId, row.ProjectId, null, "Company." + row.Action);
+            await Add(db, row.WorkspaceId, row.ActorUserId, row.ProjectId, null, "Company." + row.Action, token);
     }
-    private static void Add(TaskFlowDbContext db, long workspace, long actor, long? project, long? task, string kind)
+    private static async Task Add(TaskFlowDbContext db, long workspace, long actor, long? project, long? task, string kind, CancellationToken token)
     {
         if (!Known(kind)) throw new InvalidOperationException("Unregistered business event kind.");
         var message = new OutboxEvent { WorkspaceId = workspace, ActorUserId = actor, ProjectId = project, TaskId = task,
             Kind = kind, CorrelationId = AuditCorrelation.Current(), CreatedAtUtc = DateTime.UtcNow };
         db.OutboxDeliveries.Add(new OutboxDelivery { WorkspaceId = workspace, Event = message });
+        await Notifications.NotificationMaterializer.CaptureAsync(db, message, token);
     }
 }

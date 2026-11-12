@@ -36,6 +36,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             if (type == typeof(AddProjectMemberRequest) && name == "role") { SetEnum(property, ["Member"]); property.Default = JsonValue.Create("Member"); }
             if (type == typeof(CreateTaskRequest) && name == "priority") property.Default = JsonValue.Create("Medium");
             if (name == "email") property.Format = "email";
+            if (type.Name == "NotificationDto" && name == "kind") SetEnum(property, ["TaskAssigned"]);
             if (schema.Required?.Contains(name) == true && property.Type == JsonSchemaType.String && property.MinLength is null or 0) property.MinLength = 1;
             if (name is "id" or "projectId" or "ownerId" or "userId" or "assigneeId" or "actorUserId" or "taskId" or "workspaceId" or "targetUserId" or "invitationId")
             {
