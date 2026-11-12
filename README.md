@@ -219,7 +219,9 @@ The implemented MVP is locally verified. Container execution, hosted CI and sele
 
 ## Next product releases
 
-SaaS-024 adds the default-off [in-app notification API and transactional materialization](docs/saas/notifications.md). Apply migration twelve and the updated runtime grants before deploying this revision. Inbox UI/preferences are next in SaaS-025; public-host acceptance remains pending.
+SaaS-025 adds the default-off [company inbox, bulk read and recipient preferences](docs/saas/notification-inbox.md). Apply migration thirteen and new runtime grants before deploying this revision. Enable both API and frontend notification flags only in the reviewed preview. SaaS-026 reminders/digests are next.
+
+SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current thirteen-migration deployment requirement; public-host acceptance remains pending.
 
 SaaS-023 adds the [SendGrid staging setup, shared invitation send budget and onboarding support runbook](docs/saas/onboarding-acceptance.md). Configure your key privately with [Set-SendGridSecrets.ps1](scripts/Set-SendGridSecrets.ps1). Real delivery, bounce callbacks and selected-host acceptance remain explicit gates; public production email remains disabled.
 

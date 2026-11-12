@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003 foundation, updated through SaaS-024. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 61 paths / 79 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003 foundation, updated through SaaS-025. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 63 paths / 82 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -9,6 +9,8 @@ Canonical representations use application/json; problems use application/problem
 Typed body binding accepts case variants of canonical camelCase names; the dynamic task PATCH parser requires exact field names. Enums are case-sensitive. Collection query names are case-insensitive at runtime; the document uses canonical camelCase names. The API additionally checks signed BIGINT numeric range, timestamp parsing/UTC year range, trimming, authorization and cross-field pagination/date rules that are not completely expressible in these schemas. Generated types are compile-time checks, not runtime validation or authorization. They cannot enforce a nonempty PATCH object by themselves.
 
 ## Generate a reviewed contract change
+
+SaaS-025 adds notification preference GET/PUT and bounded POST bulk read (63 paths / 82 operations). Preference revision 0 represents absent defaults; only the current user/company can change it. See [inbox semantics](../saas/notification-inbox.md).
 
 SaaS-024 adds three recipient-scoped notification operations (61 paths / 79 operations): list, unread count and PATCH read state. All require current company/project access and the default-off notification flag. See [notification semantics](../saas/notifications.md).
 

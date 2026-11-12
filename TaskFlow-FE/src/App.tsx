@@ -33,7 +33,7 @@ function AppLayout({ companiesEnabled, lifecycleEnabled }: { companiesEnabled: b
   const routePath = company ? location.pathname.slice(('/companies/' + company).length) : location.pathname
   const previousPath = useRef(location.pathname)
   useEffect(() => {
-    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/activity': 'Activity center', '/profile': 'Profile', '/account-security': 'Account security', '/invitations/accept': 'Invitation', '/invitations': 'Invitations', '/forgot-password': 'Password recovery', '/request-verification': 'Email verification', '/verify-email': 'Verify email', '/reset-password': 'Reset password', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work', '/companies': 'Companies', '/team': 'Company team', '/audit': 'Company audit', '/policy': 'Policy & capacity' }
+    const titles: Record<string, string> = { '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/activity': 'Activity center', '/profile': 'Profile', '/account-security': 'Account security', '/invitations/accept': 'Invitation', '/invitations': 'Invitations', '/forgot-password': 'Password recovery', '/request-verification': 'Email verification', '/verify-email': 'Verify email', '/reset-password': 'Reset password', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work', '/companies': 'Companies', '/team': 'Company team', '/audit': 'Company audit', '/policy': 'Policy & capacity', '/notifications': 'Inbox' }
     document.title = `${titles[routePath] ?? (routePath.endsWith('/activity') ? 'Project activity' : routePath.startsWith('/tasks/') ? 'Task' : routePath.endsWith('/tasks') ? 'Tasks' : routePath.endsWith('/tasks/new') ? 'Create task' : routePath.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
@@ -71,7 +71,7 @@ A lot more clarity.</span><span className="user-name"><span className="user-avat
     {session.status === 'authenticated' && session.message && <div className="connection-banner" role="status">{session.message}{' '}
       <button className="text-button" onClick={() => void refresh()}>Try again</button>
     </div>}
-    <main id="main-content" tabIndex={-1}>{session.status === 'authenticated' && <div className="workspace-topbar"><span>Workspace <span aria-hidden="true">/</span> <strong>{routePath === '/policy' ? 'Policy & capacity' : routePath === '/team' ? 'Team & access' : routePath === '/audit' ? 'Company audit' : routePath.startsWith('/activity') || routePath.endsWith('/activity') ? 'Activity' : routePath.startsWith('/tasks') ? 'Tasks' : routePath.startsWith('/projects') ? 'Projects' : routePath === '/profile' ? 'Profile' : routePath === '/account-security' ? 'Account security' : routePath.includes('/invitations') ? 'Invitations' : routePath === '/companies' ? 'Companies' : 'Overview'}</strong></span><span className="workspace-private"><span />Private workspace</span></div>}<Outlet /></main>
+    <main id="main-content" tabIndex={-1}>{session.status === 'authenticated' && <div className="workspace-topbar"><span>Workspace <span aria-hidden="true">/</span> <strong>{routePath === '/notifications' ? 'Inbox' : routePath === '/policy' ? 'Policy & capacity' : routePath === '/team' ? 'Team & access' : routePath === '/audit' ? 'Company audit' : routePath.startsWith('/activity') || routePath.endsWith('/activity') ? 'Activity' : routePath.startsWith('/tasks') ? 'Tasks' : routePath.startsWith('/projects') ? 'Projects' : routePath === '/profile' ? 'Profile' : routePath === '/account-security' ? 'Account security' : routePath.includes('/invitations') ? 'Invitations' : routePath === '/companies' ? 'Companies' : 'Overview'}</strong></span><span className="workspace-private"><span />Private workspace</span></div>}<Outlet /></main>
     <footer className="app-footer"><span>TaskFlow</span><span>A clearer way to work.</span></footer>
   </div>
 }
@@ -93,7 +93,7 @@ function NotFoundPage() {
     <p>The link may have changed. Let us get you back on track.</p><Link className="button primary" to="/">Back to TaskFlow</Link></section>
 }
 
-export default function App({ client = api, companiesEnabled = import.meta.env.VITE_WORKSPACES_ENABLED === 'true', lifecycleEnabled = companiesEnabled && import.meta.env.VITE_WORKSPACE_LIFECYCLE_ENABLED === 'true', invitationsEnabled = lifecycleEnabled && import.meta.env.VITE_INVITATIONS_ENABLED === 'true' }: { client?: ApiClient; companiesEnabled?: boolean; lifecycleEnabled?: boolean; invitationsEnabled?: boolean }) {
+export default function App({ client = api, companiesEnabled = import.meta.env.VITE_WORKSPACES_ENABLED === 'true', lifecycleEnabled = companiesEnabled && import.meta.env.VITE_WORKSPACE_LIFECYCLE_ENABLED === 'true', invitationsEnabled = lifecycleEnabled && import.meta.env.VITE_INVITATIONS_ENABLED === 'true', notificationsEnabled = lifecycleEnabled && import.meta.env.VITE_NOTIFICATIONS_ENABLED === 'true' }: { client?: ApiClient; companiesEnabled?: boolean; lifecycleEnabled?: boolean; invitationsEnabled?: boolean; notificationsEnabled?: boolean }) {
   return <AuthProvider client={client}><InvitationProvider><Routes><Route element={<AppLayout companiesEnabled={companiesEnabled} lifecycleEnabled={lifecycleEnabled} />}>
     <Route index element={<HomePage />} />
     <Route path="invitations/accept" element={<InvitationAcceptPage client={client} enabled={invitationsEnabled} />} />
@@ -106,7 +106,7 @@ export default function App({ client = api, companiesEnabled = import.meta.env.V
       <Route path="register" element={<AuthPage key="register" mode="register" />} />
     </Route>
     <Route element={<ProtectedRoute />}>
-      {companiesEnabled && <><Route path="companies" element={<CompanyDirectory client={client} />} /><Route path="companies/:workspaceId/*" element={<CompanyArea client={client} lifecycleEnabled={lifecycleEnabled} invitationsEnabled={invitationsEnabled} />} /></>}
+      {companiesEnabled && <><Route path="companies" element={<CompanyDirectory client={client} />} /><Route path="companies/:workspaceId/*" element={<CompanyArea client={client} lifecycleEnabled={lifecycleEnabled} invitationsEnabled={invitationsEnabled} notificationsEnabled={notificationsEnabled} />} /></>}
       <Route path="account-security/mfa" element={<MfaPage client={client} />} />
       <Route path="account-security" element={<AccountSecurityPage client={client} />} />
       <Route path="profile" element={<ProfilePage />} />

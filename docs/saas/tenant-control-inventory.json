@@ -1,5 +1,5 @@
 {
-  "release": "SaaS-024",
+  "release": "SaaS-025",
   "date": "2026-11-12",
   "scope": "Current identity/company/MFA and staged SendGrid controls plus default-off recipient in-app assignment notifications. Local evidence only; public hosting, provider delivery and tenant cutover remain gated.",
   "operations": [
@@ -1213,14 +1213,17 @@
       "method": "GET",
       "path": "/api/v2/workspaces/{workspaceId}/notifications",
       "controls": [
-        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
-        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
-        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
-        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "docs/saas/notifications.md"
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
       ]
     },
     {
@@ -1228,14 +1231,17 @@
       "method": "GET",
       "path": "/api/v2/workspaces/{workspaceId}/notifications/unread-count",
       "controls": [
-        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
-        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
-        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
-        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "docs/saas/notifications.md"
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
       ]
     },
     {
@@ -1243,14 +1249,71 @@
       "method": "PATCH",
       "path": "/api/v2/workspaces/{workspaceId}/notifications/{notificationId}",
       "controls": [
-        "Stamped session recipient; active company and private-project access before binding and in service snapshot",
-        "Notifications and three workspace flags default off; no recipient selector or raw event payload in API",
-        "Deleted/revoked resources excluded from titles, list totals and unread counts; live authorized names only",
-        "Repeatable-read count/list snapshot; company-gated idempotent read-state mutation; CSRF and rate limit for PATCH"
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "docs/saas/notifications.md"
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
+      ]
+    },
+    {
+      "operationId": "Notifications_MarkRead",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/read",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
+      ]
+    },
+    {
+      "operationId": "Notifications_Preferences",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
+      ]
+    },
+    {
+      "operationId": "Notifications_SetPreferences",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md"
       ]
     }
   ],
@@ -1515,6 +1578,19 @@
       "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
       "tests/operations/test_release_operations.py",
       "TaskFlow-BE/TaskFlow.Tests/MfaConfigurationTests.cs"
+    ]
+  },
+  "notificationUi": {
+    "controls": [
+      "Default-off scoped inbox, active recipient session, API-derived opaque links and escaped titles",
+      "URL filters and paging; explicit page selection for bulk writes; no automatic write retry",
+      "Abort/identity-keyed state clears company/account drafts and ignores late responses",
+      "Keyboard controls, live status/error states, explicit conflict reload and unavailable email channel"
+    ],
+    "evidenceSources": [
+      "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+      "tests/browser/notifications.cjs",
+      "docs/saas/notification-inbox.md"
     ]
   }
 }

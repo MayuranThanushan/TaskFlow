@@ -19,6 +19,7 @@ public static class NotificationMaterializer
             && (t.Project.OwnerId == t.AssigneeId || db.ProjectMembers.Any(m => m.WorkspaceId == message.WorkspaceId && m.ProjectId == t.ProjectId && m.UserId == t.AssigneeId && m.RevokedAtUtc == null)))
             .Select(t => t.AssigneeId).SingleOrDefaultAsync(token);
         if (recipient is not { } user) return;
+        if (await db.NotificationPreferences.AnyAsync(p => p.WorkspaceId == message.WorkspaceId && p.UserId == user && (!p.InAppEnabled || !p.TaskAssignedEnabled), token)) return;
         if (db.UserNotifications.Local.Any(n => ReferenceEquals(n.Event, message) && n.RecipientUserId == user)) return;
         db.UserNotifications.Add(new() { WorkspaceId = message.WorkspaceId, RecipientUserId = user, Event = message,
             ProjectId = message.ProjectId.Value, TaskId = message.TaskId.Value, CreatedAtUtc = message.CreatedAtUtc });

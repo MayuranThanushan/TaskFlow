@@ -1,5 +1,7 @@
 # SaaS-024: recipient in-app notifications
 
+Current rollout: [SaaS-025](notification-inbox.md) now provides the inbox UI, bulk read and preferences and requires migration thirteen. This document records the earlier API foundation and its twelfth migration; use the current matching build/migration set for deployment.
+
 12 November 2026. This release adds the notification persistence and API foundation. It is default off. The inbox screen and channel/event preferences belong to SaaS-025; reminders/digests belong to SaaS-026. SendGrid staging and its outstanding real-delivery/bounce gates remain separate.
 
 ## Initial event and delivery semantics

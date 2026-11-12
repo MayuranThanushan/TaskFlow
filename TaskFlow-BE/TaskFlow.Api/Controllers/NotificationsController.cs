@@ -47,6 +47,42 @@ public sealed class NotificationsController(IUserNotifications notifications) : 
         if (!WorkspaceReadFilter.TryId(notificationId, out var id)) throw new ProjectAccessException(ProjectAccessDecision.NotFound);
         await notifications.SetReadAsync(Scope(workspaceId), id, request.IsRead!.Value, token); return NoContent();
     }
+    [HttpPost("read"), EnableRateLimiting("governance"), ProducesResponseType(204)]
+    public async Task<IActionResult> MarkRead(string workspaceId, NotificationBulkReadRequest request, CancellationToken token)
+    {
+        if (Query() is { } error) return error;
+        var ids = new List<long>();
+        foreach (var value in request.NotificationIds)
+        {
+            if (!WorkspaceReadFilter.TryId(value, out var id)) { ModelState.AddModelError("notificationIds", "Choose valid notification IDs."); return ValidationProblem(ModelState); }
+            ids.Add(id);
+        }
+        if (ids.Distinct().Count() != ids.Count) { ModelState.AddModelError("notificationIds", "Choose distinct notification IDs."); return ValidationProblem(ModelState); }
+        await notifications.MarkReadAsync(Scope(workspaceId), ids, token); return NoContent();
+    }
+    [HttpGet("preferences"), ProducesResponseType<NotificationPreferencesDto>(200)]
+    public async Task<IActionResult> Preferences(string workspaceId, CancellationToken token)
+    {
+        if (Query() is { } error) return error;
+        return Ok(await notifications.PreferencesAsync(Scope(workspaceId), token));
+    }
+    [HttpPut("preferences"), EnableRateLimiting("governance"), ProducesResponseType<NotificationPreferencesDto>(200)]
+    public async Task<IActionResult> SetPreferences(string workspaceId, NotificationPreferencesRequest request, CancellationToken token)
+    {
+        if (Query() is { } error) return error;
+        if (!long.TryParse(request.ExpectedVersion, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var version)) { ModelState.AddModelError("expectedVersion", "Reload your preferences and use their revision."); return ValidationProblem(ModelState); }
+        return Ok(await notifications.SetPreferencesAsync(Scope(workspaceId), request.InAppEnabled!.Value, request.TaskAssignedEnabled!.Value, version, token));
+    }
+}
+public sealed class NotificationBulkReadRequest
+{
+    [Required, MinLength(1), MaxLength(100)] public string[] NotificationIds { get; set; } = [];
+}
+public sealed class NotificationPreferencesRequest
+{
+    [Required] public bool? InAppEnabled { get; set; }
+    [Required] public bool? TaskAssignedEnabled { get; set; }
+    [Required, RegularExpression("^(0|[1-9][0-9]{0,18})$")] public string ExpectedVersion { get; set; } = "";
 }
 public sealed class NotificationListQuery
 {

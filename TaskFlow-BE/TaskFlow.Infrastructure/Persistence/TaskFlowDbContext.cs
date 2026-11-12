@@ -12,6 +12,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
 {
     private readonly AuditCapture auditCapture = new();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
     public bool NotificationsEnabled => configuration?.GetValue<bool>("Notifications:Enabled") == true;
     public DbSet<AccountMfa> AccountMfa => Set<AccountMfa>();
     public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();

@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-12",
+  "release": "SaaS-025",
+  "status": "implemented and verified locally; default off; not publicly deployed",
+  "features": ["company-scoped inbox and unread navigation badge", "URL all/unread filters, paging, safe deep links and explicit read/unread", "atomic bounded mark-current-page-read", "recipient/company channel and task-assignment preferences with revision conflicts", "muted future materialization without history deletion or replay", "identity/scope cancellation and accessible desktop/mobile states"],
+  "verification": {
+    "backend": {"passed": 363, "failed": 0, "skipped": 0, "notificationTests": 12, "database": "dedicated local MySQL schema removed after run"},
+    "frontend": {"passed": 169, "files": 17, "failed": 0, "newInboxTests": 13, "build": "passed with inbox preview enabled", "lint": "passed"},
+    "operations": {"passed": 35},
+    "contract": {"paths": 63, "operations": 82, "snapshotAndGeneratedTypes": "regenerated and live drift check passed in full backend run"},
+    "publishedHttpsRehearsal": {"passed": true, "checks": 6, "scope": "local published API and actual compiled frontend, isolated thirteen-migration MySQL schema and separate restricted runtime identity", "permissions": "recipient read/preference writes succeed; retarget/delete of notifications and preferences denied; temporary schema and identities removed"},
+    "browser": {"journeys": 3, "scriptErrors": 0, "accessibilityScans": 6, "widths": [1440, 320], "violations": 0, "horizontalOverflow": false, "visualReview": "desktop inbox and mobile expanded preferences screenshots inspected"}
+  },
+  "rollout": {"migration": "20261112160350_NotificationPreferences", "migrationNumber": 13, "backendFlag": "Notifications:Enabled=false", "frontendFlag": "VITE_NOTIFICATIONS_ENABLED=false", "runtimeGrants": "SELECT/INSERT preferences; UPDATE booleans and Version only", "renderActivation": "unchanged; disabled", "newDependencies": false},
+  "limitations": ["TaskAssigned is the initial supported event", "Task-assignment email unavailable; security/invitation SendGrid flow unchanged", "No global account-level preference defaults or automatic purge", "Existing administrator step-up policy applies to scoped mutations", "Hosted CI/container, selected-host acceptance and manual assistive-technology review remain external gates", "Reminders and digests remain SaaS-026"]
+}

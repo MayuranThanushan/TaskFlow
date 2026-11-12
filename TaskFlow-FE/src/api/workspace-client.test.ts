@@ -52,6 +52,6 @@ describe('company request boundaries', () => {
     await expect(client.forWorkspace('1').request({ url: '/projects' })).rejects.toMatchObject({ status: 401 })
     expect(expire).toHaveBeenCalledOnce()
     for (const id of ['0', '-1', '01', '../1', '9223372036854775808']) expect(() => client.forWorkspace(id)).toThrow()
-    for (const url of ['/auth/logout', '//evil.test', '/projectsOther']) await expect(client.forWorkspace('1').request({ url })).rejects.toThrow()
+    for (const url of ['/auth/logout', '//evil.test', '/projectsOther', '/notificationsOther']) await expect(client.forWorkspace('1').request({ url })).rejects.toThrow()
   })
 })

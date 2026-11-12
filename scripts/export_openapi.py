@@ -10,6 +10,8 @@ EXPECTED = {
     "/api/v2/workspaces/{workspaceId}/notifications": {"get"},
     "/api/v2/workspaces/{workspaceId}/notifications/unread-count": {"get"},
     "/api/v2/workspaces/{workspaceId}/notifications/{notificationId}": {"patch"},
+    "/api/v2/workspaces/{workspaceId}/notifications/read": {"post"},
+    "/api/v2/workspaces/{workspaceId}/notifications/preferences": {"get", "put"},
     "/api/v2/workspaces/{workspaceId}/invitations": {"get", "post"},
     "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend": {"post"},
     "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke": {"post"},

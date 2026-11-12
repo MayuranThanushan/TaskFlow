@@ -77,3 +77,7 @@ GRANT SELECT, INSERT, UPDATE ON taskflow.AccountMfa TO 'taskflow'@'%';
 -- Only ReadAtUtc is mutable through the runtime account. No worker grant is added.
 GRANT SELECT, INSERT ON taskflow.UserNotifications TO 'taskflow'@'%';
 GRANT UPDATE (ReadAtUtc) ON taskflow.UserNotifications TO 'taskflow'@'%';
+
+-- SaaS-025: recipient/company notification preferences. Identity keys are immutable.
+GRANT SELECT, INSERT ON taskflow.NotificationPreferences TO 'taskflow'@'%';
+GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, Version) ON taskflow.NotificationPreferences TO 'taskflow'@'%';

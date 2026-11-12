@@ -6,7 +6,7 @@ import { useAuth } from '../features/auth/auth-context'
 type Resource<T> = { key: string; status: 'loading' } | { key: string; status: 'ready'; data: T }
   | { key: string; status: 'error'; error: ApiError }
 
-export function useApiResource<T>(client: ApiClient, path: string) {
+export function useApiResource<T>(client: ApiClient, path: string, revision = 0) {
   const { session } = useAuth()
   const identity = session.user?.id ?? ''
   const key = identity + ':' + client.resourceKey + ':' + path
@@ -26,7 +26,7 @@ export function useApiResource<T>(client: ApiClient, path: string) {
       }
     })
     return () => { alive = false; controller.abort() }
-  }, [client, path, key, attempt])
+  }, [client, path, key, attempt, revision])
   const result: Resource<T> = resource.key === key ? resource : { key, status: 'loading' }
   return { result, retry: () => setAttempt(value => value + 1) }
 }

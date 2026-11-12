@@ -20,6 +20,8 @@ services:
         value: "true"
       - key: VITE_INVITATIONS_ENABLED
         value: "false"
+      - key: VITE_NOTIFICATIONS_ENABLED
+        value: "false"
       - key: WorkspaceReads__Enabled
         value: "true"
       - key: WorkspaceWrites__Enabled

@@ -55,12 +55,47 @@ public sealed class UserNotifications(TaskFlowDbContext db, TimeProvider clock) 
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, token);
         // Same company gate as resource/membership writers; authority cannot change mid-write.
-        var companies = await db.Workspaces.FromSqlInterpolated($"SELECT * FROM Workspaces WHERE Id={c.WorkspaceId} FOR UPDATE").ToArrayAsync(token);
-        if (companies.Length != 1) throw Missing();
-        await Authorize(c, token);
+        await Gate(c, token);
         var row = await Visible(c).SingleOrDefaultAsync(n => n.Id == notificationId, token) ?? throw Missing();
         if (isRead && row.ReadAtUtc == null) row.ReadAtUtc = clock.GetUtcNow().UtcDateTime;
         else if (!isRead) row.ReadAtUtc = null;
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
+    }
+    private async Task Gate(WorkspaceReadContext c, CancellationToken token)
+    {
+        var companies = await db.Workspaces.FromSqlInterpolated($"SELECT * FROM Workspaces WHERE Id={c.WorkspaceId} FOR UPDATE").ToArrayAsync(token);
+        if (companies.Length != 1) throw Missing();
+        await Authorize(c, token);
+    }
+    public async Task MarkReadAsync(WorkspaceReadContext c, IReadOnlyList<long> ids, CancellationToken token = default)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, token);
+        await Gate(c, token);
+        if (ids.Count is < 1 or > 100 || ids.Any(id => id <= 0) || ids.Distinct().Count() != ids.Count) throw new ArgumentException("Choose 1 to 100 distinct notifications.");
+        var rows = await Visible(c).Where(n => ids.Contains(n.Id)).ToArrayAsync(token);
+        // Validate the whole selection first: no partial update can reveal inaccessible IDs.
+        if (rows.Length != ids.Count) throw Missing();
+        var now = clock.GetUtcNow().UtcDateTime;
+        foreach (var row in rows.Where(n => n.ReadAtUtc == null)) row.ReadAtUtc = now;
+        await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
+    }
+    private static NotificationPreferencesDto Map(NotificationPreference? value) => new(value?.InAppEnabled ?? true, value?.TaskAssignedEnabled ?? true, false, (value?.Version ?? 0).ToString(CultureInfo.InvariantCulture));
+    public async Task<NotificationPreferencesDto> PreferencesAsync(WorkspaceReadContext c, CancellationToken token = default)
+    {
+        await using var snapshot = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, token);
+        await Authorize(c, token);
+        var value = await db.NotificationPreferences.AsNoTracking().SingleOrDefaultAsync(p => p.WorkspaceId == c.WorkspaceId && p.UserId == c.ActorId, token);
+        await snapshot.CommitAsync(token); return Map(value);
+    }
+    public async Task<NotificationPreferencesDto> SetPreferencesAsync(WorkspaceReadContext c, bool inAppEnabled, bool taskAssignedEnabled, long expectedVersion, CancellationToken token = default)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, token);
+        await Gate(c, token);
+        var value = await db.NotificationPreferences.SingleOrDefaultAsync(p => p.WorkspaceId == c.WorkspaceId && p.UserId == c.ActorId, token);
+        if (expectedVersion != (value?.Version ?? 0)) throw new ResourceVersionException(409, "resource.conflict");
+        if (value is null && inAppEnabled && taskAssignedEnabled) { await transaction.CommitAsync(token); return Map(null); }
+        if (value is null) { value = new() { WorkspaceId = c.WorkspaceId, UserId = c.ActorId }; db.NotificationPreferences.Add(value); }
+        value.InAppEnabled = inAppEnabled; value.TaskAssignedEnabled = taskAssignedEnabled;
+        await db.SaveChangesAsync(token); await transaction.CommitAsync(token); return Map(value);
     }
 }

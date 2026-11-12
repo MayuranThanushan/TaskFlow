@@ -191,3 +191,18 @@ a { text-underline-offset:3px; }
 .mfa-recovery code { overflow-wrap:anywhere; font-size:13px; }
 .mfa-choice { display:flex; align-items:flex-start; gap:10px; margin:12px 0; }
 .mfa-choice input { width:auto; margin-top:4px; }
+
+.inbox-nav-count { display:inline-flex; align-items:center; justify-content:center; min-width:1.5rem; padding:.1rem .4rem; margin-left:.4rem; border-radius:1rem; background:#215b49; color:white; font-size:.75rem; font-weight:700; }
+.inbox-toolbar, .inbox-filters { display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; }
+.inbox-toolbar { justify-content:space-between; margin-bottom:1rem; }
+.inbox-filters button[aria-pressed="true"] { background:#e4f0e9; border-color:#34725a; color:#183d30; }
+.inbox-count { color:#52636b; font-size:.9rem; }
+.notification-list { display:grid; gap:.75rem; list-style:none; padding:0; margin:0 0 1.5rem; }
+.notification-list > li { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:1.25rem; padding:1.25rem; background:white; border:1px solid #d8e1dc; border-radius:.8rem; }
+.notification-list > .is-unread { border-left:4px solid #34725a; background:#f9fcfa; }
+.notification-copy { min-width:0; overflow-wrap:anywhere; }.notification-copy h2 { margin:.55rem 0 .35rem; font-size:1.1rem; }.notification-copy p { margin-bottom:.35rem; color:#52636b; }.notification-copy time { font-size:.85rem; color:#52636b; }
+.notification-preferences { margin-top:2rem; padding:1.25rem; background:white; border:1px solid #d8e1dc; border-radius:.8rem; }
+.notification-preferences summary { cursor:pointer; font-weight:700; }.notification-preferences summary:focus-visible { outline:3px solid #35806a; outline-offset:4px; }.notification-preferences[open] summary { margin-bottom:1rem; }
+.notification-preferences fieldset { margin:1rem 0; }.notification-preferences legend { font-weight:600; margin-bottom:.65rem; }
+.notification-choice { display:flex; align-items:flex-start; gap:.65rem; margin:.75rem 0; }.notification-choice input[type="checkbox"] { width:1rem; min-width:1rem; height:1rem; margin:.2rem 0 0; }
+@media (max-width:640px) { .notification-list > li { grid-template-columns:minmax(0,1fr); gap:.85rem; }.notification-list > li > button { justify-self:start; }.inbox-toolbar { align-items:flex-start; flex-direction:column; }.notification-preferences .form-actions { flex-wrap:wrap; } }
