@@ -21,6 +21,15 @@ try
         Environment.ExitCode = await TaskFlow.Infrastructure.Email.EmailCaptureCommand.RunAsync(args[1], sender, Console.Out);
         return;
     }
+    using var emailHttp = TaskFlow.Infrastructure.Email.SendGridEmailSender.CreateClient();
+    // Explicit provider test only; the capture command above can never use the network.
+    if (args.Length == 2 && args[0] == "--send-email")
+    {
+        var options = builder.Configuration.GetSection("Email").Get<TaskFlow.Infrastructure.Email.LocalEmailOptions>() ?? new();
+        var sender = new TaskFlow.Infrastructure.Email.SendGridEmailSender(options, builder.Environment.EnvironmentName, emailHttp, TimeProvider.System);
+        Environment.ExitCode = await TaskFlow.Infrastructure.Email.EmailCaptureCommand.RunAsync(args[1], sender, Console.Out);
+        return;
+    }
     builder.Logging.ClearProviders(); builder.Logging.AddJsonConsole(); builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.None);
     builder.Services.AddSingleton(TimeProvider.System);
     builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(TaskFlowConnectionString.Normalize(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new PersistenceConfigurationException())));
@@ -33,7 +42,9 @@ try
         var keyPath = builder.Configuration["DataProtection:KeysPath"] ?? throw new InvalidOperationException();
         builder.Services.AddDataProtection().SetApplicationName("TaskFlow").PersistKeysToFileSystem(new DirectoryInfo(keyPath));
         var options = builder.Configuration.GetSection("Email").Get<TaskFlow.Infrastructure.Email.LocalEmailOptions>() ?? new();
-        builder.Services.AddSingleton<TaskFlow.Application.Features.Email.IEmailSender>(new TaskFlow.Infrastructure.Email.LocalEmailSender(options, builder.Environment.EnvironmentName, TimeProvider.System));
+        builder.Services.AddSingleton<TaskFlow.Application.Features.Email.IEmailSender>(options.Mode == "SendGrid"
+            ? new TaskFlow.Infrastructure.Email.SendGridEmailSender(options, builder.Environment.EnvironmentName, emailHttp, TimeProvider.System)
+            : new TaskFlow.Infrastructure.Email.LocalEmailSender(options, builder.Environment.EnvironmentName, TimeProvider.System));
         builder.Services.AddScoped<TaskFlow.Infrastructure.Email.AccountMailCapture>();
         builder.Services.AddScoped<TaskFlow.Infrastructure.Email.InvitationMailCapture>();
     }

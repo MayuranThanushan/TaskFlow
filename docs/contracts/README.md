@@ -10,6 +10,8 @@ Typed body binding accepts case variants of canonical camelCase names; the dynam
 
 ## Generate a reviewed contract change
 
+SaaS-023 adds `ProviderAccepted` to invitation delivery state, distinct from local `Captured` and recipient delivery. Invitation creates/resends share 20/hour per company; budget exhaustion returns `429 invitation.send_limited` with bounded `Retry-After`. No new HTTP routes or database migration are added. See [onboarding acceptance](../saas/onboarding-acceptance.md).
+
 Run from the repository root. The isolated artifacts directory avoids rebuilding DLLs loaded by a running local API. Generation uses an in-process Development test host and requires no database or separately started server. It never starts a public endpoint.
 
 ```powershell

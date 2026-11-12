@@ -96,3 +96,5 @@ It validates two independent worker processes, quota admission, restart/idempote
 Next is SaaS-019 account verification/recovery/change and reauthentication, with appropriately scoped framework tokens and additional account-security templates. Real provider credentials, authenticated bounce/failure handling and actual staging recipient delivery remain open before onboarding acceptance (SaaS-023).
 
 SaaS-019 adds [encrypted global account-mail capture](account-security.md), two account templates and a separate restricted batch command. Company checkpoint rows still cannot authorize a recipient send. Global account captures use a separate `account-<ID>` namespace.
+
+SaaS-023 adds a distinct [SendGrid staging adapter and onboarding acceptance runbook](onboarding-acceptance.md). Existing LocalCapture mode and the offline capture command remain network-free. The provider is default off and real inbox/bounce acceptance remains an external gate.

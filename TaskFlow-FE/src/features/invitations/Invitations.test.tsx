@@ -11,7 +11,7 @@ const link = '/invitations/accept#workspaceId=1&invitationId=5&token=' + secret
 function Location() { const l = useLocation(); return <div data-testid="location">{l.pathname + l.search + l.hash}</div> }
 const row = { id: '5', workspaceId: '1', projectId: null, email: 'invitee@example.test', role: 'Member', state: 'Pending', version: '9007199254741111', expiresAtUtc: '2030-01-01T00:00:00Z', resendAvailableAtUtc: '2020-01-01T00:00:00Z', resends: 0, deliveryState: 'Captured' }
 function setup(path = link, authenticated = true, options: { role?: string; verified?: boolean; previewStatus?: number; enabled?: boolean; strict?: boolean } = {}) {
-  const auth = server(authenticated), state = { role: options.role ?? 'Owner', verified: options.verified ?? true, previewStatus: options.previewStatus ?? 200, acceptStatus: 200, status: 200, rows: [{ ...row }], posts: [] as { url: string; base: string; data: Record<string, string> }[], previewCalls: 0, wait: null as Promise<void> | null }
+  const auth = server(authenticated), state = { role: options.role ?? 'Owner', verified: options.verified ?? true, previewStatus: options.previewStatus ?? 200, acceptStatus: 200, status: 200, code: 'invitation.conflict', rows: [{ ...row }], posts: [] as { url: string; base: string; data: Record<string, string> }[], previewCalls: 0, wait: null as Promise<void> | null }
   const client = createApiClient(async c => {
     if (c.url === '/auth/security') return reply(c, 200, { emailConfirmed: state.verified, reauthenticatedUntilUtc: null })
     if (c.baseURL === '/api/v1') return auth.adapter(c)
@@ -23,7 +23,7 @@ function setup(path = link, authenticated = true, options: { role?: string; veri
     if (c.method === 'post' && c.url?.startsWith('/invitations')) {
       const data = JSON.parse(c.data as string) as Record<string, string>; state.posts.push({ url: c.url, base: c.baseURL!, data }); await state.wait
       if (c.url.endsWith('/accept')) return reply(c, state.acceptStatus, {})
-      if (state.status !== 200) return reply(c, state.status, { code: 'invitation.conflict' })
+      if (state.status !== 200) return reply(c, state.status, { code: state.code })
       if (c.url.endsWith('/revoke')) state.rows = state.rows.map(r => ({ ...r, state: 'Revoked' }))
       return reply(c, c.url === '/invitations' ? 201 : 200, { ...row })
     }
@@ -83,6 +83,12 @@ describe('invitation management', () => {
     const { state, user } = setup('/companies/1/invitations'); await screen.findByText('invitee@example.test'); state.status = 409
     await user.type(screen.getByLabelText('Recipient email'), 'keep@example.test'); await user.click(screen.getByRole('button', { name: 'Create invitation' })); expect(await screen.findByRole('alert')).toHaveTextContent('invitation changed'); expect(screen.getByLabelText('Recipient email')).toHaveValue('keep@example.test'); expect(state.posts).toHaveLength(1)
   })
+  it('explains the shared hourly send limit, keeps the draft and never retries automatically', async () => {
+    const { state, user } = setup('/companies/1/invitations'); await screen.findByText('invitee@example.test'); state.status = 429; state.code = 'invitation.send_limited'
+    await user.type(screen.getByLabelText('Recipient email'), 'keep@example.test'); await user.click(screen.getByRole('button', { name: 'Create invitation' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('hourly invitation send limit'); expect(screen.getByRole('alert')).toHaveTextContent('resends count toward the same limit')
+    expect(screen.getByLabelText('Recipient email')).toHaveValue('keep@example.test'); expect(state.posts).toHaveLength(1)
+  })
   it('hides private records immediately after losing permission on a write', async () => {
     const { state, user } = setup('/companies/1/invitations'); await screen.findByText('invitee@example.test'); state.status = 403; await user.click(screen.getByRole('button', { name: 'Revoke for invitee@example.test' })); await user.click(screen.getByRole('button', { name: 'Revoke invitation' })); await screen.findByRole('alert'); await waitFor(() => expect(screen.queryByText('invitee@example.test')).not.toBeInTheDocument()); expect(screen.queryByLabelText('Recipient email')).not.toBeInTheDocument()
   })
@@ -92,6 +98,11 @@ describe('invitation management', () => {
   it('enforces resend cooldown and the bounded resend count in the controls', async () => {
     const { state } = setup('/companies/1/invitations'); state.rows[0].resendAvailableAtUtc = '2099-01-01T00:00:00Z'; state.rows[0].resends = 3
     expect(await screen.findByRole('button', { name: 'Resend to invitee@example.test' })).toBeDisabled(); expect(screen.getByText('Resend limit reached')).toBeVisible(); expect(state.posts).toHaveLength(0)
+  })
+  it('distinguishes provider acceptance from confirmed delivery and local previews', async () => {
+    const { state } = setup('/companies/1/invitations'); state.rows[0].deliveryState = 'ProviderAccepted'
+    expect(await screen.findByText('Delivery: Accepted by email provider (delivery not confirmed)')).toBeVisible()
+    expect(screen.queryByText(/Preview captured/)).not.toBeInTheDocument()
   })
   it('does not fetch invitation recipients for non-admin company members', async () => {
     const { state } = setup('/companies/1/invitations', true, { role: 'Member' }); expect(await screen.findByRole('heading', { name: 'Company administration required' })).toBeVisible(); expect(screen.queryByLabelText('Recipient email')).not.toBeInTheDocument(); expect(state.posts).toHaveLength(0)

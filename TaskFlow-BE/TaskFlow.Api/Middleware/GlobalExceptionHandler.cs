@@ -9,6 +9,8 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     {
         if (exception is TaskFlow.Application.Features.Workspaces.InvitationException invitation)
         {
+            if (invitation.Status == 429 && invitation.RetryAfterSeconds is >= 1 and <= 3600)
+                context.Response.Headers.RetryAfter = invitation.RetryAfterSeconds.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var problem = ProblemResponses.Create(context, invitation.Status); problem.Extensions["code"] = invitation.Code;
             problem.Title = "Invitation action could not be completed."; await ProblemResponses.WriteAsync(context, problem); return true;
         }

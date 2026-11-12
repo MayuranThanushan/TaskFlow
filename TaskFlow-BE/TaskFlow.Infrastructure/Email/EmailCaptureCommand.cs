@@ -26,6 +26,6 @@ public static class EmailCaptureCommand
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or JsonException or NotSupportedException or System.Security.SecurityException)
         { result = new(EmailStatus.InvalidRequest, "email.request_unreadable"); }
         await output.WriteLineAsync(JsonSerializer.Serialize(new { eventId = 3400, code = result.Code, status = result.Status.ToString(), retryAtUtc = result.RetryAtUtc }));
-        return result.IsCaptured ? 0 : result.Status is EmailStatus.CaptureUnavailable or EmailStatus.RateLimited ? 1 : 2;
+        return result.IsAccepted ? 0 : result.Status is EmailStatus.CaptureUnavailable or EmailStatus.ProviderUnavailable or EmailStatus.RateLimited ? 1 : 2;
     }
 }

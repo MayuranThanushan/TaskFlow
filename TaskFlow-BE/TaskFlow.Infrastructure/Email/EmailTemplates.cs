@@ -32,7 +32,7 @@ public static class EmailTemplates
     }
 
     // Links are constructed from a deployment-controlled origin and closed route shapes.
-    public static RenderedEmail Render(EmailRequest request, Uri origin)
+    public static RenderedEmail Render(EmailRequest request, Uri origin, bool localPreview = true)
     {
         if (!ValidRequest(request)) throw new ArgumentException("Invalid email request.");
         var (subject, message, path, action) = request.Template switch
@@ -46,9 +46,10 @@ public static class EmailTemplates
         };
         var link = new Uri(origin, path).AbsoluteUri;
         var greeting = $"Hello {request.DisplayName},";
-        var text = $"{greeting}\n\n{message}\n\n{action}: {link}\n\nTaskFlow\nThis is a local preview. No email has been sent.\n";
+        var footer = localPreview ? "This is a local preview. No email has been sent." : "This is a transactional message from TaskFlow. If you did not expect it, contact your company administrator.";
+        var text = $"{greeting}\n\n{message}\n\n{action}: {link}\n\nTaskFlow\n{footer}\n";
         static string E(string value) => WebUtility.HtmlEncode(value);
-        var html = $"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>{E(subject)}</title></head><body style=\"margin:0;background:#f4f6f8;color:#162c36;font:16px/1.6 Arial,sans-serif\"><main style=\"max-width:560px;margin:32px auto;background:#fff;padding:32px;border-radius:12px\"><p style=\"font-weight:bold;color:#225c4c\">TaskFlow</p><h1 style=\"font-size:24px\">{E(subject)}</h1><p>{E(greeting)}</p><p>{E(message)}</p><p><a href=\"{E(link)}\" style=\"color:#225c4c\">{E(action)}</a></p><hr><p style=\"font-size:13px;color:#52636b\">This is a local preview. No email has been sent.</p></main></body></html>";
+        var html = $"<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>{E(subject)}</title></head><body style=\"margin:0;background:#f4f6f8;color:#162c36;font:16px/1.6 Arial,sans-serif\"><main style=\"max-width:560px;margin:32px auto;background:#fff;padding:32px;border-radius:12px\"><p style=\"font-weight:bold;color:#225c4c\">TaskFlow</p><h1 style=\"font-size:24px\">{E(subject)}</h1><p>{E(greeting)}</p><p>{E(message)}</p><p><a href=\"{E(link)}\" style=\"color:#225c4c\">{E(action)}</a></p><hr><p style=\"font-size:13px;color:#52636b\">{E(footer)}</p></main></body></html>";
         return new(subject, text, html);
     }
     internal static byte[] Mime(EmailRequest request, RenderedEmail body, DateTimeOffset now)

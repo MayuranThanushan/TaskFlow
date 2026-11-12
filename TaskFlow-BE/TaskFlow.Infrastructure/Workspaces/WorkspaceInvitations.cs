@@ -71,7 +71,8 @@ public sealed class WorkspaceInvitations(IServiceScopeFactory scopes, IDataProte
         if (member is not null && (member.State != WorkspaceMembershipState.Active || project is null)) Fail();
         if (user is not null && project is not null && (await db.Projects.AnyAsync(p => p.Id == project && p.OwnerId == user.Id, token) || await db.ProjectMembers.AnyAsync(m => m.ProjectId == project && m.UserId == user.Id && m.RevokedAtUtc == null, token))) Fail();
         if (member is null) await PilotQuotas.MemberAsync(db, c.WorkspaceId, token);
-        if (await db.WorkspaceInvitations.CountAsync(i => i.WorkspaceId == c.WorkspaceId, token) >= 1000 || await db.WorkspaceInvitations.CountAsync(i => i.WorkspaceId == c.WorkspaceId && i.CreatedAtUtc > now.AddHours(-1), token) >= 20) throw new PilotQuotaException();
+        if (await db.WorkspaceInvitations.CountAsync(i => i.WorkspaceId == c.WorkspaceId, token) >= 1000) throw new PilotQuotaException();
+        await SendBudget(db, c.WorkspaceId, now, token);
         var invite = new WorkspaceInvitation { WorkspaceId = c.WorkspaceId, InviterUserId = c.ActorId, ProjectId = project, Email = email, NormalizedEmail = normalized, PendingEmail = normalized, Role = role, CreatedAtUtc = now, LastSentAtUtc = now, AvailableAtUtc = now, ExpiresAtUtc = now.AddDays(7) };
         db.WorkspaceInvitations.Add(invite); await db.SaveChangesAsync(token); await Queue(db, invite, now, token);
         InvitationPolicy.Audit(db, invite, c.ActorId, "Created", now); return Map(invite);
@@ -85,12 +86,26 @@ public sealed class WorkspaceInvitations(IServiceScopeFactory scopes, IDataProte
         i.ProtectedMessage = protection.CreateProtector("TaskFlow.InvitationMail.v1", Id(i.WorkspaceId), Id(i.Id), i.MessageId).Protect(JsonSerializer.Serialize(request));
     }
     private static async Task<WorkspaceInvitation> Find(TaskFlowDbContext db, WorkspaceWriteContext c, long id, CancellationToken token) => await db.WorkspaceInvitations.SingleOrDefaultAsync(i => i.WorkspaceId == c.WorkspaceId && i.Id == id, token) ?? throw new InvitationException(404, "invitation.unavailable");
+    private static async Task SendBudget(TaskFlowDbContext db, long workspace, DateTime now, CancellationToken token)
+    {
+        // Company row lock serializes admission across actors, projects and processes.
+        // Append-only history means revoke/accept does not replenish the send budget.
+        var recent = await db.InvitationTransitions
+            .Where(t => t.WorkspaceId == workspace && (t.Action == "Created" || t.Action == "Resent") && t.CreatedAtUtc > now.AddHours(-1))
+            .OrderByDescending(t => t.CreatedAtUtc).Select(t => t.CreatedAtUtc).Take(20).ToArrayAsync(token);
+        if (recent.Length == 20)
+        {
+            var wait = Math.Clamp((int)Math.Ceiling((recent[^1].AddHours(1) - now).TotalSeconds), 1, 3600);
+            throw new InvitationException(429, "invitation.send_limited", wait);
+        }
+    }
     public Task<InvitationDto> ResendAsync(WorkspaceWriteContext c, long id, long version, CancellationToken token) => Write(c, async (db, now) =>
     {
         var i = await Find(db, c, id, token); await Manage(db, c, i.ProjectId, token);
         if (i.Version != version || i.State != "Pending" || !await InvitationPolicy.Valid(db, c.WorkspaceId, now).AnyAsync(x => x.Id == id, token)) Fail();
         if (i.Resends >= 3 || i.LastSentAtUtc > now.AddMinutes(-1)) Fail(429, "invitation.resend_limited");
         if (!await db.Users.AnyAsync(u => u.Id == c.ActorId && u.EmailConfirmed, token)) Fail(403, "invitation.email_unverified");
+        await SendBudget(db, c.WorkspaceId, now, token);
         i.Resends++; i.Version++; await Queue(db, i, now, token); InvitationPolicy.Audit(db, i, c.ActorId, "Resent", now); return Map(i);
     }, token);
     public async Task RevokeAsync(WorkspaceWriteContext c, long id, long version, CancellationToken token) => await Write(c, async (db, now) =>

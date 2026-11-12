@@ -1,7 +1,7 @@
 namespace TaskFlow.Application.Features.Email;
 
 public enum EmailTemplate { CompanyInvitation = 1, TaskAssigned = 2, WorkspaceWelcome = 3, EmailVerification = 4, PasswordRecovery = 5 }
-public enum EmailStatus { Captured, AlreadyCaptured, Disabled, InvalidRequest, RecipientBlocked, RateLimited, IdConflict, CaptureUnavailable }
+public enum EmailStatus { Captured, AlreadyCaptured, Disabled, InvalidRequest, RecipientBlocked, RateLimited, IdConflict, CaptureUnavailable, ProviderAccepted, ProviderRejected, ProviderUnavailable }
 
 // An explicit, recipient-bound request. Never create these by replaying checkpoint facts.
 public sealed class EmailRequest
@@ -26,6 +26,7 @@ public sealed class EmailRequest
 public sealed record EmailResult(EmailStatus Status, string Code, DateTimeOffset? RetryAtUtc = null)
 {
     public bool IsCaptured => Status is EmailStatus.Captured or EmailStatus.AlreadyCaptured;
+    public bool IsAccepted => IsCaptured || Status == EmailStatus.ProviderAccepted;
 }
 
 public interface IEmailSender

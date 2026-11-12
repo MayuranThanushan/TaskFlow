@@ -48,13 +48,14 @@ public sealed class InvitationMailCapture(TaskFlowDbContext db, IDataProtectionP
             {
                 var rows = await db.WorkspaceInvitations.FromSqlInterpolated($"SELECT * FROM `WorkspaceInvitations` WHERE `Id`={work.Id} AND `WorkspaceId`={work.WorkspaceId} FOR UPDATE").ToListAsync(token); var current = rows.Single(); var now = await InvitationPolicy.Now(db, token);
                 if (current.State != "Pending" || current.MessageId != work.MessageId || current.LeaseToken != lease || current.LeaseExpiresAtUtc is null || current.LeaseExpiresAtUtc <= now) { await transaction.CommitAsync(token); continue; }
-                current.LastCode = result.Code is "email.captured" or "email.already_captured" or "email.company_limit" or "email.capture_unavailable" or "email.recipient_blocked" or "email.disabled" or "email.configuration_invalid" or "email.id_conflict" or "invitation_mail.invalid_payload" ? result.Code : "email.capture_unavailable";
+                current.LastCode = result.Code is "email.captured" or "email.already_captured" or "email.company_limit" or "email.capture_unavailable" or "email.recipient_blocked" or "email.disabled" or "email.configuration_invalid" or "email.id_conflict" or "invitation_mail.invalid_payload" or "email.provider_accepted" or "email.provider_rate_limited" or "email.provider_unavailable" or "email.provider_auth_failed" or "email.provider_rejected" ? result.Code : "email.capture_unavailable";
                 if (current.ExpiresAtUtc <= now) { current.DeliveryState = "Cancelled"; current.LastCode = "invitation_mail.expired"; }
                 else if (result.IsCaptured) current.DeliveryState = "Captured";
-                else if (result.Status is EmailStatus.CaptureUnavailable or EmailStatus.RateLimited && current.Attempts < 5) { current.DeliveryState = "Pending"; current.AvailableAtUtc = result.RetryAtUtc?.UtcDateTime ?? now.AddSeconds(5 * (1 << (current.Attempts - 1))); }
+                else if (result.Status == EmailStatus.ProviderAccepted) current.DeliveryState = "ProviderAccepted";
+                else if (result.Status is EmailStatus.CaptureUnavailable or EmailStatus.ProviderUnavailable or EmailStatus.RateLimited && current.Attempts < 5) { current.DeliveryState = "Pending"; current.AvailableAtUtc = result.RetryAtUtc?.UtcDateTime ?? now.AddSeconds(5 * (1 << (current.Attempts - 1))); }
                 else current.DeliveryState = "DeadLetter";
                 if (current.DeliveryState != "Pending") current.ProtectedMessage = null; current.LeaseToken = null; current.LeaseExpiresAtUtc = null;
-                InvitationPolicy.Audit(db, current, current.InviterUserId, current.DeliveryState == "Captured" ? "Captured" : "DeliveryAttempted", now);
+                InvitationPolicy.Audit(db, current, current.InviterUserId, current.DeliveryState is "Captured" or "ProviderAccepted" ? current.DeliveryState : "DeliveryAttempted", now);
                 await db.SaveChangesAsync(token); await transaction.CommitAsync(token); handled++;
             }
         }

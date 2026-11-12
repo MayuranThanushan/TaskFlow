@@ -10,8 +10,9 @@ public interface IWorkspaceInvitations
     Task RevokeAsync(WorkspaceWriteContext context, long invitationId, long expectedVersion, CancellationToken token);
     Task<InvitationPreviewDto> PreviewAsync(WorkspaceWriteContext context, long invitationId, string secret, bool accept, CancellationToken token);
 }
-public sealed class InvitationException(int status, string code) : Exception("Invitation action could not be completed.")
+public sealed class InvitationException(int status, string code, int? retryAfterSeconds = null) : Exception("Invitation action could not be completed.")
 {
     public int Status { get; } = status;
     public string Code { get; } = code;
+    public int? RetryAfterSeconds { get; } = retryAfterSeconds;
 }

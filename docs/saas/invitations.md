@@ -82,6 +82,8 @@ After verifying imported counts/history and before publishing recovered keys, th
 
 ## Verification and release gates
 
+SaaS-023 adds a shared create/resend budget, real-provider staging adapter and acceptance tests. See the [SendGrid setup and support runbook](onboarding-acceptance.md). `ProviderAccepted` is distinct from a local preview and does not guarantee delivery; the public free-host profile keeps email disabled.
+
 MySQL tests cover intended verified recipient, concurrent single use, project privacy/Guest+Viewer grants, wrong company/account, token rotation/revision/cooldown, expiry/inviter suspension, duplicate races, the last reserved seat, no suspension reactivation, audit rollback, append-only journal, composite scope and revoke during capture. A published HTTPS rehearsal uses actual separate API/worker grants, local captured links, resend/replay/accept, private-project read/denied Viewer writes and negative privileges. See [release evidence](../evidence/saas020-invitations.json).
 
 No real provider/recipient sending, provider callbacks, production activation, hosted CI/CodeQL/container certification, tenant cutover, distributed fairness or automatic retention is claimed. Pending and terminal recipient addresses remain private retained metadata; archive/purge policy and key custody require selected-host review. SaaS-021 now supplies [invite/accept/manage-team screens](invitation-ui.md); next is SaaS-022 optional MFA and recovery policy.

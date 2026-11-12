@@ -6,6 +6,8 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 ## Release sequence
 
+SaaS-023 local implementation adds [SendGrid staging and onboarding abuse controls](../docs/saas/onboarding-acceptance.md) on 12 November 2026. Real inbox delivery, authenticated bounce/complaint ingestion and selected-host acceptance remain open; R2 is not production-certified.
+
 | Release | Outcome | Main scope | Release gate |
 | --- | --- | --- | --- |
 | R0 / 0.9.1 | Safe delivery baseline | Tenant/role ADR, accurate contracts, full-stack CI, telemetry, deployment/recovery evidence, modular UI cleanup | Reproducible candidate and passing real environment checks; no public readiness claim based on local mocks |

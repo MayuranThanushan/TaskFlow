@@ -12,6 +12,7 @@ public sealed class LocalEmailOptions
     public string PublicOrigin { get; set; } = "";
     public int PerCompanyHourlyLimit { get; set; } = 20;
     public string[] AllowedRecipients { get; set; } = [];
+    public SendGridEmailOptions SendGrid { get; set; } = new();
 }
 
 // A local/staging file sink only: no SMTP, HTTP provider or production network path.

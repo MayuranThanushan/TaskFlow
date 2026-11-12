@@ -58,7 +58,8 @@ public sealed class AccountMailCapture(TaskFlowDbContext db, IDataProtectionProv
                 current.LastCode = SafeCode(result.Code);
                 if (current.ExpiresAtUtc <= now) { current.State = "Cancelled"; current.LastCode = "account_mail.expired"; }
                 else if (result.IsCaptured) current.State = "Captured";
-                else if (result.Status is EmailStatus.CaptureUnavailable or EmailStatus.RateLimited && current.Attempts < 5)
+                else if (result.Status == EmailStatus.ProviderAccepted) current.State = "ProviderAccepted";
+                else if (result.Status is EmailStatus.CaptureUnavailable or EmailStatus.ProviderUnavailable or EmailStatus.RateLimited && current.Attempts < 5)
                 { current.State = "Pending"; current.AvailableAtUtc = result.RetryAtUtc?.UtcDateTime ?? now.AddSeconds(5 * (1 << (current.Attempts - 1))); }
                 else current.State = "DeadLetter";
                 if (current.State != "Pending") current.ProtectedPayload = null;
@@ -68,5 +69,5 @@ public sealed class AccountMailCapture(TaskFlowDbContext db, IDataProtectionProv
         }
         return handled;
     }
-    private static string SafeCode(string code) => code is "email.captured" or "email.already_captured" or "email.disabled" or "email.configuration_invalid" or "email.recipient_blocked" or "email.account_limit" or "email.capture_storage_limit" or "email.capture_unavailable" or "email.id_conflict" or "email.invalid" or "account_mail.invalid_payload" ? code : "email.capture_unavailable";
+    private static string SafeCode(string code) => code is "email.captured" or "email.already_captured" or "email.disabled" or "email.configuration_invalid" or "email.recipient_blocked" or "email.account_limit" or "email.capture_storage_limit" or "email.capture_unavailable" or "email.id_conflict" or "email.invalid" or "account_mail.invalid_payload" or "email.provider_accepted" or "email.provider_rate_limited" or "email.provider_unavailable" or "email.provider_auth_failed" or "email.provider_rejected" ? code : "email.capture_unavailable";
 }

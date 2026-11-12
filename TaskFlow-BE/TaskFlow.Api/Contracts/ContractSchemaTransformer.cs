@@ -58,7 +58,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             {
                 if (name == "role") SetEnum(property, ["Member", "Guest", "Editor", "Viewer"]);
                 if (name == "state") SetEnum(property, ["Pending", "Accepted", "Revoked", "Expired"]);
-                if (name == "deliveryState") SetEnum(property, ["Pending", "Leased", "Captured", "Cancelled", "DeadLetter"]);
+                if (name == "deliveryState") SetEnum(property, ["Pending", "Leased", "Captured", "ProviderAccepted", "Cancelled", "DeadLetter"]);
             }
             if (type == typeof(WorkspaceProjectMemberRequest) && name == "role") { SetEnum(property, ["Member", "Editor", "Viewer"]); property.Default = JsonValue.Create("Member"); }
             if (type == typeof(WorkspaceProjectRoleRequest) && name == "role") SetEnum(property, ["Editor", "Viewer"]);
