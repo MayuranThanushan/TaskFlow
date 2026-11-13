@@ -219,9 +219,11 @@ The implemented MVP is locally verified. Container execution, hosted CI and sele
 
 ## Next product releases
 
-SaaS-025 adds the default-off [company inbox, bulk read and recipient preferences](docs/saas/notification-inbox.md). Apply migration thirteen and new runtime grants before deploying this revision. Enable both API and frontend notification flags only in the reviewed preview. SaaS-026 reminders/digests are next.
+SaaS-026 adds opt-in [due reminders, daily inbox digest and delivery status](docs/saas/notification-scheduling.md). Apply migration fourteen and expanded preference grants before deploying. The separate scheduler remains disabled; no hosted scheduling or reminder email is activated. Next: SaaS-027 comments and mentions.
 
-SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current thirteen-migration deployment requirement; public-host acceptance remains pending.
+SaaS-025 adds the default-off [company inbox, bulk read and recipient preferences](docs/saas/notification-inbox.md). Apply migration thirteen and new runtime grants before deploying this revision. Enable both API and frontend notification flags only in the reviewed preview. SaaS-026 scheduling is described above.
+
+SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current fourteen-migration deployment requirement; public-host acceptance remains pending.
 
 SaaS-023 adds the [SendGrid staging setup, shared invitation send budget and onboarding support runbook](docs/saas/onboarding-acceptance.md). Configure your key privately with [Set-SendGridSecrets.ps1](scripts/Set-SendGridSecrets.ps1). Real delivery, bounce callbacks and selected-host acceptance remain explicit gates; public production email remains disabled.
 

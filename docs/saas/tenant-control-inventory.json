@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-025",
-  "date": "2026-11-12",
-  "scope": "Current identity/company/MFA and staged SendGrid controls plus default-off recipient in-app assignment notifications. Local evidence only; public hosting, provider delivery and tenant cutover remain gated.",
+  "release": "SaaS-026",
+  "date": "2026-11-13",
+  "scope": "Current identity/company/MFA and staged SendGrid controls plus default-off recipient inbox, opted-in due reminders and local-time daily digest task cards. Local evidence only; hosting and real provider delivery remain gated.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -1217,13 +1217,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -1235,13 +1237,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -1253,13 +1257,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -1271,13 +1277,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -1289,13 +1297,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -1307,13 +1317,15 @@
         "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
         "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
         "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate"
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
         "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md"
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     }
   ],
@@ -1591,6 +1603,20 @@
       "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
       "tests/browser/notifications.cjs",
       "docs/saas/notification-inbox.md"
+    ]
+  },
+  "notificationScheduling": {
+    "controls": [
+      "separate default-off scheduler flag and private worker identity",
+      "current authority and task state rechecked under shared company locking transaction",
+      "bounded durable scan cursor, rollback-safe in-app materialization and unique scoped occurrence key",
+      "UTC storage and explicit IANA DST gap/fold policy; local-date digest identity",
+      "no provider, checkpoint replay or detached lease authority"
+    ],
+    "evidenceSources": [
+      "TaskFlow-BE/TaskFlow.Tests/NotificationScheduleTests.cs",
+      "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs",
+      "docs/evidence/saas026-scheduling.json"
     ]
   }
 }

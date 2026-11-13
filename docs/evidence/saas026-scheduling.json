@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-13",
+  "release": "SaaS-026",
+  "status": "implemented and verified locally; scheduling default off; not publicly deployed",
+  "features": [
+    "opt-in due reminders at task deadline with 24-hour catch-up",
+    "daily local-time inbox digest task cards, one-hour window",
+    "IANA timezone settings and deterministic missing/repeated DST times",
+    "transactional bounded company batches with durable cursors and unique occurrence keys",
+    "stale scheduled rows suppressed on reads, counts and writes",
+    "explicit InAppDelivered status independent from read state"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 378,
+      "failed": 0,
+      "skipped": 0,
+      "newTests": 15,
+      "database": "isolated MySQL 8.4 schema removed"
+    },
+    "frontend": {
+      "passed": 170,
+      "files": 17,
+      "failed": 0,
+      "lint": "passed",
+      "build": "passed with preview flags",
+      "note": "initial high-concurrency run hit an existing dashboard timing failure; complete rerun with maxWorkers=2 passed"
+    },
+    "operations": {
+      "passed": 35
+    },
+    "contract": {
+      "paths": 63,
+      "operations": 82,
+      "snapshotAndTypes": "regenerated; live drift check passed in full suite"
+    },
+    "publishedHttpsRehearsal": {
+      "passed": true,
+      "checks": 7,
+      "database": "fourteen migrations with separate restricted API and scheduler identities; disposable schema/users removed",
+      "scheduler": "published worker repeated twice; single delivery; changed deadline hides stale row; identity secret reads and inbox/company mutation denied"
+    },
+    "browser": {
+      "journeys": 3,
+      "accessibilityScans": 8,
+      "widths": [
+        1440,
+        320
+      ],
+      "violations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "preferences": "reminder, digest, timezone and hour persisted in real database",
+      "visualReview": "mobile expanded scheduling preferences inspected; full-width timezone/hour fields added"
+    },
+    "renderBlueprint": "validated against cached official schema; free plan retained"
+  },
+  "rollout": {
+    "migration": "20261113161730_ScheduledNotifications",
+    "migrationNumber": 14,
+    "flag": "Notifications:SchedulingEnabled=false",
+    "workerCommand": "--notifications-once <company-id>",
+    "hostedActivation": "disabled; no new hosted or paid resources",
+    "newDependencies": false,
+    "downMigration": "refuses destructive downgrade; disable/roll forward or restore verified backup to new schema"
+  },
+  "limitations": [
+    "inbox digest is individual task cards, not consolidated email",
+    "no reminder/digest SendGrid delivery, receipt or webhook",
+    "bounded sweep requires adequate per-company scheduling cadence inside digest window",
+    "TiDB/selected-host locking semantics remain unverified; no hosted scheduler activation",
+    "existing administrator MFA policy applies to preference mutations",
+    "manual assistive-technology review and external hosted CI/container acceptance remain gates"
+  ]
+}

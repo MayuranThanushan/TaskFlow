@@ -853,9 +853,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Task-assignment email is unavailable; account security and invitation email are unaffected. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected. */
         get: operations["Notifications_Preferences"];
-        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Task-assignment email is unavailable; account security and invitation email are unaffected. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         put: operations["Notifications_SetPreferences"];
         post?: never;
         delete?: never;
@@ -1424,10 +1424,15 @@ export interface components {
         NotificationDto: {
             /** Format: date-time */
             createdAtUtc: string;
+            /**
+             * @default InAppDelivered
+             * @enum {string}
+             */
+            deliveryStatus: "InAppDelivered";
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
             id: string;
             /** @enum {string} */
-            kind: "TaskAssigned";
+            kind: "TaskAssigned" | "TaskDue" | "TaskDigest";
             /** @description Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number. */
             projectId: string;
             projectName: string;
@@ -1453,15 +1458,31 @@ export interface components {
             unreadCount: number;
         };
         NotificationPreferencesDto: {
+            /** @default false */
+            dailyDigestEnabled: boolean;
+            /**
+             * Format: int32
+             * @default 9
+             */
+            digestHour: number;
+            /** @default false */
+            dueReminderEnabled: boolean;
             emailAvailable: boolean;
             inAppEnabled: boolean;
             taskAssignedEnabled: boolean;
+            /** @default UTC */
+            timeZoneId: string;
             version: string;
         };
         NotificationPreferencesRequest: {
+            dailyDigestEnabled?: null | boolean;
+            /** Format: int32 */
+            digestHour?: null | number | string;
+            dueReminderEnabled?: null | boolean;
             expectedVersion: string;
             inAppEnabled: null | boolean;
             taskAssignedEnabled: null | boolean;
+            timeZoneId?: null | string;
         };
         NotificationReadRequest: {
             isRead: null | boolean;

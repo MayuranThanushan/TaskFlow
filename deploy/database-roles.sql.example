@@ -80,4 +80,17 @@ GRANT UPDATE (ReadAtUtc) ON taskflow.UserNotifications TO 'taskflow'@'%';
 
 -- SaaS-025: recipient/company notification preferences. Identity keys are immutable.
 GRANT SELECT, INSERT ON taskflow.NotificationPreferences TO 'taskflow'@'%';
-GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, Version) ON taskflow.NotificationPreferences TO 'taskflow'@'%';
+GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, DueReminderEnabled, DailyDigestEnabled, TimeZoneId, DigestHour, Version) ON taskflow.NotificationPreferences TO 'taskflow'@'%';
+
+-- Optional in-app scheduler identity (never the checkpoint or email worker).
+-- Provision taskflow_notifications_worker privately, then scope grants to this schema.
+-- GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT, UPDATE (Id) ON taskflow.Workspaces TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.WorkspaceMemberships TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.Projects TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.ProjectMembers TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.Tasks TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.NotificationPreferences TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT, INSERT ON taskflow.UserNotifications TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT, INSERT ON taskflow.NotificationScheduleCursors TO 'taskflow_notifications_worker'@'%';
+-- GRANT UPDATE (LastTaskId, LastBatchAtUtc) ON taskflow.NotificationScheduleCursors TO 'taskflow_notifications_worker'@'%';

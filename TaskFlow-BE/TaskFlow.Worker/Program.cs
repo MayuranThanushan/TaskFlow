@@ -34,6 +34,8 @@ try
     builder.Services.AddSingleton(TimeProvider.System);
     builder.Services.AddDbContext<TaskFlowDbContext>(options => options.UseMySQL(TaskFlowConnectionString.Normalize(builder.Configuration.GetConnectionString("TaskFlow") ?? throw new PersistenceConfigurationException())));
     builder.Services.AddScoped<OutboxStore>(); builder.Services.AddSingleton<OutboxMetrics>(); builder.Services.AddSingleton<IOutboxConsumer, CheckpointConsumer>(); builder.Services.AddSingleton<OutboxPump>();
+    var scheduled = args.Length == 2 && args[0] == "--notifications-once" && long.TryParse(args[1], out var scheduledWorkspace) && scheduledWorkspace > 0;
+    builder.Services.AddScoped<TaskFlow.Infrastructure.Notifications.NotificationScheduler>();
     var invitationMail = args.Length == 1 && args[0] == "--invitations-once";
     var accountMail = args.Length == 1 && args[0] == "--account-mail-once";
     if (accountMail || invitationMail)
@@ -53,6 +55,12 @@ try
     {
         var db = check.ServiceProvider.GetRequiredService<TaskFlowDbContext>();
         if (!db.Database.GetMigrations().ToHashSet(StringComparer.Ordinal).SetEquals(await db.Database.GetAppliedMigrationsAsync())) throw new InvalidOperationException();
+    }
+    if (scheduled)
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var result = await scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Notifications.NotificationScheduler>().RunAsync(long.Parse(args[1], System.Globalization.CultureInfo.InvariantCulture));
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { eventId = 3501, code = "notifications.batch_completed", result.Scanned, result.Delivered, result.NextTaskId, result.Busy })); return;
     }
     if (accountMail || invitationMail)
     {

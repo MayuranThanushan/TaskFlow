@@ -104,3 +104,7 @@ Step 11 implements POST /projects, GET /projects and GET /projects/{projectId}, 
 ## SaaS-003 machine contract amendment
 
 The [typed contract workflow](README.md) replaces the earlier route-only snapshot limitation. Controller success annotations and OpenAPI transformers now describe request/response DTOs, dynamic PATCH presence/null rules, cookie/CSRF security, errors and query allowlists. Canonical JSON names are camelCase; current typed MVC body binding accepts casing variants, while dynamic task PATCH names are exact. No new v2 endpoints, tenant roles or expectedVersion fields are implemented by this amendment. Full live-document drift and generated frontend type drift are mandatory CI checks.
+
+## SaaS-026 scheduling amendment
+
+Notification kinds now include TaskDue and TaskDigest; deliveryStatus InAppDelivered denotes only a committed inbox row. Preferences add dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA), digestHour (0..23). Both switches default off, UTC/09:00. Supply all four scheduling request values or omit all to preserve them; existing revision/CSRF/MFA rules apply. Scheduled notifications also require the same current assignee, unchanged deadline and incomplete task on reads/counts/writes. [Detailed scheduling rules](../saas/notification-scheduling.md).

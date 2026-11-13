@@ -6,7 +6,7 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 ## Release sequence
 
-SaaS-025 adds the local [inbox UI and self/company preferences](../docs/saas/notification-inbox.md) on 12 November 2026. Migration thirteen and matching API/frontend flags are required; task-assignment email remains unavailable. SaaS-026 reminder/digest scheduling is next, with hosted/commercial acceptance still gated.
+SaaS-025 adds the local [inbox UI and self/company preferences](../docs/saas/notification-inbox.md) on 12 November 2026. Migration thirteen and matching API/frontend flags are required; task-assignment email remains unavailable. SaaS-026 is implemented locally with [due reminders and daily inbox digest task cards](../docs/saas/notification-scheduling.md), a separate disabled scheduler gate and migration fourteen. SaaS-027 comments/mentions is next; hosted/commercial acceptance remains gated.
 
 SaaS-024 adds the local [recipient notification foundation](../docs/saas/notifications.md) on 12 November 2026, with assignment materialization, list/count and read/unread APIs behind a default-off flag. Migration twelve and new grants are required. Inbox UI/preferences remain SaaS-025; hosted acceptance is not claimed.
 

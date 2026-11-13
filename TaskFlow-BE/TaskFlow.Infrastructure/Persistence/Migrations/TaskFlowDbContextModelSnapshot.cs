@@ -354,6 +354,17 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("DailyDigestEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("DigestHour")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(9);
+
+                    b.Property<bool>("DueReminderEnabled")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("InAppEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -364,6 +375,13 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(true);
 
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasDefaultValue("UTC");
+
                     b.Property<long>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAdd()
@@ -372,7 +390,26 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.HasKey("WorkspaceId", "UserId");
 
-                    b.ToTable("NotificationPreferences");
+                    b.ToTable("NotificationPreferences", t =>
+                        {
+                            t.HasCheckConstraint("CK_NotificationPreferences_Hour", "DigestHour BETWEEN 0 AND 23");
+                        });
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.NotificationScheduleCursor", b =>
+                {
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastBatchAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("LastTaskId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("WorkspaceId");
+
+                    b.ToTable("NotificationScheduleCursors");
                 });
 
             modelBuilder.Entity("TaskFlow.Domain.Entities.OutboxAttempt", b =>
@@ -767,7 +804,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<long>("EventId")
+                    b.Property<long?>("EventId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Kind")
@@ -784,6 +821,14 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<long>("RecipientUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ScheduleKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .UseCollation("ascii_bin");
+
+                    b.Property<DateTime?>("SourceDueDateUtc")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<long>("TaskId")
                         .HasColumnType("bigint");
 
@@ -799,11 +844,14 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("WorkspaceId", "RecipientUserId", "Id");
 
+                    b.HasIndex("WorkspaceId", "RecipientUserId", "ScheduleKey")
+                        .IsUnique();
+
                     b.HasIndex("WorkspaceId", "RecipientUserId", "ReadAtUtc", "Id");
 
                     b.ToTable("UserNotifications", t =>
                         {
-                            t.HasCheckConstraint("CK_UserNotifications_Kind", "Kind = 'TaskAssigned'");
+                            t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)");
                         });
                 });
 
@@ -1280,6 +1328,15 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.NotificationScheduleCursor", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.OutboxAttempt", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entities.OutboxDelivery", null)
@@ -1374,8 +1431,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "EventId")
                         .HasPrincipalKey("WorkspaceId", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
                         .WithMany()

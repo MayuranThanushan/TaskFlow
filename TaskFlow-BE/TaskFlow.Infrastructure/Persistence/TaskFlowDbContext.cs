@@ -11,6 +11,7 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<NotificationScheduleCursor> NotificationScheduleCursors => Set<NotificationScheduleCursor>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
     public bool NotificationsEnabled => configuration?.GetValue<bool>("Notifications:Enabled") == true;

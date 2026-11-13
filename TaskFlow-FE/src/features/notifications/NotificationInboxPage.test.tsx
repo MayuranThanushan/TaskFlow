@@ -108,6 +108,16 @@ describe('recipient notification preferences', () => {
     expect(state.writes[0]).toMatchObject({ base: '/api/v2/workspaces/1', url: '/notifications/preferences', data: { inAppEnabled: false, taskAssignedEnabled: true, expectedVersion: '0' } })
     expect(screen.getByLabelText('In-app notifications')).not.toBeChecked(); expect(screen.getByRole('link', { name: '<script>Review work</script>' })).toBeVisible()
   })
+  it('saves explicit reminder and local digest settings without enabling email', async () => {
+    const { state, user } = setup(); await screen.findByRole('link', { name: '<script>Review work</script>' }); await user.click(screen.getByText('Notification preferences'))
+    await user.click(screen.getByLabelText('Remind me when assigned tasks are due'))
+    await user.click(screen.getByLabelText('Daily digest of overdue tasks and tasks due in the next 24 hours'))
+    await user.clear(screen.getByLabelText('Timezone')); await user.type(screen.getByLabelText('Timezone'), 'Asia/Colombo')
+    await user.selectOptions(screen.getByLabelText('Daily digest hour'), '17')
+    await user.click(screen.getByRole('button', { name: 'Save preferences' })); await screen.findByText('Notification preferences saved.')
+    expect(state.writes[0].data).toMatchObject({ dueReminderEnabled: true, dailyDigestEnabled: true, timeZoneId: 'Asia/Colombo', digestHour: 17, expectedVersion: '0' })
+    expect(screen.getByLabelText('Email notifications')).toBeDisabled()
+  })
   it('retains a conflicting draft and reloads current preferences only on explicit action', async () => {
     const { state, user } = setup(); await screen.findByRole('link', { name: '<script>Review work</script>' }); await user.click(screen.getByText('Notification preferences'))
     await user.click(screen.getByLabelText('Tasks assigned to me')); state.writeStatus = 409; state.code = 'resource.conflict'

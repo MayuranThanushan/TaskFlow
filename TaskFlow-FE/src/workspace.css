@@ -206,3 +206,7 @@ a { text-underline-offset:3px; }
 .notification-preferences fieldset { margin:1rem 0; }.notification-preferences legend { font-weight:600; margin-bottom:.65rem; }
 .notification-choice { display:flex; align-items:flex-start; gap:.65rem; margin:.75rem 0; }.notification-choice input[type="checkbox"] { width:1rem; min-width:1rem; height:1rem; margin:.2rem 0 0; }
 @media (max-width:640px) { .notification-list > li { grid-template-columns:minmax(0,1fr); gap:.85rem; }.notification-list > li > button { justify-self:start; }.inbox-toolbar { align-items:flex-start; flex-direction:column; }.notification-preferences .form-actions { flex-wrap:wrap; } }
+
+.notification-preferences label[for] { display:block; margin:1rem 0 .4rem; font-weight:600; }
+.notification-preferences input:not([type="checkbox"]), .notification-preferences select { display:block; width:100%; max-width:26rem; min-height:44px; box-sizing:border-box; padding:.65rem .8rem; font:inherit; color:inherit; background:#fff; border:1px solid #9aaec1; border-radius:.5rem; }
+.notification-preferences input:focus-visible, .notification-preferences select:focus-visible { outline:3px solid #35806a; outline-offset:3px; }

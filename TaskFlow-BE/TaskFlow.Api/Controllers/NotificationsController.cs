@@ -71,7 +71,20 @@ public sealed class NotificationsController(IUserNotifications notifications) : 
     {
         if (Query() is { } error) return error;
         if (!long.TryParse(request.ExpectedVersion, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var version)) { ModelState.AddModelError("expectedVersion", "Reload your preferences and use their revision."); return ValidationProblem(ModelState); }
-        return Ok(await notifications.SetPreferencesAsync(Scope(workspaceId), request.InAppEnabled!.Value, request.TaskAssignedEnabled!.Value, version, token));
+        NotificationScheduleOptions? schedule = null;
+        if (request.DueReminderEnabled is not null || request.DailyDigestEnabled is not null || request.TimeZoneId is not null || request.DigestHour is not null)
+        {
+            if (request.DueReminderEnabled is null || request.DailyDigestEnabled is null || request.TimeZoneId is null || request.DigestHour is null)
+                ModelState.AddModelError("schedule", "Provide both schedule switches, timezone and digest hour together.");
+            else
+            {
+                try { _ = Infrastructure.Notifications.NotificationSchedule.GetZone(request.TimeZoneId); }
+                catch (ArgumentException) { ModelState.AddModelError("timeZoneId", "Choose a supported IANA timezone such as Asia/Colombo."); }
+                schedule = new(request.DueReminderEnabled.Value, request.DailyDigestEnabled.Value, request.TimeZoneId, request.DigestHour.Value);
+            }
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        }
+        return Ok(await notifications.SetPreferencesAsync(Scope(workspaceId), request.InAppEnabled!.Value, request.TaskAssignedEnabled!.Value, version, token, schedule));
     }
 }
 public sealed class NotificationBulkReadRequest
@@ -82,6 +95,10 @@ public sealed class NotificationPreferencesRequest
 {
     [Required] public bool? InAppEnabled { get; set; }
     [Required] public bool? TaskAssignedEnabled { get; set; }
+    public bool? DueReminderEnabled { get; set; }
+    public bool? DailyDigestEnabled { get; set; }
+    [MaxLength(100)] public string? TimeZoneId { get; set; }
+    [Range(0, 23)] public int? DigestHour { get; set; }
     [Required, RegularExpression("^(0|[1-9][0-9]{0,18})$")] public string ExpectedVersion { get; set; } = "";
 }
 public sealed class NotificationListQuery

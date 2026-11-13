@@ -24,7 +24,7 @@ public sealed class UserNotifications(TaskFlowDbContext db, TimeProvider clock) 
         && db.Projects.Any(p => p.Id == n.ProjectId && p.WorkspaceId == c.WorkspaceId && p.DeletedAtUtc == null
             && db.WorkspaceMemberships.Any(m => m.WorkspaceId == c.WorkspaceId && m.UserId == p.OwnerId)
             && (p.OwnerId == c.ActorId || db.ProjectMembers.Any(m => m.WorkspaceId == c.WorkspaceId && m.ProjectId == p.Id && m.UserId == c.ActorId && m.RevokedAtUtc == null)))
-        && db.Tasks.Any(t => t.Id == n.TaskId && t.ProjectId == n.ProjectId && t.WorkspaceId == c.WorkspaceId && t.DeletedAtUtc == null));
+        && db.Tasks.Any(t => t.Id == n.TaskId && t.ProjectId == n.ProjectId && t.WorkspaceId == c.WorkspaceId && t.DeletedAtUtc == null && (n.ScheduleKey == null || (t.AssigneeId == c.ActorId && t.Status != TaskState.Done && t.DueDateUtc == n.SourceDueDateUtc))));
 
     public async Task<NotificationPage> ListAsync(WorkspaceReadContext c, int page, int pageSize, bool unreadOnly, CancellationToken token = default)
     {
@@ -79,7 +79,7 @@ public sealed class UserNotifications(TaskFlowDbContext db, TimeProvider clock) 
         foreach (var row in rows.Where(n => n.ReadAtUtc == null)) row.ReadAtUtc = now;
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
     }
-    private static NotificationPreferencesDto Map(NotificationPreference? value) => new(value?.InAppEnabled ?? true, value?.TaskAssignedEnabled ?? true, false, (value?.Version ?? 0).ToString(CultureInfo.InvariantCulture));
+    private static NotificationPreferencesDto Map(NotificationPreference? value) => new(value?.InAppEnabled ?? true, value?.TaskAssignedEnabled ?? true, false, (value?.Version ?? 0).ToString(CultureInfo.InvariantCulture), value?.DueReminderEnabled ?? false, value?.DailyDigestEnabled ?? false, value?.TimeZoneId ?? "UTC", value?.DigestHour ?? 9);
     public async Task<NotificationPreferencesDto> PreferencesAsync(WorkspaceReadContext c, CancellationToken token = default)
     {
         await using var snapshot = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, token);
@@ -87,14 +87,21 @@ public sealed class UserNotifications(TaskFlowDbContext db, TimeProvider clock) 
         var value = await db.NotificationPreferences.AsNoTracking().SingleOrDefaultAsync(p => p.WorkspaceId == c.WorkspaceId && p.UserId == c.ActorId, token);
         await snapshot.CommitAsync(token); return Map(value);
     }
-    public async Task<NotificationPreferencesDto> SetPreferencesAsync(WorkspaceReadContext c, bool inAppEnabled, bool taskAssignedEnabled, long expectedVersion, CancellationToken token = default)
+    public async Task<NotificationPreferencesDto> SetPreferencesAsync(WorkspaceReadContext c, bool inAppEnabled, bool taskAssignedEnabled, long expectedVersion, CancellationToken token = default, NotificationScheduleOptions? schedule = null)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, token);
         await Gate(c, token);
         var value = await db.NotificationPreferences.SingleOrDefaultAsync(p => p.WorkspaceId == c.WorkspaceId && p.UserId == c.ActorId, token);
         if (expectedVersion != (value?.Version ?? 0)) throw new ResourceVersionException(409, "resource.conflict");
-        if (value is null && inAppEnabled && taskAssignedEnabled) { await transaction.CommitAsync(token); return Map(null); }
+        if (value is null && inAppEnabled && taskAssignedEnabled && schedule is null) { await transaction.CommitAsync(token); return Map(null); }
         if (value is null) { value = new() { WorkspaceId = c.WorkspaceId, UserId = c.ActorId }; db.NotificationPreferences.Add(value); }
+        if (schedule is not null)
+        {
+            _ = NotificationSchedule.GetZone(schedule.TimeZoneId);
+            if (schedule.DigestHour is < 0 or > 23) throw new ArgumentException("Invalid digest hour.");
+            value.DueReminderEnabled = schedule.DueReminderEnabled; value.DailyDigestEnabled = schedule.DailyDigestEnabled;
+            value.TimeZoneId = schedule.TimeZoneId; value.DigestHour = schedule.DigestHour;
+        }
         value.InAppEnabled = inAppEnabled; value.TaskAssignedEnabled = taskAssignedEnabled;
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token); return Map(value);
     }

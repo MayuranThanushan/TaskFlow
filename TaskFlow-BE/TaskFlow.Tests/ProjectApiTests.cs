@@ -411,8 +411,9 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await database.InvitationTransitions.Where(a => invites.Contains(a.InvitationId)).ExecuteDeleteAsync();
             await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();
             var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
+            await database.NotificationScheduleCursors.Where(c => database.WorkspaceMemberships.Any(m => m.WorkspaceId == c.WorkspaceId && ids.Contains(m.UserId))).ExecuteDeleteAsync();
             await database.NotificationPreferences.Where(p => ids.Contains(p.UserId)).ExecuteDeleteAsync();
-            await database.UserNotifications.Where(n => ids.Contains(n.RecipientUserId) || events.Contains(n.EventId)).ExecuteDeleteAsync();
+            await database.UserNotifications.Where(n => ids.Contains(n.RecipientUserId) || (n.EventId != null && events.Contains(n.EventId.Value))).ExecuteDeleteAsync();
             var deliveries = database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).Select(d => d.Id);
             await database.OutboxAttempts.Where(a => deliveries.Contains(a.DeliveryId)).ExecuteDeleteAsync();
             await database.OutboxDeliveries.Where(d => events.Contains(d.EventId)).ExecuteDeleteAsync();
