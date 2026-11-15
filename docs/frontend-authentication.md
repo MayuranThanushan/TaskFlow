@@ -26,5 +26,7 @@ A local headless Edge check used the real HTTPS Vite proxy, API and MySQL: prote
 
 The backend suite also passed all 30 tests with live MySQL and no skips. The separate HTTPS protocol check retained a session across API restart using persisted protection keys. Temporary services stopped and synthetic accounts were removed afterward. Local browser drivers/screenshots remain ignored verification artifacts, not CI dependencies; committed browser end-to-end automation remains later backlog work. No hosted CI run or deployment is claimed.
 
+The SaaS-032 board is protected under company routes and keyed by account/company/project. Scope changes abort owned reads/writes and discard private board drafts; a late request cannot populate the next company view.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

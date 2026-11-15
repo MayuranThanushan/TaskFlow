@@ -104,5 +104,7 @@ SaaS-030 adds MySQL board tests for 364 cards, per-column completeness, list par
 
 SaaS-031 adds move correctness, same-card and same-gap races, stale/foreign/hidden anchors, strict payload/CSRF/revision/role denials, no-op, 500-card rebalance, overflow, queued revocation and rollback tests. A populated 16-to-17 migration rehearsal verifies old order and unchanged versions/timestamps. See [release evidence](evidence/saas031-board-moves.json).
 
+SaaS-032 adds board interaction and placement-state tests plus a loopback-only production-browser review with fully mocked APIs. Current measured results and the distinction from selected-host verification are in [release evidence](evidence/saas032-board-ui.json).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -73,5 +73,7 @@ The local suite adds nine HTTP/MySQL cases covering scoped CRUD/CSRF, server-der
 
 SaaS-031 adds [atomic scoped board movement](board-moves.md), using the same admission/project locks, CSRF/MFA policies and task revisions. Creation/status changes append ranks, while explicit moves validate captured adjacent neighbors and bound rebalance work.
 
+SaaS-032 sends captured task/neighbor revisions only after placement review. A blocked or failed move restores the displayed state and requires reload; successful POST plus failed refresh is reported as a saved move with an unavailable view.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

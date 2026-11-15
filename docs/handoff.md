@@ -90,5 +90,7 @@ The current SaaS continuation includes [SaaS-030 board read APIs](saas/board-rea
 
 SaaS-031 [rank and atomic move APIs](saas/board-moves.md) are the current backend foundation; apply seventeen migrations. SaaS-032 remains the board UI and accessibility/reconciliation handoff. Hosted acceptance is still separate.
 
+The SaaS-032 [project board](saas/board-ui.md) is implemented locally with drag, keyboard and click/tap alternatives, captured-position confirmation and explicit stale-write recovery. Hosted acceptance/manual assistive-technology review remain separate; next is SaaS-033 My work/search.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

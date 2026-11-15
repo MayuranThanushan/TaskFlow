@@ -94,5 +94,7 @@ SaaS-030 board reads require no new migration, worker or provider setup. The exi
 
 SaaS-031 requires migration seventeen (BoardRank), unlike the no-migration SaaS-030 read release. Back up/quiesce writers, apply the complete forward migration set and deploy a matching binary. Review [atomic moves and rollback constraints](saas/board-moves.md).
 
+SaaS-032 adds frontend routing/styles only; migration seventeen and the matching SaaS-031 API are still required. Existing workspace build flags control availability. Ship matching artifacts; task-list and chunk-reload fallbacks remain available. No worker/provider/paid-resource activation is required.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

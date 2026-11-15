@@ -111,5 +111,7 @@ Local evidence: the published HTTPS application passed eleven migrations against
 
 The local-to-cloud compatibility probe recorded several-second requests. It demonstrates behavior, not acceptable hosted latency. Select compatible regions and measure the actual hosted path before inviting users or making performance commitments.
 
+SaaS-032 board navigation uses the already enabled workspace frontend in this free profile. No new resource or board flag is added. Keep all seventeen migrations and the matching rank/move API before deploying the board bundle; see [UI rollout](saas/board-ui.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

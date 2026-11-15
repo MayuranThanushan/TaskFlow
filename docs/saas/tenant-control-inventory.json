@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-031",
+  "release": "SaaS-032",
   "date": "2026-11-15",
-  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments/watchers, board counts and atomic rank/move APIs. Local verification only; provider/selected-host gates remain open and board UI remains SaaS-032.",
+  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments/watchers, board counts and atomic rank/move APIs. Local verification only; provider/selected-host gates remain open and board UI remains SaaS-032. Company-scoped board UI uses captured revisions, bounded canonical placement reads, optimistic rollback and explicit conflict/access recovery.",
   "operations": [
     {
       "operationId": "AccountSecurity_Capabilities",
@@ -1840,6 +1840,21 @@
       "docs/saas/task-watchers.md",
       "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
       "tests/browser/watchers.cjs"
+    ]
+  },
+  "boardUi": {
+    "route": "/companies/:workspaceId/projects/:projectId/board",
+    "controls": [
+      "Account/company/project-keyed state and owned request cancellation",
+      "Read-only viewer controls; private-project authority remains server enforced",
+      "Captured task/neighbor revisions; no automatic stale-write replay",
+      "At most five 100-card placement pages; complete counts and off-page adjacency",
+      "Optimistic display rollback, confirmed-save refresh distinction and access-failure clearing"
+    ],
+    "evidenceSources": [
+      "TaskFlow-FE/src/features/board/BoardPage.test.tsx",
+      "TaskFlow-FE/src/features/board/board-state.test.ts",
+      "tests/browser/board-ui.cjs"
     ]
   }
 }

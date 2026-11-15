@@ -47,5 +47,7 @@ The published HTTPS company journey is `node tests/browser/companies.cjs`; use t
 
 Next is SaaS-012: company/project role lifecycle, suspension/leave, ownership transfer, assignment cleanup and company audit coverage. Company quotas, non-null scope, legacy route retirement, hosted CI/container evidence and the full acceptance/cutover remain open. Do not market this preview as completed tenant enforcement.
 
+SaaS-032 adds /companies/:workspaceId/projects/:projectId/board, discoverable from project details and task lists. Its draft/read state is reset with the existing company/account boundary; no legacy board route or company-admin private-project override is introduced.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

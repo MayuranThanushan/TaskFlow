@@ -461,6 +461,8 @@
     {
       "order": 32,
       "id": "SaaS-032",
+      "status": "implemented and verified locally; hosted/manual assistive-technology acceptance remain gated",
+      "evidence": "docs/evidence/saas032-board-ui.json",
       "work": "Add responsive board UI, keyboard moves and non-drag controls",
       "dependencies": "031, 006",
       "acceptance": "Drag, keyboard and click-to-move work; optimistic error rollback; progress/counts update after commit; focus announcements and mobile overflow pass",

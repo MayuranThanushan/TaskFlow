@@ -61,5 +61,7 @@ Next: SaaS-031 server-owned rank and atomic move/reorder API, then SaaS-032 boar
 
 The SaaS-030 baseline above records its original created-date defaults and sixteen-migration scope. SaaS-031 now adds [persisted rank and atomic movement](board-moves.md): canonical board columns default to rank ascending, and all seventeen migrations are required by the current binary. Alternate title/priority/deadline/date sorts remain available. Movement validates neighbors in the full unfiltered canonical column, not an arbitrary filtered page. The existing TaskPage/TaskDto wire shapes are preserved; the current full API has 72 paths / 94 operations. Board UI remains SaaS-032.
 
+SaaS-032 now implements the [responsive board UI](board-ui.md) on these reads, with independent column pages and full counts. It uses unfiltered canonical rank order and exposes list navigation for other task filters.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

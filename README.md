@@ -223,7 +223,9 @@ If Render builds successfully but readiness reports `database.schema_mismatch`, 
 
 ## SaaS release status
 
-SaaS-031 adds [server-owned rank and atomic move/reorder APIs](docs/saas/board-moves.md). Apply all **seventeen migrations**, including BoardRank, before this binary. Moves require captured task and adjacent-neighbor revisions, preserve atomic audit/outbox history and bound rebalancing to 500 cards. Board reads now default to rank order; the API inventory is 72 paths / 94 operations. Next: SaaS-032 accessible board UI.
+SaaS-032 adds the [responsive project board](docs/saas/board-ui.md): open a company project and choose Open board, or Board view from its task list. Columns page independently and keep full counts. Drag, keyboard and click/tap share a captured-position confirmation dialog, with optimistic rollback, explicit conflict review and focus recovery. No new migration is added; all seventeen through BoardRank remain required. Next: SaaS-033 My work and authorized search.
+
+SaaS-031 adds [server-owned rank and atomic move/reorder APIs](docs/saas/board-moves.md). Apply all **seventeen migrations**, including BoardRank, before this binary. Moves require captured task and adjacent-neighbor revisions, preserve atomic audit/outbox history and bound rebalancing to 500 cards. Board reads now default to rank order; the API inventory is 72 paths / 94 operations. SaaS-032 now implements the board screen; next product work is SaaS-033.
 
 SaaS-030 adds the [board read model, full status counts and independently paged columns](docs/saas/board-read-model.md), plus a typed company-scoped client. The API contract now has 71 paths / 93 operations. No new migration is needed; the existing workspace-read gate applies. SaaS-031 implements rank/moves; the board UI remains SaaS-032. See the [documentation index](docs/documentation-index.md) for current implementation and rollout status across all guides.
 

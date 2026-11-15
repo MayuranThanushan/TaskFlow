@@ -118,5 +118,7 @@ SaaS-030 implements the [board read model](saas/board-read-model.md): existing c
 
 SaaS-031 implements [persisted rank and atomic moves](saas/board-moves.md) under the existing scoped transaction boundary, with version/adjacency fencing, bounded 500-card rebalance and metadata audit/outbox. SaaS-032 remains accessible board UI.
 
+SaaS-032 implements the [accessible responsive board](saas/board-ui.md) on the existing canonical read/rank model. It preserves server-owned order, bounds full-column position preparation, shares equivalent movement controls and blocks replay after uncertainty. My work/search follows in SaaS-033.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

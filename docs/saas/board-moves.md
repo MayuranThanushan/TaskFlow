@@ -64,5 +64,7 @@ See [local release evidence](../evidence/saas031-board-moves.json). Hosted CI/co
 
 Next: SaaS-032 responsive board UI with keyboard, click/tap and non-drag movement, focus announcements, conflict reconciliation and mobile overflow verification.
 
+SaaS-032 now supplies the [accessible board screen](board-ui.md) and typed confirmation flow. It prepares canonical full-column neighbors before confirmation and reloads affected columns after a committed move; no automatic stale-write replay is added. The dated SaaS-031 API guarantees above remain unchanged.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

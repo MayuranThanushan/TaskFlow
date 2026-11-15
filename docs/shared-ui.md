@@ -10,5 +10,7 @@ Projects, tasks and activity use shared pagination while keeping filters/page st
 
 Validation retains all 95 frontend tests, including failed-write drafts, duplicate submissions, keyboard cancellation, stale responses, account switching, URL history and owner/member controls. The separate 42-scan synthetic UI baseline checks responsive layouts and accessibility. Published-app journeys use actual API mutations and an isolated database; see [verification evidence](evidence/saas006-ui-ci.json). These results do not establish multi-company isolation, which remains planned in SaaS-008 onward.
 
+SaaS-032 reuses scoped navigation, badges/icons, pagination and lazy-panel recovery. Native dialog focus containment, saving/review announcements and task/link/heading focus return are local to the board rather than changing existing confirmation flows.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -60,5 +60,7 @@ The original nine-route inventory above is the SaaS-009 baseline. SaaS-030 adds 
 
 SaaS-031 switches canonical board-column reads to stored rank ascending and supports explicit rank list sorting. Visibility/count predicates remain shared; TaskDto is unchanged. See [move/order contract](board-moves.md).
 
+SaaS-032 consumes the board summary and independent column pages, detects cross-response count drift and requires explicit reload. It does not synthesize a complete board from a single task-list page. See [UI behavior](board-ui.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

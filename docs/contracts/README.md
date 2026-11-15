@@ -88,5 +88,7 @@ SaaS-021 adds `InvitationDto.resendAvailableAtUtc` and `PilotCapacityDto.reserve
 
 SaaS-022 adds five self-only MFA routes, optional login `code`/`recoveryCode`, factor-protected reset, and optional authenticator `code` on change-password/reauthenticate. MFA DTOs expose only self status and deliberately one-time setup/recovery responses. See [MFA rollout](../saas/mfa.md). Review these sensitive response types together with no-store/logging and generated-client changes.
 
+SaaS-032 adds only UI/client consumers; API inventory remains 72 paths / 94 operations and TaskDto is unchanged. The board uses the existing rank/move contract and does not send a client rank or refreshed revision to silently replay a failed move.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

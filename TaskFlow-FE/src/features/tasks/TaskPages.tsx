@@ -63,7 +63,7 @@ export function TasksPage({ client }: { client: ApiClient }) {
   const { result, retry } = useApiResource<TaskPage>(client, path + '/tasks' + (query ? '?' + query : ''))
   const page = (value: number) => { const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next) }
   return <section className="projects-page"><Link className="text-link" to={path}>Back to project</Link>
-    <div className="page-heading"><div><p className="eyebrow">Project work</p><h1>Tasks</h1></div>{canWrite && <Link className="button primary" to={path + '/tasks/new'}>New task</Link>}</div>
+    <div className="page-heading"><div><p className="eyebrow">Project work</p><h1>Tasks</h1></div><div className="form-actions">{client.resourceKey.startsWith('workspace:') && <Link className="button subtle" to={path + '/board'}>Board view</Link>}{canWrite && <Link className="button primary" to={path + '/tasks/new'}>New task</Link>}</div></div>
     {location.state?.deleted && <p role="status" className="notice">Task deleted.</p>}
     <TaskQuery key={query} params={params} apply={setParams} assignees={members.result.status === 'ready' ? members.result.data.items : []} assigneesFailed={members.result.status === 'error'} retryAssignees={members.retry} />
     {result.status === 'loading' && <p role="status">Loading tasks...</p>}

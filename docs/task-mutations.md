@@ -36,5 +36,7 @@ The published Production release passed verified HTTPS migration/readiness/resta
 
 SaaS-031 create/status paths maintain server-owned append ranks; the new scoped POST move validates task and neighbor revisions and preserves atomic status/rank/audit/outbox. See [move API](saas/board-moves.md).
 
+SaaS-032 uses the [rank/move API](saas/board-moves.md) through a common click/keyboard/drag confirmation dialog. UI rollback restores display only; uncertain POST outcomes require an explicit server reload and are never blindly retried.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

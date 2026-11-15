@@ -29,5 +29,7 @@ Browser requests were intercepted with synthetic API fixtures; no real user acco
 
 [Sanitized machine-readable evidence](evidence/workspace-ui.json) is committed. Screenshots and the full browser report are generated under ignored TestResults/workspace-ui, including overview-desktop.png, tasks-desktop.png, activity-desktop.png, login-1440.png and mobile/form variants. Reproduce them with the [browser instructions](../tests/browser/README.md#local-workspace-ui-review).
 
+SaaS-032 adds three responsive board lanes, full counts/progress, compact task cards and an accessible captured-position dialog. The board code/styles load on demand, columns stack on mobile, and the list is available as a recovery path. See [board UI](saas/board-ui.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

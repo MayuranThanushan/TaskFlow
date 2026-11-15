@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-032",
+  "status": "implemented and verified locally; selected-host and manual assistive-technology acceptance remain separate gates",
+  "features": [
+    "company-only lazy-loaded project board with scoped project/task-list entry points",
+    "three canonical columns, independent pages, full counts and project completion",
+    "click/tap, keyboard and actual pointer drag share captured-position confirmation",
+    "bounded full-column neighbor preparation prevents false page-edge placement",
+    "optimistic display rollback, duplicate-write guard and explicit conflict review without replay",
+    "confirmed-save versus post-commit refresh failure distinction",
+    "native modal Tab containment, Escape/cancel, saving/review announcements and focus return",
+    "scope cancellation and unavailable/private content clearing with list/chunk recovery"
+  ],
+  "verification": {
+    "backendBoardAndContract": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "live board/move/dashboard and OpenAPI regressions against disposable seventeen-migration MySQL schema removed"
+    },
+    "frontend": {
+      "newTests": 13,
+      "lint": "passed",
+      "typecheck": "passed",
+      "productionBuild": "passed with existing workspace flags",
+      "initialBundleKilobytes": 484.19,
+      "initialBundleGzipKilobytes": 142.21,
+      "onDemandBoardJavascriptKilobytes": 15.76,
+      "onDemandBoardCssKilobytes": 3.45,
+      "bundleWarning": false,
+      "passed": 201,
+      "failed": 0,
+      "files": 22,
+      "execution": "one worker; original assertions/timeouts retained"
+    },
+    "contract": "API and generated wire types unchanged from SaaS-031",
+    "visualReview": "desktop owner board and 320px modal screenshots inspected; malformed decorative glyphs replaced with JSX entity and shared SVG icon",
+    "operations": {
+      "passed": 40
+    },
+    "browser": {
+      "checks": [
+        "native modal focus containment, Escape cancellation and source focus restoration",
+        "keyboard move, explicit confirmation, committed count refresh and empty-column state",
+        "real pointer drag across columns and before-card reorder through captured-neighbor confirmation",
+        "conflict rollback/review, no automatic POST replay and explicit reload",
+        "full 125-card column count, independent second page and long-title mobile wrapping"
+      ],
+      "journeys": 5,
+      "accessibilityScans": 14,
+      "widths": [
+        1440,
+        320
+      ],
+      "violations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "scope": "mocked API production frontend; no real accounts or database",
+      "artifacts": "TestResults/saas032-browser; screenshots inspected locally",
+      "finalProductionBundle": true
+    },
+    "secretScan": "redacted staged patch scan passed"
+  },
+  "rollout": {
+    "migrationCount": 17,
+    "newMigration": false,
+    "newDependencies": false,
+    "newBackendEndpoint": false,
+    "apiPaths": 72,
+    "apiOperations": 94,
+    "frontendRoute": "/companies/:workspaceId/projects/:projectId/board",
+    "newFeatureFlag": false,
+    "existingGate": "workspace frontend and backend read/write settings; current company/project permission and MFA policy",
+    "realEmailSent": false,
+    "hostedDatabaseTouched": false,
+    "hostedResourcesChanged": false
+  },
+  "limitations": [
+    "Full browser journeys mock every API request; they do not certify a selected host, real authorization topology or durable storage.",
+    "Manual screen-reader/touch-device review and selected-host capacity/latency remain acceptance gates.",
+    "Board has canonical unfiltered order; existing task filters remain in list view and saved views are later work.",
+    "Position preparation is bounded to 500 cards and rejects inconsistent/drifting page inventories.",
+    "Separate requests are live snapshots; conflicts require explicit reload/review and are not replayed automatically."
+  ],
+  "next": "SaaS-033 tenant-scoped My work, due/overdue queues and authorized search",
+  "documentation": {
+    "markdownFiles": 78,
+    "relativeLinksChecked": 727,
+    "brokenLinks": 0,
+    "readmeAndCurrentGuidesUpdated": true,
+    "historicalReleaseEvidencePreserved": true
+  }
+}

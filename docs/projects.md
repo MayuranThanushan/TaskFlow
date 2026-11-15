@@ -53,5 +53,7 @@ Step 12 verification: 67 backend tests passed with real MySQL and zero skips, in
 
 The step 12 published Production app passed the HTTPS migration/readiness/restart smoke rehearsal and real Edge editing/reload, confirmation focus/Escape cancellation, confirmed deletion/list refresh/deleted deep-link rejection, plus the existing project/account/mobile checks. The disposable database was removed and all verification services stopped.
 
+Company project details now offer Open board alongside View tasks. SaaS-032 exposes only currently authorized task cards and uses existing project member roles for read-only/write controls; server policy remains authoritative.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

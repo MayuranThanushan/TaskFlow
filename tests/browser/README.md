@@ -85,5 +85,9 @@ The journey posts escaped script-like text with an explicit picker mention, edit
 
 `watchers.cjs` requires a disposable HTTPS API with watcher/inbox/comment/workspace flags, matching compiled frontend preview flags and two synthetic project collaborators. Point TASKFLOW_WATCHER_SCENARIO privately at workspaceId, taskId, recipientId, recipientEmail, ownerEmail, password, quietStart and quietEnd. The recipient starts subscribed with revision 1 and three source inbox updates for one task. The journey stops/re-subscribes, sets local noise controls, groups and reviews source updates, then switches to the owner to emit a quiet watcher update and direct mention. It scans task controls, expanded preferences and grouped inbox at desktop/mobile widths. A separate published scheduler rehearsal checks pending delivery/mute cancellation and restricted grants; never use a shared/live company.
 
+## SaaS-032 isolated board UI review
+
+`board-ui.cjs` runs the production frontend with every API request mocked; no database, real credentials or TLS bypass is used. It requires an explicit loopback TASKFLOW_BOARD_UI_ORIGIN and TASKFLOW_BOARD_UI_MOCKS=1. It checks native dialog Tab/Escape/focus, real pointer dragging, keyboard movement, conflict recovery, viewers, independent paging and axe/overflow at 1440px and 320px. See the [build/preview/review commands](../../docs/saas/board-ui.md). This complements live backend board/move tests and does not replace selected-host or manual assistive-technology acceptance.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -1,3 +1,4 @@
+import { BoardEntry } from '../board/BoardEntry'
 import { InvitationManagerPage } from '../invitations/InvitationManager'
 import { NotificationInboxPage, NotificationNavLink } from '../notifications/NotificationInboxPage'
 import { CompanyPolicyPage } from './CompanyPolicyPage'
@@ -102,6 +103,7 @@ function CompanyContent({ client, workspaceId, lifecycleEnabled, invitationsEnab
     <Route path="projects/new" element={company.role === "Guest" ? <section><h1>Guests cannot create projects.</h1><Link to={"/companies/" + workspaceId + "/projects"}>Back to projects</Link></section> : <NewProjectPage client={scoped} />} />
     <Route path="projects/:projectId" element={<ProjectDetailPage client={scoped} />} />
     <Route path="projects/:projectId/edit" element={<EditProjectPage client={scoped} />} />
+    <Route path="projects/:projectId/board" element={<BoardEntry client={scoped} />} />
     <Route path="projects/:projectId/tasks" element={<TasksPage client={scoped} />} />
     <Route path="projects/:projectId/tasks/new" element={<NewTaskPage client={scoped} />} />
     <Route path="projects/:projectId/activity" element={<ActivityPage client={scoped} />} />

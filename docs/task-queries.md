@@ -32,5 +32,7 @@ SaaS-030 adds [company-scoped board counts and per-column pages](saas/board-read
 
 SaaS-031 allows explicit sortBy=rank and preserves created-date list defaults. Board columns use rank/asc by default. Rank is per status, so compare list/board order within the same status/filter scope. See [ordering](saas/board-moves.md).
 
+SaaS-032 board columns page independently in canonical rank order, while placement preparation reads the complete target column within the 500-card bound. A loaded page edge is never assumed to be the true start/end. Existing task-list filters stay in List view.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

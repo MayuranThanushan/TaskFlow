@@ -62,5 +62,7 @@ All 109 backend tests passed with real MySQL and zero skips (35 non-database and
 
 Hosted CI/container execution and selected-host checks remain unexecuted. The committed browser suite is runnable against a prepared disposable host; this step does not claim a hosted browser CI run or publication. Step 22 [release/recovery preparation](release-runbook.md) is complete locally; [step 23 documentation/demo handoff](handoff.md) is complete. External release gates remain pending.
 
+SaaS-032 adds real Edge UI review for modal focus containment, keyboard/pointer movement, explicit conflict recovery, viewer access, independent paging and desktop/320px axe scans. These are production-frontend tests with synthetic API responses, not hosted authorization or assistive-technology certification.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

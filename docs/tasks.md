@@ -40,5 +40,7 @@ The combined Production release passed verified HTTPS migration/readiness/restar
 
 SaaS-030 exposes [board read APIs](saas/board-read-model.md) for company-scoped tasks. The existing task list/detail UI stays in place; board movement and UI follow in SaaS-031/032.
 
+SaaS-032 adds company-only project/task-list entry points to the [board screen](saas/board-ui.md). The legacy task list remains available and receives no unscoped board route.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

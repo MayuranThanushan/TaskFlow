@@ -27,5 +27,7 @@ SaaS-030 adds a typed read-only board client in src/features/board/board-api.ts 
 
 SaaS-031 adds moveBoardTask with captured X-Expected-Version, neighbor revisions, CSRF, cancellation and conflict propagation. It does not fetch fresh revisions or silently replay a move. Rank stays server-owned. The board screen follows in SaaS-032.
 
+SaaS-032 exposes the lazy project board at /companies/:workspaceId/projects/:projectId/board. Project/task-list links open it. Independent pages, full counts, shared click/keyboard/drag confirmation, captured revisions, optimistic rollback and explicit reload/focus recovery are covered by component and real-browser UI tests. See [board guide](../docs/saas/board-ui.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
