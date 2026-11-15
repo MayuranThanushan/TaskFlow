@@ -16,7 +16,7 @@ public sealed class DatabaseReadinessCheck(IServiceScopeFactory scopeFactory, IL
         if (span is not null) span.TraceStateString = null;
         string result = "cancelled";
         bool? ready = null;
-        HealthCheckResult NotReady(string code) { result = code; ready = false; return Failure(code); }
+        HealthCheckResult NotReady(string code, DatabaseSchemaState? schema = null) { result = code; ready = false; return Failure(code, schema); }
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -26,7 +26,8 @@ public sealed class DatabaseReadinessCheck(IServiceScopeFactory scopeFactory, IL
             var compiled = database.Database.GetMigrations().ToHashSet(StringComparer.Ordinal);
             var applied = (await database.Database.GetAppliedMigrationsAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
             // An older binary must not declare an unrecognized future schema ready.
-            if (!compiled.SetEquals(applied)) return NotReady("database.schema_mismatch");
+            var schema = DatabaseSchemaState.Compare(compiled,applied);
+            if (!schema.IsCurrent) return NotReady("database.schema_mismatch", schema);
             // Verify a mapped table is readable, without changing schema or user data.
             await database.Users.AsNoTracking().Select(user => user.Id).Take(1).ToListAsync(cancellationToken);
             result = "ready"; ready = true;
@@ -50,9 +51,12 @@ public sealed class DatabaseReadinessCheck(IServiceScopeFactory scopeFactory, IL
         }
     }
 
-    private HealthCheckResult Failure(string code)
+    private HealthCheckResult Failure(string code, DatabaseSchemaState? schema = null)
     {
-        logger.LogWarning(new EventId(2002, "database.not_ready"), "Database readiness failed: {FailureCode}", code);
+        if (schema is null) logger.LogWarning(new EventId(2002, "database.not_ready"), "Database readiness failed: {FailureCode}", code);
+        else logger.LogWarning(new EventId(2002,"database.not_ready"),
+            "Database readiness failed: {FailureCode}; {ExpectedMigrationCount} expected, {AppliedMigrationCount} applied, {PendingMigrationCount} pending, {UnexpectedMigrationCount} unrecognized. Run Repair-HostedDatabase.ps1 with the private migration connection before redeploying.",
+            code,schema.ExpectedCount,schema.AppliedCount,schema.PendingMigrations.Length,schema.UnexpectedCount);
         return HealthCheckResult.Unhealthy();
     }
 }

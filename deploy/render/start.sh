@@ -14,6 +14,9 @@ case "$taskflow_port" in *[!0-9]*|'') echo 'Invalid port' >&2; exit 1 ;; esac
 if [ "$taskflow_port" -lt 1 ] || [ "$taskflow_port" -gt 65535 ]; then echo 'Invalid port' >&2; exit 1; fi
 # Environment secrets are provided by Render; do not use Compose's /run/secrets default.
 unset TASKFLOW_SECRETS_DIRECTORY
+# Clear the base image port defaults; Render supplies PORT and URLS is authoritative.
+export ASPNETCORE_HTTP_PORTS=""
+export ASPNETCORE_HTTPS_PORTS=""
 export ASPNETCORE_URLS="http://0.0.0.0:$taskflow_port"
 export ASPNETCORE_ENVIRONMENT=Production
 export Transport__RequireHttps=true

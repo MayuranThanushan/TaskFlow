@@ -217,6 +217,10 @@ Free public pilot preparation: follow the [Render Free + TiDB checklist](docs/fr
 
 The implemented MVP is locally verified. Container execution, hosted CI and selected-host verification remain release gates; nothing has been publicly deployed. Keep private settings, credentials, keys, databases and generated output outside Git.
 
+## Deployment repair
+
+If Render builds successfully but readiness reports `database.schema_mismatch`, follow [the repair checklist](docs/deployment-repair.md). From `D:\TaskFlow`, run `.\scripts\Repair-HostedDatabase.ps1` to check, then `.\scripts\Repair-HostedDatabase.ps1 -Apply` with your private TiDB migration connection before deploying the same commit. The current release requires all sixteen migrations.
+
 ## Next product releases
 
 SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Apply all sixteen migrations and updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. Next: SaaS-029 delivery reliability, revocation races and load/alert verification.

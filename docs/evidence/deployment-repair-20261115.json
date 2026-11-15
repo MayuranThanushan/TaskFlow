@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-15",
+  "type": "deployment hotfix",
+  "diagnosis": "Provided logs show a completed container build and repeated database.schema_mismatch/readiness 503; recorded EF migrations differ from the deployed binary. Port defaults and redundant internal HTTPS redirect also produced warnings.",
+  "changes": [
+    "explicit offline database status/update commands with verified TLS, sanitized diagnostics and unknown-history refusal",
+    "private-input PowerShell repair wrapper with isolated build, existing-connection opt-in and configuration restoration",
+    "single structured schema-readiness warning with expected/applied/pending/unrecognized counts",
+    "Render entrypoint clears inherited port defaults; validated edge mode skips application HTTPS redirection while strict auth remains enforced",
+    "day-one local repair and redeploy checklist"
+  ],
+  "verification": {
+    "targetedBackend": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "maintenance, MySQL readiness, transport and API contract tests"
+    },
+    "additionalWarningRegression": {
+      "passed": 17,
+      "scope": "includes explicit no-HTTPS-warning capture and insecure-auth rejection"
+    },
+    "operations": {
+      "passed": 35
+    },
+    "databaseRehearsal": {
+      "passed": true,
+      "fromMigrations": 15,
+      "toMigrations": 16,
+      "checks": [
+        "pending status is read-only",
+        "unrecognized history blocks updates without deletion/downgrade",
+        "explicit forward update succeeds and repeat is a no-op",
+        "hosting cookie/key configuration is not required for offline operation",
+        "PowerShell hidden input and environment/key-directory restoration verified"
+      ],
+      "cleanup": "dedicated local schema removed"
+    },
+    "renderEntrypoint": "isolated shell stub verified assigned port, cleared inherited port defaults, strict transport and secrets-directory isolation"
+  },
+  "hostedStatus": {
+    "databaseUpdateApplied": false,
+    "deploymentVerified": false,
+    "blocker": "Actual TiDB migration connection and Render account actions are not available to this session; owner must run the private repair and deploy matching revision."
+  },
+  "safety": {
+    "webStartupAutoMigration": false,
+    "readinessBypass": false,
+    "paidResourcesCreated": false,
+    "migrationCountChanged": false
+  }
+}

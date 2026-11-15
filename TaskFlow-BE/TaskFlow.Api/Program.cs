@@ -9,7 +9,7 @@ if (TaskFlow.Api.Operations.HostingKeyCommand.IsRequested(args))
     return;
 }
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(TaskFlow.Api.Operations.DatabaseMaintenanceCommand.IsRequested(args) ? [] : args);
 var workspaceMigration = TaskFlow.Api.Operations.WorkspaceMigrationCommand.IsRequested(args);
 if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secretsDirectory)
     builder.Configuration.AddKeyPerFile(source =>
@@ -19,6 +19,13 @@ if (builder.Configuration["TASKFLOW_SECRETS_DIRECTORY"] is { Length: > 0 } secre
         source.ReloadOnChange = false;
         source.IgnoreCondition = name => name.StartsWith('.') || name.EndsWith(".pfx", StringComparison.OrdinalIgnoreCase);
     });
+
+// Offline maintenance needs no listener, hosting key ring, cookie services or telemetry.
+if (TaskFlow.Api.Operations.DatabaseMaintenanceCommand.IsRequested(args))
+{
+    Environment.ExitCode = await TaskFlow.Api.Operations.DatabaseMaintenanceCommand.ExecuteAsync(args,builder.Configuration,Console.Out);
+    return;
+}
 
 // Keep local and hosted logging independent of Windows Event Log permissions.
 builder.Logging.ClearProviders();
@@ -113,7 +120,8 @@ if (requireHttps && !app.Environment.IsDevelopment() && !app.Environment.IsEnvir
     && !app.Environment.IsEnvironment("Testing"))
 {
     app.UseHsts();
-    app.UseHttpsRedirection();
+    // The validated Render public edge owns redirection; its internal health probe is HTTP.
+    if (!app.Configuration.GetValue<bool>("Hosting:RenderEdge")) app.UseHttpsRedirection();
 }
 
 app.Use(async (context, next) =>

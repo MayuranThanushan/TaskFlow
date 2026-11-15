@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TaskFlow.Api.Hosting;
 using TaskFlow.Api.Operations;
 
@@ -80,6 +81,24 @@ public sealed class HostingTests
         var expired = new ReadOnlyKeyRing(ring).GetAllElements().Select(e => new XElement(e)).ToArray();
         expired[0].Element("expirationDate")!.Value = DateTimeOffset.UtcNow.AddDays(-1).ToString("O");
         using var old = Factory(ReadOnlyKeyRing.Encode(expired)); Assert.Throws<InvalidOperationException>(() => old.CreateClient());
+    }
+    [Fact]
+    public async Task RenderInternalHttpHealthDoesNotAttemptAnApplicationHttpsRedirect()
+    {
+        using var keys=new PrivateFolder();var warnings=new RedirectWarningRecorder();await using var factory=Factory(Ring(keys.Path)).WithWebHostBuilder(builder=>builder.ConfigureLogging(logging=>logging.AddProvider(warnings)));
+        using var client=factory.CreateClient(new(){BaseAddress=new("http://localhost"),AllowAutoRedirect=false});client.DefaultRequestHeaders.Host="healthcheck.render.com";
+        var response=await client.GetAsync("/api/v1/health/live");Assert.Equal(HttpStatusCode.OK,response.StatusCode);Assert.Null(response.Headers.Location);Assert.Equal(0,warnings.Count);
+        var credentials=await client.GetAsync("/api/v1/auth/csrf");Assert.Equal(HttpStatusCode.BadRequest,credentials.StatusCode);
+    }
+    private sealed class RedirectWarningRecorder : ILoggerProvider,ILogger
+    {
+        private int count;
+        public int Count=>Volatile.Read(ref count);
+        public ILogger CreateLogger(string categoryName)=>categoryName=="Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware"?this:Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+        public bool IsEnabled(LogLevel logLevel)=>logLevel>=LogLevel.Warning;
+        public IDisposable? BeginScope<TState>(TState state) where TState:notnull=>null;
+        public void Log<TState>(LogLevel level,EventId eventId,TState state,Exception? error,Func<TState,Exception?,string> formatter){if(level>=LogLevel.Warning&&eventId.Id==3)Interlocked.Increment(ref count);}
+        public void Dispose(){}
     }
     private static ServiceProvider Provider(string ring, string application = "TaskFlow")
     {
