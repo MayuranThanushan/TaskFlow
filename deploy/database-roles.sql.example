@@ -113,3 +113,11 @@ GRANT UPDATE (State, Outcome, CompletedAtUtc, AvailableAtUtc) ON taskflow.Watche
 -- GRANT SELECT (Id, WorkspaceId, ActorUserId, TargetUserId, ProjectId, Action) ON taskflow.WorkspaceAuditLogs TO 'taskflow_notifications_worker'@'%';
 -- GRANT SELECT ON taskflow.WatcherNotificationIntents TO 'taskflow_notifications_worker'@'%';
 -- GRANT UPDATE (State, Outcome, CompletedAtUtc, AvailableAtUtc) ON taskflow.WatcherNotificationIntents TO 'taskflow_notifications_worker'@'%';
+
+-- SaaS-029: optional read-only delivery operations identity. Provision privately.
+-- No payloads, addresses, user IDs, company IDs, tokens, or mutation privileges.
+-- GRANT SELECT ON taskflow.__EFMigrationsHistory TO 'taskflow_delivery_monitor'@'%';
+-- GRANT SELECT (State, AvailableAtUtc, LeaseExpiresAtUtc, Attempts) ON taskflow.OutboxDeliveries TO 'taskflow_delivery_monitor'@'%';
+-- GRANT SELECT (State, AvailableAtUtc, LeaseExpiresAtUtc, Attempts) ON taskflow.AccountEmailJobs TO 'taskflow_delivery_monitor'@'%';
+-- GRANT SELECT (State, DeliveryState, AvailableAtUtc, LeaseExpiresAtUtc, Attempts) ON taskflow.WorkspaceInvitations TO 'taskflow_delivery_monitor'@'%';
+-- GRANT SELECT (State, AvailableAtUtc) ON taskflow.WatcherNotificationIntents TO 'taskflow_delivery_monitor'@'%';

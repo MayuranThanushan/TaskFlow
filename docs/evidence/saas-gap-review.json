@@ -431,6 +431,8 @@
     {
       "order": 29,
       "id": "SaaS-029",
+      "status": "implemented and verified locally; selected-host locking/load and human alert routing remain gated",
+      "evidence": "docs/evidence/saas029-reliability.json",
       "work": "Test revocation races and delivery reliability under load",
       "dependencies": "024-028",
       "acceptance": "Removal before send suppresses queued private content; worker crash/provider timeout/replay tested; backlog/error/dead-letter alerts actionable",

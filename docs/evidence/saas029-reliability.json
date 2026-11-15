@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-029",
+  "status": "implemented and verified locally; hosted dispatch/scheduling and alert routing remain gated",
+  "changes": [
+    "final invitation dispatch authority recheck under company/invitation locks before decryption and send",
+    "bounded dispatch cancellation and lease-fenced acknowledgment",
+    "private read-only four-queue health snapshot and fail-closed alert evaluator",
+    "deterministic claim-gap/revocation, crash/retry, provider-backoff and bounded-load regressions"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 431,
+      "failed": 0,
+      "skipped": 0,
+      "newReliabilityTests": 8,
+      "database": "isolated sixteen-migration MySQL 8.4 schema removed",
+      "newCases": [
+        {
+          "name": "DeliveryReliabilityCancelledWorkerRecoversExpiredLeaseWithStableMessageId",
+          "outcome": "Passed",
+          "duration": "00:00:00.6960164"
+        },
+        {
+          "name": "DeliveryReliabilityWatcherBacklogDrainsInBoundedBatchesWithoutCrossCompanyDelivery",
+          "outcome": "Passed",
+          "duration": "00:00:03.4060536"
+        },
+        {
+          "name": "DeliveryReliabilityAcceptedButUncommittedSendIsAtLeastOnceWithStableIdentity",
+          "outcome": "Passed",
+          "duration": "00:00:00.7501865"
+        },
+        {
+          "name": "DeliveryReliabilityRevocationAfterClaimBeforeSendNeverCallsProvider",
+          "outcome": "Passed",
+          "duration": "00:00:00.8655755"
+        },
+        {
+          "name": "DeliveryReliabilitySchedulerSkipsCompanyRevocationAndSuppressesAfterCommit",
+          "outcome": "Passed",
+          "duration": "00:00:01.7454031"
+        },
+        {
+          "name": "DeliveryReliabilityInviterSuspensionInClaimGapSuppressesPrivatePayload",
+          "outcome": "Passed",
+          "duration": "00:00:00.9391536"
+        },
+        {
+          "name": "DeliveryReliabilitySnapshotDistinguishesDueWorkFromFutureQuietHoursWithoutPayloads",
+          "outcome": "Passed",
+          "duration": "00:00:01.0834522"
+        },
+        {
+          "name": "DeliveryReliabilityProviderRetryAfterPreventsHotLoopAndReplayAfterRevocation",
+          "outcome": "Passed",
+          "duration": "00:00:00.9038106"
+        }
+      ]
+    },
+    "operations": {
+      "passed": 40,
+      "newAlertTests": 5,
+      "faults": [
+        "backlog",
+        "overdue age",
+        "dead letter",
+        "expired lease",
+        "retry pressure",
+        "stale/future observation",
+        "malformed/partial/non-finite inventory"
+      ],
+      "recovery": "fresh zero-work samples clear evaluator conditions; no queue mutation"
+    },
+    "publishedMonitor": {
+      "release": "SaaS-029",
+      "publishedRestrictedWorker": true,
+      "queues": 4,
+      "negativePermissions": 4,
+      "healthyExit": 0,
+      "faultAlerts": 5,
+      "staleAlert": true,
+      "invalidInputRedacted": true,
+      "liveEmailSent": false,
+      "hostedDatabaseTouched": false
+    },
+    "load": {
+      "source": "ten real API comment writes",
+      "recipients": 22,
+      "activeCompanyMembers": 24,
+      "queuedIntents": 220,
+      "maximumRowsPerBatch": 100,
+      "competingBatches": 6,
+      "duplicates": 0,
+      "crossCompanyDeliveries": 0,
+      "rateLimiter": "unchanged; ten writes/minute respected",
+      "scope": "single-company local bounded regression, not a selected-host SLO or soak"
+    },
+    "frontend": "unchanged; no frontend tests repeated",
+    "secretScan": "redacted staged patch scan passed"
+  },
+  "rollout": {
+    "migrationCount": 16,
+    "newMigration": false,
+    "newDependencies": false,
+    "apiInventoryChanged": false,
+    "hostedActivation": false,
+    "realEmailSent": false,
+    "hostedDatabaseTouched": false,
+    "monitorIdentity": "separate read-only column-granted operations identity; never API/root/mail/scheduler identity"
+  },
+  "limitations": [
+    "External sends are at least once under ambiguous acceptance/commit failures; stable message IDs are correlation, not provider deduplication.",
+    "Already-started dispatch is ordered before later revocation; accepted mail cannot be recalled.",
+    "Invitation share lock may delay company mutations for the bounded dispatch phase; selected-host lock/deadline verification remains required.",
+    "Aggregate queue scans require host cost/frequency calibration and reviewed history retention.",
+    "Missing probe execution requires an external supervisor; local checker is not installed alert routing.",
+    "Named primary/backup receipt, escalation and recovery verification remain external acceptance gates.",
+    "TiDB locking semantics, hosted CI/container checks, full-pilot soak and large-company fairness remain unverified."
+  ],
+  "next": "SaaS-030 board read model with status counts and per-column pagination"
+}

@@ -223,7 +223,9 @@ If Render builds successfully but readiness reports `database.schema_mismatch`, 
 
 ## Next product releases
 
-SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Apply all sixteen migrations and updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. Next: SaaS-029 delivery reliability, revocation races and load/alert verification.
+SaaS-029 adds [delivery reliability, final invitation dispatch authority, private queue-health checks and revocation/load verification](docs/saas/delivery-reliability.md). No additional migration or hosted activation is required. Existing flags remain off; selected-host locking and alert routing remain rollout gates. Next: SaaS-030 board read model and per-column pagination.
+
+SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Apply all sixteen migrations and updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. SaaS-029 adds the linked reliability verification above.
 
 SaaS-027 adds [task comments, safe mentions and revision metadata](docs/saas/comments.md). Apply all fifteen migrations and the matching runtime grants before deploying this revision. Comments and mention delivery remain opt-in; both comment flags are disabled in the free deployment profile. Next: SaaS-028 watchers and notification grouping/noise controls.
 

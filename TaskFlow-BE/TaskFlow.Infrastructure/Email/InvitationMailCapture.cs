@@ -32,22 +32,41 @@ public sealed class InvitationMailCapture(TaskFlowDbContext db, IDataProtectionP
                 work.DeliveryState = "Leased"; work.LeaseToken = lease = Guid.NewGuid().ToString("N"); work.LeaseExpiresAtUtc = now.AddSeconds(60); work.Attempts++;
                 await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
             }
-            EmailResult result;
-            try
-            {
-                var plain = protection.CreateProtector("TaskFlow.InvitationMail.v1", work.WorkspaceId.ToString(), work.Id.ToString(), work.MessageId).Unprotect(work.ProtectedMessage!);
-                var request = JsonSerializer.Deserialize<EmailRequest>(plain);
-                if (request is null || request.WorkspaceId != work.WorkspaceId || request.InvitationId != work.Id || request.AccountUserId is not null || request.MessageId != work.MessageId || request.Template != EmailTemplate.CompanyInvitation) throw new CryptographicException();
-                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(20)); result = await sender.SendAsync(request, deadline.Token).WaitAsync(deadline.Token);
-            }
-            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
-            catch (Exception e) when (e is CryptographicException or JsonException or ArgumentException) { result = new(EmailStatus.InvalidRequest, "invitation_mail.invalid_payload"); }
-            catch (Exception) { result = new(EmailStatus.CaptureUnavailable, "email.capture_unavailable"); }
+            // Claiming is not send authority. Reacquire the company gate in the same
+            // order as invitation writers and retain it through dispatch/finalization.
+            // A revocation that commits first therefore prevents even decryption/send.
             db.ChangeTracker.Clear();
-            await using (var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, token))
+            using var dispatchDeadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+            dispatchDeadline.CancelAfter(TimeSpan.FromSeconds(25));
+            var dispatchToken = dispatchDeadline.Token;
+            await using (var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, dispatchToken))
             {
-                var rows = await db.WorkspaceInvitations.FromSqlInterpolated($"SELECT * FROM `WorkspaceInvitations` WHERE `Id`={work.Id} AND `WorkspaceId`={work.WorkspaceId} FOR UPDATE").ToListAsync(token); var current = rows.Single(); var now = await InvitationPolicy.Now(db, token);
-                if (current.State != "Pending" || current.MessageId != work.MessageId || current.LeaseToken != lease || current.LeaseExpiresAtUtc is null || current.LeaseExpiresAtUtc <= now) { await transaction.CommitAsync(token); continue; }
+                await using var gate = db.Database.GetDbConnection().CreateCommand(); gate.Transaction = transaction.GetDbTransaction(); gate.CommandText = "SELECT Id FROM Workspaces WHERE Id=@workspace FOR SHARE";
+                var parameter = gate.CreateParameter(); parameter.ParameterName = "@workspace"; parameter.Value = work.WorkspaceId; gate.Parameters.Add(parameter); await gate.ExecuteScalarAsync(dispatchToken);
+                var current = (await db.WorkspaceInvitations.FromSqlInterpolated($"SELECT * FROM `WorkspaceInvitations` WHERE `Id`={work.Id} AND `WorkspaceId`={work.WorkspaceId} FOR UPDATE").ToListAsync(dispatchToken)).Single();
+                var now = await InvitationPolicy.Now(db, dispatchToken);
+                if (current.State != "Pending" || current.DeliveryState != "Leased" || current.MessageId != work.MessageId || current.LeaseToken != lease || current.LeaseExpiresAtUtc is null || current.LeaseExpiresAtUtc <= now)
+                { await transaction.CommitAsync(dispatchToken); continue; }
+                if (!await InvitationPolicy.Valid(db, current.WorkspaceId, now).AnyAsync(i => i.Id == current.Id, dispatchToken))
+                {
+                    current.DeliveryState = "Cancelled"; current.ProtectedMessage = null; current.LeaseToken = null; current.LeaseExpiresAtUtc = null; current.LastCode = "invitation_mail.unavailable";
+                    await db.SaveChangesAsync(dispatchToken); await transaction.CommitAsync(dispatchToken); handled++; continue;
+                }
+                EmailResult result;
+                try
+                {
+                    var plain = protection.CreateProtector("TaskFlow.InvitationMail.v1", current.WorkspaceId.ToString(), current.Id.ToString(), current.MessageId).Unprotect(current.ProtectedMessage!);
+                    var request = JsonSerializer.Deserialize<EmailRequest>(plain);
+                    if (request is null || request.WorkspaceId != current.WorkspaceId || request.InvitationId != current.Id || request.AccountUserId is not null || request.MessageId != current.MessageId || request.Template != EmailTemplate.CompanyInvitation) throw new CryptographicException();
+                    using var deadline = CancellationTokenSource.CreateLinkedTokenSource(dispatchToken); deadline.CancelAfter(TimeSpan.FromSeconds(20));
+                    result = await sender.SendAsync(request, deadline.Token).WaitAsync(deadline.Token);
+                }
+                catch (OperationCanceledException) when (dispatchToken.IsCancellationRequested) { throw; }
+                catch (Exception e) when (e is CryptographicException or JsonException or ArgumentException) { result = new(EmailStatus.InvalidRequest, "invitation_mail.invalid_payload"); }
+                catch (Exception) { result = new(EmailStatus.CaptureUnavailable, "email.capture_unavailable"); }
+                now = await InvitationPolicy.Now(db, dispatchToken);
+                // A lease can expire during a stalled dispatch; never acknowledge stale ownership.
+                if (current.LeaseExpiresAtUtc <= now) { await transaction.CommitAsync(dispatchToken); continue; }
                 current.LastCode = result.Code is "email.captured" or "email.already_captured" or "email.company_limit" or "email.capture_unavailable" or "email.recipient_blocked" or "email.disabled" or "email.configuration_invalid" or "email.id_conflict" or "invitation_mail.invalid_payload" or "email.provider_accepted" or "email.provider_rate_limited" or "email.provider_unavailable" or "email.provider_auth_failed" or "email.provider_rejected" ? result.Code : "email.capture_unavailable";
                 if (current.ExpiresAtUtc <= now) { current.DeliveryState = "Cancelled"; current.LastCode = "invitation_mail.expired"; }
                 else if (result.IsCaptured) current.DeliveryState = "Captured";
@@ -56,7 +75,7 @@ public sealed class InvitationMailCapture(TaskFlowDbContext db, IDataProtectionP
                 else current.DeliveryState = "DeadLetter";
                 if (current.DeliveryState != "Pending") current.ProtectedMessage = null; current.LeaseToken = null; current.LeaseExpiresAtUtc = null;
                 InvitationPolicy.Audit(db, current, current.InviterUserId, current.DeliveryState is "Captured" or "ProviderAccepted" ? current.DeliveryState : "DeliveryAttempted", now);
-                await db.SaveChangesAsync(token); await transaction.CommitAsync(token); handled++;
+                await db.SaveChangesAsync(dispatchToken); await transaction.CommitAsync(dispatchToken); handled++;
             }
         }
         return handled;

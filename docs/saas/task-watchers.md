@@ -49,3 +49,5 @@ View updates opens the existing flat inbox with an opaque `taskId` filter; indiv
 - [ ] Disable the watcher flags/invocations to stop new watcher capture/delivery. Keep all subscription, source event, intent and inbox tables together during backup/recovery. Down migration refuses to destroy this history; roll forward or restore a verified earlier backup to a new schema.
 
 See [release evidence](../evidence/saas028-watchers.json). Hosted/container acceptance, real-provider delivery and manual assistive-technology review remain external gates. Next: SaaS-029 revocation races, delivery reliability/load and operational alert verification.
+
+SaaS-029 now adds [delivery reliability, synchronized revocation races, bounded backlog verification and private alert checks](delivery-reliability.md). Selected-host activation remains gated.

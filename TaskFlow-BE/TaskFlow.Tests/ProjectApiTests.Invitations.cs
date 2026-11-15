@@ -115,13 +115,13 @@ public sealed partial class ProjectApiTests
         public async Task<EmailResult> SendAsync(EmailRequest request, CancellationToken token = default) { Started.TrySetResult(); await Released.Task.WaitAsync(token); return new(EmailStatus.Captured, "email.captured"); }
     }
     [MySqlFact]
-    public async Task InvitationRevokeDuringCaptureCannotReviveTheGrantOrDelivery()
+    public async Task InvitationRevokeAfterDispatchStartsCannotReviveTheGrantOrDelivery()
     {
         await using var host = new ProjectHost(fixture, true, true, true, true); await host.InitializeAsync(); var c = await SeedCompanies(host); await VerifyInviteUsers(host); using var owner = await host.LoginAsync(0);
         var invite = await Invite(host, owner, c, host.Users[1].Email!); var id = invite.GetProperty("id").GetString()!;
         var sender = new InviteSender(); await using var db = fixture.CreateContext(); var task = new InvitationMailCapture(db, host.Services.GetRequiredService<IDataProtectionProvider>(), sender).RunAsync(); await sender.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.Equal(HttpStatusCode.NoContent, (await host.MemberWriteAsync(owner, HttpMethod.Post, W(c.A) + "/invitations/" + id + "/revoke", new { expectedVersion = "1" })).StatusCode);
-        sender.Released.SetResult(); await task; db.ChangeTracker.Clear(); var row = await db.WorkspaceInvitations.SingleAsync(i => i.Id == long.Parse(id)); Assert.Equal("Revoked", row.State); Assert.Equal("Cancelled", row.DeliveryState); Assert.Null(row.ProtectedMessage);
+        var revoke = host.MemberWriteAsync(owner, HttpMethod.Post, W(c.A) + "/invitations/" + id + "/revoke", new { expectedVersion = "1" });
+        sender.Released.SetResult(); await task; Assert.Equal(HttpStatusCode.NoContent, (await revoke).StatusCode); db.ChangeTracker.Clear(); var row = await db.WorkspaceInvitations.SingleAsync(i => i.Id == long.Parse(id)); Assert.Equal("Revoked", row.State); Assert.Equal("Cancelled", row.DeliveryState); Assert.Null(row.ProtectedMessage);
     }
     [MySqlFact]
     public async Task InvitationFeatureIsDefaultOffAndCsrfIsRequired()

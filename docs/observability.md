@@ -85,3 +85,5 @@ Primary references: [OpenTelemetry .NET exporters](https://opentelemetry.io/docs
 Pilot sizing, SLI eligibility, proposed alert thresholds and operations ownership are recorded in the [SaaS-007 pilot operating plan](pilot-operations.md). Local load evidence does not approve a hosted SLO.
 
 SaaS-017 implements the reserved worker names in the separate TaskFlow.Outbox meter, not the API meter. See [worker operations](saas/outbox-workers.md) and [worker contract](contracts/worker-telemetry.json). Readiness follows actual queue sampling; pending/age/dead-letter are last-observed database samples and attempts count processing tries, not delivered notifications. No tenant/entity dimensions or configured OTLP collector/alerts are implied. The checkpoint consumer sends nothing externally.
+
+SaaS-029 adds a separate [private queue snapshot and alert evaluator](saas/delivery-reliability.md) covering checkpoint, account mail, invitation mail and watcher due backlog, age, retries, expired leases and dead letters. It is explicit read-only operations tooling, not an API metrics export or an installed alert-routing service.

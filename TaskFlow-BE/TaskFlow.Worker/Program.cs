@@ -56,6 +56,13 @@ try
         var db = check.ServiceProvider.GetRequiredService<TaskFlowDbContext>();
         if (!db.Database.GetMigrations().ToHashSet(StringComparer.Ordinal).SetEquals(await db.Database.GetAppliedMigrationsAsync())) throw new InvalidOperationException();
     }
+    if (args.Length == 1 && args[0] == "--delivery-status")
+    {
+        await using var scope = host.Services.CreateAsyncScope();
+        var snapshot = await DeliveryHealth.ReadAsync(scope.ServiceProvider.GetRequiredService<TaskFlowDbContext>());
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(snapshot, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)));
+        return;
+    }
     if (scheduled)
     {
         await using var scope = host.Services.CreateAsyncScope();
