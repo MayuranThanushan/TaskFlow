@@ -20,6 +20,10 @@ services:
         value: "true"
       - key: VITE_INVITATIONS_ENABLED
         value: "false"
+      - key: Notifications__WatchersEnabled
+        value: "false"
+      - key: VITE_TASK_WATCHERS_ENABLED
+        value: "false"
       - key: Comments__Enabled
         value: "false"
       - key: VITE_COMMENTS_ENABLED

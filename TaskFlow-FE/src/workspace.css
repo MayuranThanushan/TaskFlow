@@ -218,3 +218,5 @@ a { text-underline-offset:3px; }
 .comment-body { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; }.comment-mention { color:#2847a3; background:#eef2ff; border-radius:.25rem; padding:.1rem .2rem; }
 .comment-form label { display:block; margin:.75rem 0 .4rem; font-weight:600; }.comment-form textarea, .comment-form input { width:100%; max-width:100%; box-sizing:border-box; padding:.75rem; border:1px solid #9aaec1; border-radius:.5rem; font:inherit; }.comment-form textarea { resize:vertical; min-height:7rem; }.comment-people { margin:1rem 0; }.comment-people .form-actions { align-items:stretch; }.comment-people input { flex:1 1 12rem; min-width:0; }.comment-history { margin-top:1rem; }.comment-history li { margin:.5rem 0; }
 .comment-form textarea:focus-visible, .comment-form input:focus-visible { outline:3px solid #35806a; outline-offset:3px; }
+
+.task-watching { margin:1.5rem 0; padding:1.25rem; background:#fff; border:1px solid #d8e1dc; border-radius:.8rem; }.task-watching h2 { margin-top:0; }

@@ -409,6 +409,12 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasDefaultValue(true);
 
+                    b.Property<int?>("QuietEndHour")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("QuietStartHour")
+                        .HasColumnType("int");
+
                     b.Property<bool>("TaskAssignedEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("tinyint(1)")
@@ -427,11 +433,20 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasDefaultValue(1L);
 
+                    b.Property<string>("WatcherDeliveryMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)")
+                        .HasDefaultValue("Immediate");
+
                     b.HasKey("WorkspaceId", "UserId");
 
                     b.ToTable("NotificationPreferences", t =>
                         {
                             t.HasCheckConstraint("CK_NotificationPreferences_Hour", "DigestHour BETWEEN 0 AND 23");
+
+                            t.HasCheckConstraint("CK_NotificationPreferences_Noise", "WatcherDeliveryMode IN ('Immediate','Digest','Off') AND ((QuietStartHour IS NULL AND QuietEndHour IS NULL) OR (QuietStartHour IS NOT NULL AND QuietEndHour IS NOT NULL AND QuietStartHour BETWEEN 0 AND 23 AND QuietEndHour BETWEEN 0 AND 23 AND QuietStartHour <> QuietEndHour))");
                         });
                 });
 
@@ -884,6 +899,36 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.TaskWatcher", b =>
+                {
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsWatching")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L);
+
+                    b.HasKey("WorkspaceId", "TaskId", "UserId");
+
+                    b.HasIndex("WorkspaceId", "UserId");
+
+                    b.ToTable("TaskWatchers");
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.UserNotification", b =>
                 {
                     b.Property<long>("Id")
@@ -945,7 +990,74 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("UserNotifications", t =>
                         {
-                            t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND CommentId IS NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskMention' AND EventId IS NOT NULL AND CommentId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND CommentId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)");
+                            t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND CommentId IS NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskWatched' AND EventId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskMention' AND EventId IS NOT NULL AND CommentId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND CommentId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WatcherNotificationIntent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("AuthorityWatermark")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("AvailableAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long?>("CommentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Outcome")
+                        .HasMaxLength(24)
+                        .HasColumnType("varchar(24)");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RecipientUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<long>("SubscriptionVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId", "CommentId");
+
+                    b.HasIndex("WorkspaceId", "EventId");
+
+                    b.HasIndex("WorkspaceId", "RecipientUserId", "EventId")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "TaskId", "RecipientUserId");
+
+                    b.HasIndex("WorkspaceId", "State", "AvailableAtUtc", "Id");
+
+                    b.ToTable("WatcherNotificationIntents", t =>
+                        {
+                            t.HasCheckConstraint("CK_WatcherNotificationIntents_State", "(State = 'Pending' AND Outcome IS NULL AND CompletedAtUtc IS NULL) OR (State = 'Delivered' AND Outcome = 'InAppDelivered' AND CompletedAtUtc IS NOT NULL) OR (State = 'Suppressed' AND Outcome IN ('Expired','Unwatched','Revoked','Unavailable','Muted') AND CompletedAtUtc IS NOT NULL)");
                         });
                 });
 
@@ -1544,6 +1656,15 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.TaskWatcher", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.UserNotification", b =>
                 {
                     b.HasOne("TaskFlow.Domain.Entities.TaskComment", null)
@@ -1561,6 +1682,30 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("TaskFlow.Domain.Entities.WatcherNotificationIntent", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entities.TaskComment", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "CommentId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TaskFlow.Domain.Entities.OutboxEvent", "Event")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "EventId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.TaskWatcher", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "TaskId", "RecipientUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

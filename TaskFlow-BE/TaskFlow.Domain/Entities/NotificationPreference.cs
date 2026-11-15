@@ -10,5 +10,8 @@ public sealed class NotificationPreference : IVersionedResource
     public bool DailyDigestEnabled { get; set; }
     public string TimeZoneId { get; set; } = "UTC";
     public int DigestHour { get; set; } = 9;
+    public string WatcherDeliveryMode { get; set; } = "Immediate";
+    public int? QuietStartHour { get; set; }
+    public int? QuietEndHour { get; set; }
     public long Version { get; set; } = 1;
 }

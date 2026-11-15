@@ -27,5 +27,6 @@ public static class OutboxEnqueue
             Kind = kind, CorrelationId = AuditCorrelation.Current(), CreatedAtUtc = DateTime.UtcNow };
         db.OutboxDeliveries.Add(new OutboxDelivery { WorkspaceId = workspace, Event = message });
         await Notifications.NotificationMaterializer.CaptureAsync(db, message, token);
+        await Notifications.WatcherNotificationDelivery.CaptureAsync(db, message, token: token);
     }
 }

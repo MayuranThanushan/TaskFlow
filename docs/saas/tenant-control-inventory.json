@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-027",
+  "release": "SaaS-028",
   "date": "2026-11-15",
-  "scope": "Current identity/company/MFA, staged SendGrid, default-off inbox/scheduling and task comments with project-local mentions. Local verification only; hosted and provider gates remain open.",
+  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments plus default-off personal watchers, scoped grouping and deferred watcher noise controls. Local verification only; public hosting/provider gates remain open.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -1429,6 +1429,57 @@
         "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
         "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
       ]
+    },
+    {
+      "operationId": "Notifications_Groups",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/groups",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
+      ]
+    },
+    {
+      "operationId": "TaskWatchers_Get",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
+      ]
+    },
+    {
+      "operationId": "TaskWatchers_Set",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
+      ]
     }
   ],
   "nonHttpEntryPoints": [
@@ -1731,6 +1782,21 @@
     "evidenceSources": [
       "docs/saas/comments.md",
       "TaskFlow-BE/TaskFlow.Infrastructure/Projects/TaskComments.cs"
+    ]
+  },
+  "watcherDelivery": {
+    "controls": [
+      "Default-off watcher gates; at most 90 stored subscriptions plus at most 10 direct mentions/comment",
+      "Source actor suppressed; direct mentions/assignments precede watcher duplicates",
+      "Metadata queue and inbox commit under company gate; unique source-recipient key",
+      "Intervening audited revocation and subscription revision fence; current visibility rechecked",
+      "At most 100 due intent rows/call; seven-day expiry; explicit mutation retry only",
+      "Grouped reads preserve individually authorized source rows and source unread counts"
+    ],
+    "evidenceSources": [
+      "docs/saas/task-watchers.md",
+      "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+      "tests/browser/watchers.cjs"
     ]
   }
 }

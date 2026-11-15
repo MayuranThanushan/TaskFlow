@@ -7,7 +7,7 @@ using TaskFlow.Infrastructure.Persistence;
 
 namespace TaskFlow.Infrastructure.Notifications;
 
-public sealed record NotificationBatchResult(int Scanned, int Delivered, long NextTaskId, bool Busy = false);
+public sealed record NotificationBatchResult(int Scanned, int Delivered, long NextTaskId, bool Busy = false, int WatcherScanned = 0, int WatcherDelivered = 0, int WatcherSuppressed = 0);
 
 // In-app delivery is entirely transactional: a database row lock is the work lease.
 // A crash rolls back both cursor and inserts. There is no external side effect to retry.
@@ -25,6 +25,7 @@ public sealed class NotificationScheduler(TaskFlowDbContext db, TimeProvider clo
         // SKIP LOCKED avoids concurrent schedulers waiting behind a long mutation.
         var company = await db.Workspaces.FromSqlInterpolated($"SELECT * FROM Workspaces WHERE Id={workspaceId} FOR UPDATE SKIP LOCKED").ToArrayAsync(token);
         if (company.Length == 0) return new(0, 0, 0, true);
+        var watcherBatch = await WatcherNotificationDelivery.FlushAsync(db, workspaceId, token);
         var cursor = await db.NotificationScheduleCursors.SingleOrDefaultAsync(c => c.WorkspaceId == workspaceId, token);
         if (cursor is null) { cursor = new() { WorkspaceId = workspaceId }; db.NotificationScheduleCursors.Add(cursor); }
         // Scan raw IDs, including ineligible rows, so a permanently ineligible prefix
@@ -66,6 +67,6 @@ public sealed class NotificationScheduler(TaskFlowDbContext db, TimeProvider clo
         }
         cursor.LastTaskId = ids.Length == 100 ? ids[^1] : 0; cursor.LastBatchAtUtc = now;
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
-        return new(ids.Length, delivered, cursor.LastTaskId);
+        return new(ids.Length, delivered, cursor.LastTaskId, false, watcherBatch.Scanned, watcherBatch.Delivered, watcherBatch.Suppressed);
     }
 }

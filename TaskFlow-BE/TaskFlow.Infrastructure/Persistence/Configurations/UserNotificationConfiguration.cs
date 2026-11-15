@@ -18,6 +18,6 @@ public sealed class UserNotificationConfiguration : IEntityTypeConfiguration<Use
         b.HasIndex(n => new { n.WorkspaceId, n.RecipientUserId, n.ReadAtUtc, n.Id });
         b.HasOne(n => n.Event).WithMany().HasForeignKey(n => new { n.WorkspaceId, n.EventId }).HasPrincipalKey(e => new { e.WorkspaceId, e.Id });
         b.HasOne<WorkspaceMembership>().WithMany().HasForeignKey(n => new { n.WorkspaceId, UserId = n.RecipientUserId });
-        b.ToTable(t => t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND CommentId IS NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskMention' AND EventId IS NOT NULL AND CommentId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND CommentId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)"));
+        b.ToTable(t => t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND CommentId IS NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskWatched' AND EventId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskMention' AND EventId IS NOT NULL AND CommentId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND CommentId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)"));
     }
 }

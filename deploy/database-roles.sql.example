@@ -80,7 +80,7 @@ GRANT UPDATE (ReadAtUtc) ON taskflow.UserNotifications TO 'taskflow'@'%';
 
 -- SaaS-025: recipient/company notification preferences. Identity keys are immutable.
 GRANT SELECT, INSERT ON taskflow.NotificationPreferences TO 'taskflow'@'%';
-GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, DueReminderEnabled, DailyDigestEnabled, TimeZoneId, DigestHour, Version) ON taskflow.NotificationPreferences TO 'taskflow'@'%';
+GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, DueReminderEnabled, DailyDigestEnabled, TimeZoneId, DigestHour, WatcherDeliveryMode, QuietStartHour, QuietEndHour, Version) ON taskflow.NotificationPreferences TO 'taskflow'@'%';
 
 -- Optional in-app scheduler identity (never the checkpoint or email worker).
 -- Provision taskflow_notifications_worker privately, then scope grants to this schema.
@@ -99,3 +99,17 @@ GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, DueReminderEnabled, DailyDigest
 GRANT SELECT, INSERT ON taskflow.TaskComments TO 'taskflow'@'%';
 GRANT UPDATE (Body, Version, EditedAtUtc, DeletedAtUtc) ON taskflow.TaskComments TO 'taskflow'@'%';
 GRANT SELECT, INSERT ON taskflow.CommentRevisions TO 'taskflow'@'%';
+
+-- SaaS-028: self-only subscription state and metadata-only watcher intent.
+GRANT SELECT, INSERT ON taskflow.TaskWatchers TO 'taskflow'@'%';
+GRANT UPDATE (IsWatching, Version) ON taskflow.TaskWatchers TO 'taskflow'@'%';
+GRANT SELECT, INSERT ON taskflow.WatcherNotificationIntents TO 'taskflow'@'%';
+-- Runtime may cancel/reschedule its recipient's pending watcher work, never retarget it.
+GRANT UPDATE (State, Outcome, CompletedAtUtc, AvailableAtUtc) ON taskflow.WatcherNotificationIntents TO 'taskflow'@'%';
+-- Add these only to the separately provisioned optional in-app scheduler identity.
+-- GRANT SELECT ON taskflow.TaskWatchers TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT (WorkspaceId, Id, TaskId, DeletedAtUtc) ON taskflow.TaskComments TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.OutboxEvents TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT (Id, WorkspaceId, ActorUserId, TargetUserId, ProjectId, Action) ON taskflow.WorkspaceAuditLogs TO 'taskflow_notifications_worker'@'%';
+-- GRANT SELECT ON taskflow.WatcherNotificationIntents TO 'taskflow_notifications_worker'@'%';
+-- GRANT UPDATE (State, Outcome, CompletedAtUtc, AvailableAtUtc) ON taskflow.WatcherNotificationIntents TO 'taskflow_notifications_worker'@'%';

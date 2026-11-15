@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003 foundation, updated through SaaS-027. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 67 paths / 88 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003 foundation, updated through SaaS-028. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 69 paths / 91 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -11,6 +11,8 @@ Typed body binding accepts case variants of canonical camelCase names; the dynam
 SaaS-027 adds six comment operations across four paths (current inventory: 67 paths / 88 operations), plain-text comment DTOs and project-local mention search; TaskMention extends notification kinds. See [comment policy](../saas/comments.md).
 
 SaaS-026 extends the existing preferences GET/PUT with opt-in reminder/digest settings and adds TaskDue/TaskDigest kinds and explicit InAppDelivered status. Scheduling fields must be supplied together or omitted to preserve settings. Path/operation counts remain unchanged. See [scheduling rules](../saas/notification-scheduling.md).
+
+SaaS-028 adds watcher GET/PUT and grouped notification GET (current inventory: 69 paths / 91 operations), optional taskId source filtering, TaskWatched kind and watcherDeliveryMode/quiet-hour preferences. See [watcher and grouping rules](../saas/task-watchers.md).
 
 ## Generate a reviewed contract change
 

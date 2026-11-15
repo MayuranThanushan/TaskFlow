@@ -112,3 +112,7 @@ Notification kinds now include TaskDue and TaskDigest; deliveryStatus InAppDeliv
 ## SaaS-027 comment amendment
 
 Scoped task comments add list/create, PUT/DELETE by comment ID, metadata-only revision history and bounded project mention candidate search. All routes require Comments plus workspace flags; task authorization precedes validation. PUT/DELETE use a required expectedVersion body; 409 preserves a stale draft. Text is escaped plain text; only canonical project-local mention IDs resolve. TaskMention inbox rows contain no comment body. See [comment limits, history and permission rules](../saas/comments.md). Current inventory: 67 paths / 88 operations.
+
+## SaaS-028 watcher amendment
+
+Self-only watcher GET/PUT uses expectedVersion, current task visibility and shared company transaction gate. GET notifications/groups groups live source rows by task; taskId on the source list filters only already authorized recipient rows. TaskWatched is a new notification kind. Preferences add Immediate/Digest/Off watcherDeliveryMode and paired nullable quiet hours; supplied mode replaces noise settings, omission preserves them. Digest requires daily digest. Muting cancels pending watcher work and timing changes reschedule it. See [full limits, deferred delivery and visibility policy](../saas/task-watchers.md). Current inventory: 69 paths / 91 operations.

@@ -117,6 +117,7 @@ public sealed class TaskComments(TaskFlowDbContext db, TimeProvider clock) : ITa
             foreach (var recipient in targets.Except(muted)) db.UserNotifications.Add(new() { WorkspaceId = c.WorkspaceId, ProjectId = row.ProjectId, TaskId = taskId, CommentId = row.Id,
                 RecipientUserId = recipient, Kind = "TaskMention", Event = message, CreatedAtUtc = now });
         }
+        if (!delete && commentId is null) await WatcherNotificationDelivery.CaptureAsync(db, message, row.Id, token);
         await db.SaveChangesAsync(token); await transaction.CommitAsync(token);
         return await Map(c, row, access.Owner, access.Write, token);
     }

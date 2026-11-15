@@ -1,3 +1,6 @@
+import { LazyPanelBoundary } from '../../components/LazyPanelBoundary'
+import { lazy, Suspense } from 'react'
+const TaskWatchControl = lazy(() => import('./TaskWatchControl').then(module => ({ default: module.TaskWatchControl })))
 import { CommentThread } from './CommentThread'
 import { useProjectWrite, useProjectAccess } from '../companies/use-project-write'
 import { Pagination, TableRegion, FieldError, Confirmation } from '../../components/Feedback'
@@ -190,6 +193,7 @@ export function TaskDetailPage({ client }: { client: ApiClient }) {
       <TaskActions key={taskId} client={client} task={result.data} refresh={retry} />
       <section className="project-about"><h2>Task details</h2><p className="project-description">{result.data.description || 'No description added.'}</p><dl className="task-details"><div><dt>Status</dt><dd><Badge value={result.data.status}>{statusText[result.data.status]}</Badge></dd></div><div><dt>Priority</dt><dd><Badge value={result.data.priority} /></dd></div><div><dt>Assignee ID</dt><dd>{result.data.assigneeId ?? 'Unassigned'}</dd></div><div><dt>Deadline</dt><dd>{deadline(result.data.dueDateUtc)}</dd></div><div><dt>Created</dt><dd>{new Date(result.data.createdAtUtc).toLocaleString()}</dd></div></dl><p className="field-hint">Times are shown in your local time zone.</p></section>
       <Link className="text-link" to={'/projects/' + encodeURIComponent(result.data.projectId)}>View project progress</Link>
+      {client.resourceKey.startsWith('workspace:') && import.meta.env.VITE_TASK_WATCHERS_ENABLED === 'true' && <LazyPanelBoundary key={'watch:' + client.resourceKey + ':' + taskId} className="task-watching" title="Task watching unavailable" message="The task watching controls could not load. Reload to get the current version." reloadLabel="Reload task"><Suspense fallback={<p role="status">Loading task watching controls...</p>}><TaskWatchControl client={client} taskId={taskId} /></Suspense></LazyPanelBoundary>}
       {client.resourceKey.startsWith('workspace:') && import.meta.env.VITE_COMMENTS_ENABLED === 'true' && <CommentThread key={client.resourceKey + ':' + taskId} client={client} taskId={taskId} />}
     </>}
   </section>

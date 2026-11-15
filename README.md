@@ -219,13 +219,15 @@ The implemented MVP is locally verified. Container execution, hosted CI and sele
 
 ## Next product releases
 
+SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Apply all sixteen migrations and updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. Next: SaaS-029 delivery reliability, revocation races and load/alert verification.
+
 SaaS-027 adds [task comments, safe mentions and revision metadata](docs/saas/comments.md). Apply all fifteen migrations and the matching runtime grants before deploying this revision. Comments and mention delivery remain opt-in; both comment flags are disabled in the free deployment profile. Next: SaaS-028 watchers and notification grouping/noise controls.
 
 SaaS-026 added [due reminders, daily inbox digest and delivery status](docs/saas/notification-scheduling.md). Its separate scheduler remains disabled; no hosted scheduling or reminder email is activated.
 
 SaaS-025 adds the default-off [company inbox, bulk read and recipient preferences](docs/saas/notification-inbox.md). Apply migration thirteen and new runtime grants before deploying this revision. Enable both API and frontend notification flags only in the reviewed preview. SaaS-026 scheduling is described above.
 
-SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current fifteen-migration deployment requirement; public-host acceptance remains pending.
+SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current sixteen-migration deployment requirement; public-host acceptance remains pending.
 
 SaaS-023 adds the [SendGrid staging setup, shared invitation send budget and onboarding support runbook](docs/saas/onboarding-acceptance.md). Configure your key privately with [Set-SendGridSecrets.ps1](scripts/Set-SendGridSecrets.ps1). Real delivery, bounce callbacks and selected-host acceptance remain explicit gates; public production email remains disabled.
 

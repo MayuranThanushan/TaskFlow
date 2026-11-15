@@ -60,7 +60,7 @@ try
     {
         await using var scope = host.Services.CreateAsyncScope();
         var result = await scope.ServiceProvider.GetRequiredService<TaskFlow.Infrastructure.Notifications.NotificationScheduler>().RunAsync(long.Parse(args[1], System.Globalization.CultureInfo.InvariantCulture));
-        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { eventId = 3501, code = "notifications.batch_completed", result.Scanned, result.Delivered, result.NextTaskId, result.Busy })); return;
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new { eventId = 3501, code = "notifications.batch_completed", result.Scanned, result.Delivered, result.NextTaskId, result.Busy, result.WatcherScanned, result.WatcherDelivered, result.WatcherSuppressed })); return;
     }
     if (accountMail || invitationMail)
     {

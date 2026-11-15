@@ -12,6 +12,10 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
 {
     private readonly AuditCapture auditCapture = new();
     public DbSet<NotificationScheduleCursor> NotificationScheduleCursors => Set<NotificationScheduleCursor>();
+    public DbSet<TaskWatcher> TaskWatchers => Set<TaskWatcher>();
+    public DbSet<WatcherNotificationIntent> WatcherNotificationIntents => Set<WatcherNotificationIntent>();
+    public bool WatchersEnabled => NotificationsEnabled && configuration?.GetValue<bool>("Notifications:WatchersEnabled") == true;
+    public DateTime UtcNow => clock.GetUtcNow().UtcDateTime;
     public DbSet<TaskComment> TaskComments => Set<TaskComment>();
     public DbSet<CommentRevision> CommentRevisions => Set<CommentRevision>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
@@ -86,6 +90,9 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         {
             if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition or CommentRevision) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
+            if (entry.Entity is WatcherNotificationIntent && (entry.State == EntityState.Deleted || entry.State == EntityState.Modified && entry.Properties.Any(p => p.IsModified && p.Metadata.Name is not (nameof(WatcherNotificationIntent.State) or nameof(WatcherNotificationIntent.Outcome) or nameof(WatcherNotificationIntent.CompletedAtUtc) or nameof(WatcherNotificationIntent.AvailableAtUtc))))) throw new InvalidOperationException("Only watcher delivery state is mutable.");
+            if (entry.Entity is TaskWatcher && entry.State == EntityState.Modified && entry.Properties.Any(p => p.IsModified && p.Metadata.Name is not (nameof(TaskWatcher.IsWatching) or nameof(TaskWatcher.Version)))) throw new InvalidOperationException("Watcher identity is immutable.");
+            if (entry.Entity is TaskWatcher && entry.State == EntityState.Deleted) throw new InvalidOperationException("Unwatch tasks explicitly.");
             if (entry.Entity is TaskComment && entry.State == EntityState.Deleted) throw new InvalidOperationException("Comments require soft deletion.");
             if (entry.Entity is UserNotification && (entry.State == EntityState.Deleted || entry.State == EntityState.Modified && entry.Properties.Any(p => p.IsModified && p.Metadata.Name != nameof(UserNotification.ReadAtUtc))))
                 throw new InvalidOperationException("Only notification read state is mutable.");

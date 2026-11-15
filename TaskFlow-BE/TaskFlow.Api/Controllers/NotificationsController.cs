@@ -30,9 +30,22 @@ public sealed class NotificationsController(IUserNotifications notifications) : 
     [HttpGet, ProducesResponseType<NotificationPage>(200)]
     public async Task<IActionResult> List(string workspaceId, [FromQuery] NotificationListQuery query, CancellationToken token)
     {
-        if (Query("page", "pageSize", "unreadOnly") is { } error) return error;
+        if (Query("page", "pageSize", "unreadOnly", "taskId") is { } error) return error;
         if ((long)(query.Page - 1) * query.PageSize > 10000) { ModelState.AddModelError("page", "Notification offset must not exceed 10000."); return ValidationProblem(ModelState); }
-        return Ok(await notifications.ListAsync(Scope(workspaceId), query.Page, query.PageSize, query.UnreadOnly, token));
+        long? taskId = null;
+        if (query.TaskId is not null)
+        {
+            if (!WorkspaceReadFilter.TryId(query.TaskId, out var id)) { ModelState.AddModelError("taskId", "Choose a valid task filter."); return ValidationProblem(ModelState); }
+            taskId = id;
+        }
+        return Ok(await notifications.ListAsync(Scope(workspaceId), query.Page, query.PageSize, query.UnreadOnly, token, taskId));
+    }
+    [HttpGet("groups"), ProducesResponseType<NotificationGroupPage>(200)]
+    public async Task<IActionResult> Groups(string workspaceId,[FromQuery] NotificationListQuery query,CancellationToken token)
+    {
+        if(Query("page","pageSize","unreadOnly") is {} error)return error;
+        if((long)(query.Page-1)*query.PageSize>10000){ModelState.AddModelError("page","Notification offset must not exceed 10000.");return ValidationProblem(ModelState);}
+        return Ok(await notifications.GroupsAsync(Scope(workspaceId),query.Page,query.PageSize,query.UnreadOnly,token));
     }
     [HttpGet("unread-count"), ProducesResponseType<NotificationCountDto>(200)]
     public async Task<IActionResult> Count(string workspaceId, CancellationToken token)
@@ -84,7 +97,9 @@ public sealed class NotificationsController(IUserNotifications notifications) : 
             }
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
         }
-        return Ok(await notifications.SetPreferencesAsync(Scope(workspaceId), request.InAppEnabled!.Value, request.TaskAssignedEnabled!.Value, version, token, schedule));
+        if (request.WatcherDeliveryMode is null && (request.QuietStartHour is not null || request.QuietEndHour is not null))
+        { ModelState.AddModelError("watcherDeliveryMode", "Supply watcher mode with quiet-hour settings."); return ValidationProblem(ModelState); }
+        return Ok(await notifications.SetPreferencesAsync(Scope(workspaceId), request.InAppEnabled!.Value, request.TaskAssignedEnabled!.Value, version, token, schedule, request.WatcherDeliveryMode is null ? null : new(request.WatcherDeliveryMode, request.QuietStartHour, request.QuietEndHour)));
     }
 }
 public sealed class NotificationBulkReadRequest
@@ -99,6 +114,9 @@ public sealed class NotificationPreferencesRequest
     public bool? DailyDigestEnabled { get; set; }
     [MaxLength(100)] public string? TimeZoneId { get; set; }
     [Range(0, 23)] public int? DigestHour { get; set; }
+    [RegularExpression("^(Immediate|Digest|Off)$")] public string? WatcherDeliveryMode { get; set; }
+    [Range(0,23)] public int? QuietStartHour { get; set; }
+    [Range(0,23)] public int? QuietEndHour { get; set; }
     [Required, RegularExpression("^(0|[1-9][0-9]{0,18})$")] public string ExpectedVersion { get; set; } = "";
 }
 public sealed class NotificationListQuery
@@ -106,6 +124,7 @@ public sealed class NotificationListQuery
     [Range(1, 501)] public int Page { get; set; } = 1;
     [Range(1, 100)] public int PageSize { get; set; } = 20;
     public bool UnreadOnly { get; set; }
+    public string? TaskId { get; set; }
 }
 public sealed class NotificationReadRequest
 {

@@ -6730,7 +6730,7 @@
         "tags": [
           "Notifications"
         ],
-        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied.",
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Optional taskId filters only this recipient\u0027s currently visible rows; unreadCount remains the all-task inbox badge. Inaccessible or foreign task filters yield no matching rows.",
         "operationId": "Notifications_List",
         "parameters": [
           {
@@ -6771,6 +6771,13 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "taskId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6794,6 +6801,193 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotificationPage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
+      }
+    },
+    "/api/v2/workspaces/{workspaceId}/notifications/groups": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Groups are computed by task from the same currently visible source rows, never cached private titles. Each group retains source notification IDs via taskId-filtered List; counts are source events, not groups. Explicit read/unread still targets selected source IDs. No group write marks unseen arrivals.",
+        "operationId": "Notifications_Groups",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "maximum": 501,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "unreadOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationGroupPage"
                 }
               }
             }
@@ -7583,7 +7777,7 @@
         "tags": [
           "Notifications"
         ],
-        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected.",
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Watcher noise settings: watcherDeliveryMode Immediate/Digest/Off, quietStartHour and quietEndHour (both null or distinct 0-23). Supplying mode replaces noise settings; omitting it preserves them. Digest requires dailyDigestEnabled and uses the chosen timezone/hour, shifted past quiet hours. Direct mentions/assignments keep their own delivery rules. Muting in-app or watcher mode cancels pending watcher work. Deferred delivery rechecks subscription version, current access and intervening revocations, expires after seven days and requires the separate scheduler. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected.",
         "operationId": "Notifications_Preferences",
         "parameters": [
           {
@@ -7732,7 +7926,7 @@
         "tags": [
           "Notifications"
         ],
-        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available.",
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Requires all workspace rollout flags and Notifications:Enabled (default false). Recipient is derived from the current session, never from input. Assignment notifications materialize in the business/outbox transaction; self-actions and historical event replay are suppressed. Lists/counts recheck active company and private-project access and exclude deleted resources. Names are live authorized projections, not stored title snapshots. Page offsets are bounded to 10000; list totalCount and unreadCount share a repeatable-read snapshot. Read/unread is idempotent under the company gate; only read state is mutable. No email or provider delivery is implied. Watcher noise settings: watcherDeliveryMode Immediate/Digest/Off, quietStartHour and quietEndHour (both null or distinct 0-23). Supplying mode replaces noise settings; omitting it preserves them. Digest requires dailyDigestEnabled and uses the chosen timezone/hour, shifted past quiet hours. Direct mentions/assignments keep their own delivery rules. Muting in-app or watcher mode cancels pending watcher work. Deferred delivery rechecks subscription version, current access and intervening revocations, expires after seven days and requires the separate scheduler. Preferences belong to the current recipient in this company. Absent rows default to enabled in-app/TaskAssigned and revision 0. PUT requires both booleans and expectedVersion; stale drafts return 409 without overwrite. Muting suppresses future materialization, preserves history and never replays old assignments when re-enabled. Scheduled reminders/digest task cards are opt-in; absent settings default off, UTC, 09:00. Supply dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA) and digestHour (0..23) together, or omit all four to preserve scheduling settings. A separately enabled scheduler is required. DeliveryStatus InAppDelivered means a committed inbox row, never email delivery. Task-assignment email is unavailable; account security and invitation email are unaffected. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available.",
         "operationId": "Notifications_SetPreferences",
         "parameters": [
           {
@@ -10845,6 +11039,462 @@
           },
           "404": {
             "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher": {
+      "get": {
+        "tags": [
+          "TaskWatchers"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Personal task watching requires all workspace flags, Notifications:Enabled and Notifications:WatchersEnabled. Actor comes from the session; no watcher list or count is exposed. Task visibility precedes binding and is rechecked under the company gate. Default false/revision 0; PUT isWatching/expectedVersion is idempotent and version protected. Read-only collaborators may manage their own subscription. At most 90 stored subscriptions per task; direct mentions take priority and total comment fanout stays within 100. Unwatch affects future updates and fences old queued subscription versions; delivered history remains authorized.",
+        "operationId": "TaskWatchers_Get",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskWatcherDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": []
+          },
+          {
+            "SessionStrict": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "TaskWatchers"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Personal task watching requires all workspace flags, Notifications:Enabled and Notifications:WatchersEnabled. Actor comes from the session; no watcher list or count is exposed. Task visibility precedes binding and is rechecked under the company gate. Default false/revision 0; PUT isWatching/expectedVersion is idempotent and version protected. Read-only collaborators may manage their own subscription. At most 90 stored subscriptions per task; direct mentions take priority and total comment fanout stays within 100. Unwatch affects future updates and fences old queued subscription versions; delivered history remains authorized. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available.",
+        "operationId": "TaskWatchers_Set",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskWatcherRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskWatcherRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskWatcherRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskWatcherDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              },
+              "Retry-After": {
+                "description": "Optional retry interval in seconds.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "headers": {
               "X-Trace-Id": {
                 "description": "Correlation ID; matches error traceId.",
@@ -20497,7 +21147,8 @@
               "TaskAssigned",
               "TaskDue",
               "TaskDigest",
-              "TaskMention"
+              "TaskMention",
+              "TaskWatched"
             ],
             "type": "string"
           },
@@ -20540,6 +21191,97 @@
             ],
             "type": "string",
             "default": "InAppDelivered"
+          }
+        }
+      },
+      "NotificationGroupDto": {
+        "required": [
+          "taskId",
+          "projectId",
+          "taskTitle",
+          "projectName",
+          "latestNotificationId",
+          "latestAtUtc",
+          "notificationCount",
+          "unreadCount"
+        ],
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "projectId": {
+            "minLength": 1,
+            "pattern": "^0*[1-9][0-9]*$",
+            "type": "string",
+            "description": "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number."
+          },
+          "taskTitle": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "projectName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "latestNotificationId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "latestAtUtc": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
+          },
+          "notificationCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "NotificationGroupPage": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "totalPages",
+          "unreadCount"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationGroupDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -20591,7 +21333,10 @@
           "dueReminderEnabled",
           "dailyDigestEnabled",
           "timeZoneId",
-          "digestHour"
+          "digestHour",
+          "watcherDeliveryMode",
+          "quietStartHour",
+          "quietEndHour"
         ],
         "type": "object",
         "properties": {
@@ -20626,6 +21371,34 @@
             "type": "integer",
             "format": "int32",
             "default": 9
+          },
+          "watcherDeliveryMode": {
+            "minLength": 1,
+            "enum": [
+              "Immediate",
+              "Digest",
+              "Off"
+            ],
+            "type": "string",
+            "default": "Immediate"
+          },
+          "quietStartHour": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "quietEndHour": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -20669,6 +21442,35 @@
             ]
           },
           "digestHour": {
+            "maximum": 23,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "watcherDeliveryMode": {
+            "pattern": "^(Immediate|Digest|Off)$",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quietStartHour": {
+            "maximum": 23,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "quietEndHour": {
             "maximum": 23,
             "minimum": 0,
             "pattern": "^-?(?:0|[1-9]\\d*)$",
@@ -21394,6 +22196,44 @@
         },
         "additionalProperties": false
       },
+      "TaskWatcherDto": {
+        "required": [
+          "isWatching",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "isWatching": {
+            "type": "boolean"
+          },
+          "version": {
+            "minLength": 1,
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "type": "string"
+          }
+        }
+      },
+      "TaskWatcherRequest": {
+        "required": [
+          "isWatching",
+          "expectedVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "isWatching": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "expectedVersion": {
+            "minLength": 1,
+            "pattern": "^(0|[1-9][0-9]{0,18})$",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "WorkspaceAuditDto": {
         "required": [
           "id",
@@ -21945,6 +22785,9 @@
     },
     {
       "name": "Tasks"
+    },
+    {
+      "name": "TaskWatchers"
     },
     {
       "name": "Users"

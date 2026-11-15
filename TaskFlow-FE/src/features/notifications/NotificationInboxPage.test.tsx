@@ -1,32 +1,38 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../../App'
 import { createApiClient } from '../../api/client'
 import { reply, server } from '../../test/server'
 
+afterEach(() => vi.unstubAllEnvs())
 const firstId = '9007199254741201'
 const rows = () => [{ id: firstId, workspaceId: '1', kind: 'TaskAssigned', projectId: '8', projectName: 'Private project', taskId: '9007199254741999', taskTitle: '<script>Review work</script>', createdAtUtc: '2026-11-12T09:00:00Z', readAtUtc: null as string | null }, { id: '9007199254741200', workspaceId: '1', kind: 'TaskAssigned', projectId: '8', projectName: 'Private project', taskId: '9007199254741998', taskTitle: 'Previously reviewed', createdAtUtc: '2026-11-12T08:00:00Z', readAtUtc: '2026-11-12T08:30:00Z' }]
 function Tracker() { const location = useLocation(), navigate = useNavigate(); return <><span data-testid="location">{location.pathname + location.search}</span><button onClick={() => void navigate('/companies/2/notifications')}>Switch to Beta</button></> }
 function setup(path = '/companies/1/notifications', options: { authenticated?: boolean; enabled?: boolean } = {}) {
   const auth = server(options.authenticated ?? true)
-  const state = { items: rows(), listStatus: 200, writeStatus: 200, code: '', lists: [] as string[], writes: [] as { url: string; base: string; data: Record<string, unknown> }[], wait: null as Promise<void> | null, writeWait: null as Promise<void> | null, preferences: { inAppEnabled: true, taskAssignedEnabled: true, emailAvailable: false, version: '0' } }
+  const state = { items: rows(), listStatus: 200, writeStatus: 200, code: '', lists: [] as string[], writes: [] as { url: string; base: string; data: Record<string, unknown> }[], wait: null as Promise<void> | null, writeWait: null as Promise<void> | null, preferences: { inAppEnabled: true, taskAssignedEnabled: true, emailAvailable: false, version: '0', dueReminderEnabled: false, dailyDigestEnabled: false, timeZoneId: 'UTC', digestHour: 9, watcherDeliveryMode: 'Immediate', quietStartHour: null as number | null, quietEndHour: null as number | null } }
   const client = createApiClient(async c => {
     if (c.baseURL === '/api/v1') return auth.adapter(c)
     if (c.baseURL === '/api/v2') return reply(c, 200, { id: c.url?.endsWith('/2') ? '2' : '1', name: c.url?.endsWith('/2') ? 'Beta' : 'Alpha', role: 'Member' })
     const beta = c.baseURL?.endsWith('/2'), items = beta ? [] : state.items
     if (c.method === 'get' && c.url === '/notifications/preferences') return reply(c, 200, beta ? { ...state.preferences, version: '0', inAppEnabled: true } : state.preferences)
+    if (c.method === 'get' && c.url?.startsWith('/notifications/groups?')) {
+      const groups = new Map<string, typeof items>()
+      for (const row of items) groups.set(row.taskId, [...(groups.get(row.taskId) ?? []), row])
+      return reply(c, state.listStatus, { items: [...groups.values()].map(group => ({ taskId: group[0].taskId, projectId: group[0].projectId, taskTitle: group[0].taskTitle, projectName: group[0].projectName, latestNotificationId: group[0].id, latestAtUtc: group[0].createdAtUtc, notificationCount: group.length, unreadCount: group.filter(n => !n.readAtUtc).length })), page: 1, pageSize: 20, totalCount: groups.size, totalPages: 1, unreadCount: items.filter(n => !n.readAtUtc).length })
+    }
     if (c.method === 'get' && c.url === '/notifications/unread-count') return reply(c, 200, { unreadCount: items.filter(n => !n.readAtUtc).length })
     if (c.method === 'get' && c.url?.startsWith('/notifications?')) {
       state.lists.push(c.url); const snapshot = items.map(n => ({ ...n })); await state.wait
-      const params = new URLSearchParams(c.url.split('?')[1]), page = Number(params.get('page')), unreadOnly = params.get('unreadOnly') === 'true', filtered = unreadOnly ? snapshot.filter(n => !n.readAtUtc) : snapshot
+      const params = new URLSearchParams(c.url.split('?')[1]), page = Number(params.get('page')), unreadOnly = params.get('unreadOnly') === 'true', selected = params.get('taskId') ? snapshot.filter(n => n.taskId === params.get('taskId')) : snapshot, filtered = unreadOnly ? selected.filter(n => !n.readAtUtc) : selected
       return reply(c, state.listStatus, { items: filtered.slice((page - 1) * 20, page * 20), totalCount: filtered.length, totalPages: Math.ceil(filtered.length / 20), page, pageSize: 20, unreadCount: snapshot.filter(n => !n.readAtUtc).length })
     }
     if (c.method !== 'get' && c.url?.startsWith('/notifications')) {
       const data = JSON.parse(c.data as string) as Record<string, unknown>; state.writes.push({ url: c.url, base: c.baseURL!, data }); await state.writeWait
       if (state.writeStatus !== 200) return reply(c, state.writeStatus, { code: state.code })
-      if (c.url === '/notifications/preferences') { state.preferences = { inAppEnabled: data.inAppEnabled as boolean, taskAssignedEnabled: data.taskAssignedEnabled as boolean, emailAvailable: false, version: String(Number(state.preferences.version) + 1) }; return reply(c, 200, state.preferences) }
+      if (c.url === '/notifications/preferences') { state.preferences = { ...state.preferences, ...data, inAppEnabled: data.inAppEnabled as boolean, taskAssignedEnabled: data.taskAssignedEnabled as boolean, emailAvailable: false, version: String(Number(state.preferences.version) + 1) }; return reply(c, 200, state.preferences) }
       if (c.url === '/notifications/read') state.items = state.items.map(n => (data.notificationIds as string[]).includes(n.id) ? { ...n, readAtUtc: '2026-11-12T10:00:00Z' } : n)
       else state.items = state.items.map(n => c.url?.endsWith('/' + n.id) ? { ...n, readAtUtc: data.isRead ? '2026-11-12T10:00:00Z' : null } : n)
       return reply(c, 204)
@@ -124,4 +130,28 @@ describe('recipient notification preferences', () => {
     await user.click(screen.getByRole('button', { name: 'Save preferences' })); expect(await screen.findByRole('alert')).toHaveTextContent('Your draft is kept'); expect(screen.getByLabelText('Tasks assigned to me')).not.toBeChecked(); expect(state.writes).toHaveLength(1)
     await user.click(screen.getByRole('button', { name: 'Reload current preferences' })); await waitFor(() => expect(screen.getByLabelText('Tasks assigned to me')).toBeChecked())
   })
+})
+
+describe('task notification grouping and watcher noise', () => {
+  it('drills into opaque task source rows without marking unseen notifications', async () => {
+    const {state,user}=setup();const original=rows();state.items=[original[0],{...original[0],id:'9007199254741222'},original[1]]
+    await user.click(await screen.findByRole('button',{name:'By task'}));expect(await screen.findByText(/2 updates/)).toBeVisible();expect(screen.queryByRole('button',{name:'Mark page as read'})).not.toBeInTheDocument();expect(state.writes).toHaveLength(0)
+    await user.click(screen.getByRole('button',{name:'View updates for <script>Review work</script>'}));await screen.findByText('Showing updates for this task.');expect(screen.getByTestId('location')).toHaveTextContent('taskId=9007199254741999');expect(screen.queryByRole('link',{name:'Previously reviewed'})).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button',{name:'Mark page as read'}));await waitFor(()=>expect(state.writes).toHaveLength(1));expect(state.writes[0].data.notificationIds).toEqual([firstId,'9007199254741222'])
+  })
+  it('saves local quiet hours and digest watcher mode while enabling the required daily digest', async () => {
+    vi.stubEnv('VITE_TASK_WATCHERS_ENABLED','true');const {state,user}=setup();await screen.findByRole('link',{name:'<script>Review work</script>'});await user.click(screen.getByText('Notification preferences'))
+    await user.selectOptions(screen.getByLabelText('Watched task updates'),'Digest');expect(screen.getByLabelText('Daily digest of overdue tasks and tasks due in the next 24 hours')).toBeChecked();expect(screen.getByLabelText('Daily digest of overdue tasks and tasks due in the next 24 hours')).toBeDisabled()
+    await user.click(screen.getByLabelText('Quiet hours for watched updates'));await user.selectOptions(screen.getByLabelText('Quiet hours start'),'22');await user.selectOptions(screen.getByLabelText('Quiet hours end'),'7');await user.click(screen.getByRole('button',{name:'Save preferences'}));await screen.findByText('Notification preferences saved.')
+    expect(state.writes[0].data).toMatchObject({watcherDeliveryMode:'Digest',quietStartHour:22,quietEndHour:7,dailyDigestEnabled:true})
+  })
+  it('rejects ambiguous or invalid task grouping filters', async () => {
+    setup('/companies/1/notifications?view=grouped&taskId=9007199254741999');expect(await screen.findByRole('alert')).toHaveTextContent('This inbox filter is not valid.')
+  })
+  it('keeps existing noise settings editable when the watcher rollout flag is turned off', async () => {
+    const {state,user}=setup();state.preferences.watcherDeliveryMode='Digest';state.preferences.dailyDigestEnabled=true;state.preferences.quietStartHour=22;state.preferences.quietEndHour=7
+    await screen.findByRole('link',{name:'<script>Review work</script>'});await user.click(screen.getByText('Notification preferences'));expect(screen.getByLabelText('Watched task updates')).toHaveValue('Digest')
+    await user.selectOptions(screen.getByLabelText('Watched task updates'),'Immediate');expect(screen.getByLabelText('Daily digest of overdue tasks and tasks due in the next 24 hours')).toBeEnabled();await user.click(screen.getByLabelText('Daily digest of overdue tasks and tasks due in the next 24 hours'));await user.click(screen.getByRole('button',{name:'Save preferences'}));await screen.findByText('Notification preferences saved.');expect(state.writes[0].data).toMatchObject({watcherDeliveryMode:'Immediate',dailyDigestEnabled:false})
+  })
+
 })

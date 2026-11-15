@@ -335,12 +335,14 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, bool notifications, params IInterceptor[] interceptors)
             : this(fixture, workspaceReads, workspaceWrites, lifecycle, invitations, notifications, false, interceptors) { }
         public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, bool notifications, bool comments, params IInterceptor[] interceptors)
+            : this(fixture, workspaceReads, workspaceWrites, lifecycle, invitations, notifications, comments, false, interceptors) { }
+        public ProjectHost(MySqlFixture fixture, bool workspaceReads, bool workspaceWrites, bool lifecycle, bool invitations, bool notifications, bool comments, bool watchers, params IInterceptor[] interceptors)
         {
             this.fixture = fixture;
             factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Testing");
-                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString(), ["Notifications:Enabled"] = notifications.ToString(), ["Comments:Enabled"] = comments.ToString() }));
+                builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaskFlow"] = fixture.ConnectionString, ["WorkspaceReads:Enabled"] = workspaceReads.ToString(), ["WorkspaceWrites:Enabled"] = workspaceWrites.ToString(), ["WorkspaceLifecycle:Enabled"] = lifecycle.ToString(), ["Invitations:Enabled"] = invitations.ToString(), ["Notifications:Enabled"] = notifications.ToString(), ["Comments:Enabled"] = comments.ToString(), ["Notifications:WatchersEnabled"] = watchers.ToString() }));
                 builder.ConfigureTestServices(services =>
                 {
                     services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
@@ -414,6 +416,8 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();
             var events = database.OutboxEvents.Where(e => ids.Contains(e.ActorUserId)).Select(e => e.Id);
             await database.NotificationScheduleCursors.Where(c => database.WorkspaceMemberships.Any(m => m.WorkspaceId == c.WorkspaceId && ids.Contains(m.UserId))).ExecuteDeleteAsync();
+            await database.WatcherNotificationIntents.Where(i => ids.Contains(i.RecipientUserId) || events.Contains(i.EventId)).ExecuteDeleteAsync();
+            await database.TaskWatchers.Where(w => ids.Contains(w.UserId)).ExecuteDeleteAsync();
             await database.UserNotifications.Where(n => ids.Contains(n.RecipientUserId) || (n.EventId != null && events.Contains(n.EventId.Value))).ExecuteDeleteAsync();
             await database.CommentRevisions.Where(r => database.TaskComments.Any(c => c.WorkspaceId == r.WorkspaceId && c.Id == r.CommentId && ids.Contains(c.AuthorId))).ExecuteDeleteAsync();
             await database.TaskComments.Where(c => ids.Contains(c.AuthorId)).ExecuteDeleteAsync();

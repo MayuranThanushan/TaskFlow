@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-028",
+  "status": "implemented and verified locally; watcher/scheduler rollout default off; not publicly deployed",
+  "features": [
+    "self-only versioned task subscriptions including authorized guest/viewer readers",
+    "future comment/task-change fanout with self-action and direct-mention/assignment deduplication",
+    "metadata-only deferred watcher intent with subscription revision and intervening revocation fences",
+    "watcher Immediate/Digest/Off delivery and local quiet hours with DST-aware shifted slots",
+    "atomic mute cancellation and timing rescheduling of pending intent",
+    "live task-grouped inbox with source-row drill-down and explicit read selection",
+    "on-demand grouped inbox/task-watch chunks with explicit loading-failure recovery"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 407,
+      "failed": 0,
+      "skipped": 0,
+      "newTests": 18,
+      "database": "dedicated sixteen-migration MySQL schema removed",
+      "coverage": [
+        "self-only state and version conflicts",
+        "guest/viewer personal subscription access",
+        "future-only delivery and direct mention deduplication",
+        "quiet/digest slot timing including overnight and DST",
+        "unsubscribe/re-subscribe and suspend/restore fences",
+        "mute cancellation, unavailable comments and expiry",
+        "live grouped source counts, read state and revocation",
+        "90-subscription admission limit and overlapping 10-mention audience",
+        "source transaction and worker post-save rollback",
+        "pending availability rescheduled by preference change"
+      ]
+    },
+    "frontend": {
+      "passed": 182,
+      "files": 19,
+      "failed": 0,
+      "newTests": 7,
+      "lint": "passed",
+      "build": "passed with preview flags",
+      "initialBundleKilobytes": 498.96,
+      "initialBundleGzipKilobytes": 146.72,
+      "onDemandChunks": [
+        "GroupedInbox",
+        "TaskWatchControl"
+      ],
+      "bundleWarning": false
+    },
+    "operations": {
+      "passed": 35
+    },
+    "contract": {
+      "paths": 69,
+      "operations": 91,
+      "liveContractTests": 4,
+      "snapshotAndTypes": "regenerated and checked"
+    },
+    "publishedHttpsRehearsal": {
+      "passed": true,
+      "checks": 6,
+      "scope": "separate restricted API and scheduler database identities with disposable schema/users removed",
+      "verified": [
+        "real browser stop/re-subscribe versions, local noise controls, grouping and source read state",
+        "quiet watcher update deferred while direct mention arrives without watcher duplicate",
+        "published worker retry delivers one pending source exactly once",
+        "preference timing change releases pending work and mute cancellation does not replay",
+        "worker cannot read comment Body or identity secrets or retarget/delete intent",
+        "runtime cannot retarget/delete subscription/intent",
+        "revocation hides groups/source rows and suppresses due pending work"
+      ]
+    },
+    "browser": {
+      "journeys": 3,
+      "accessibilityScans": 6,
+      "widths": [
+        1440,
+        320
+      ],
+      "violations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "visualReview": "mobile grouped inbox and expanded quiet-hour preferences screenshots inspected",
+      "harnessCorrections": [
+        "wait for source rows after drilling down before counting",
+        "omit redundant comments-candidate probe to remain within existing per-user request budget; limiter unchanged"
+      ]
+    },
+    "secretScan": "redacted staged patch scan passed",
+    "renderBlueprint": "validated against cached official schema; free profile retained"
+  },
+  "rollout": {
+    "migration": "20261115073915_TaskWatchersAndNoiseControls",
+    "migrationNumber": 16,
+    "backendFlag": "Notifications:WatchersEnabled=false",
+    "frontendFlag": "VITE_TASK_WATCHERS_ENABLED=false",
+    "deferredWorker": "requires existing Notifications:SchedulingEnabled and explicit company batch invocations",
+    "hostedActivation": "disabled; no new paid/hosted resources",
+    "newDependencies": false,
+    "downgrade": "refuses destructive rollback; disable/roll forward or restore verified backup into a new schema"
+  },
+  "limitations": [
+    "initial watcher feed covers new comments and task edit/assignment/status facts, not comment edits/deletes",
+    "quiet/digest controls govern watcher feed; direct notifications retain their own preference rules",
+    "stored paused/revoked subscribed rows count toward the 90-subscription cap",
+    "digest reuses the existing daily digest setting and deferred work needs adequate scheduler cadence",
+    "no watcher directory, email delivery, user replay or automatic retention purge",
+    "intervening revocation fence relies on normal audited mutation paths; current access is always rechecked",
+    "selected-host/TiDB locking semantics, hosted CI/container acceptance and manual assistive-technology review remain external gates",
+    "SaaS-029 will add focused delivery reliability/load and operational alert evidence"
+  ]
+}
