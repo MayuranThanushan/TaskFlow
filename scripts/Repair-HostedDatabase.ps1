@@ -1,13 +1,20 @@
 [CmdletBinding()]
-param([switch] $Apply, [switch] $UseExistingConnection)
+param([switch] $Apply, [switch] $UseExistingConnection, [string] $CaFile)
 $ErrorActionPreference = 'Stop'
 $taskflowRoot = Split-Path -Parent $PSScriptRoot
 $taskflowOriginalConnection = [Environment]::GetEnvironmentVariable('ConnectionStrings__TaskFlow', 'Process')
 $taskflowOriginalSecretsDirectory = [Environment]::GetEnvironmentVariable('TASKFLOW_SECRETS_DIRECTORY', 'Process')
+$taskflowOriginalCaFile = [Environment]::GetEnvironmentVariable('DatabaseMaintenance__CaFile', 'Process')
 $taskflowPrivate = $null
 $taskflowPointer = [IntPtr]::Zero
 Push-Location $taskflowRoot
 try {
+    $taskflowResolvedCa = $null
+    if ($CaFile) {
+        $taskflowResolvedCa = (Resolve-Path -LiteralPath $CaFile).Path
+        if (-not (Test-Path -LiteralPath $taskflowResolvedCa -PathType Leaf)) { throw 'CA must be an existing certificate file.' }
+    }
+    [Environment]::SetEnvironmentVariable('DatabaseMaintenance__CaFile', $null, 'Process')
     Write-Output "Repository: $taskflowRoot"
     Write-Output 'Building isolated database maintenance tool (no web server or hosting keys required).'
     # Do not pass a database secret to MSBuild or print it in command arguments.
@@ -24,6 +31,7 @@ try {
         $taskflowConnection = $taskflowOriginalConnection
     }
     [Environment]::SetEnvironmentVariable('ConnectionStrings__TaskFlow', $taskflowConnection, 'Process')
+    [Environment]::SetEnvironmentVariable('DatabaseMaintenance__CaFile', $taskflowResolvedCa, 'Process')
     if ($Apply) {
         Write-Output 'Applying only pending forward migrations. Use a migration account and retain a verified backup first.'
         $taskflowCommand = '--database-update'
@@ -37,6 +45,7 @@ try {
     if ($taskflowResult -eq 0) { Write-Output 'Schema matches this checkout. Confirm runtime grants, then deploy the same revision in Render.' }
     if ($taskflowResult -eq 3) { Write-Output 'Unknown migration history found. Verify the database/revision; do not delete or fabricate migration history.' }
 } finally {
+    [Environment]::SetEnvironmentVariable('DatabaseMaintenance__CaFile', $taskflowOriginalCaFile, 'Process')
     [Environment]::SetEnvironmentVariable('ConnectionStrings__TaskFlow', $taskflowOriginalConnection, 'Process')
     [Environment]::SetEnvironmentVariable('TASKFLOW_SECRETS_DIRECTORY', $taskflowOriginalSecretsDirectory, 'Process')
     if ($taskflowPointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($taskflowPointer) }

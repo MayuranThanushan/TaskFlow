@@ -15,8 +15,16 @@ public static class DatabaseMaintenanceCommand
             var raw=configuration.GetConnectionString("TaskFlow");if(string.IsNullOrWhiteSpace(raw)){Report(new{code="database.configuration_missing",message="Supply the private database connection through environment or key-per-file settings."});return 1;}
             var connection=TaskFlowConnectionString.Normalize(raw);var parsed=new MySqlConnectionStringBuilder(connection);
             if(string.IsNullOrWhiteSpace(parsed.Database))throw new DatabaseConnectionConfigurationException();
+            if(DatabaseSchemaState.IsSystemDatabase(parsed.Database))
+            {Report(new{code="database.system_schema",message="TaskFlow cannot use a system schema. Create a dedicated application database such as taskflow, then use that database in both the migration connection and Render runtime connection."});return 1;}
             if(parsed.Server is not ("localhost" or "127.0.0.1" or "::1")&&parsed.SslMode!=MySqlSslMode.VerifyFull)
             {Report(new{code="database.tls_required",message="Remote maintenance requires SslMode=VerifyFull or a verified-TLS mysql URL."});return 1;}
+            var caFile=configuration["DatabaseMaintenance:CaFile"];
+            if(!string.IsNullOrWhiteSpace(caFile))
+            {
+                if(!File.Exists(caFile)){Report(new{code="database.ca_missing",message="The configured CA certificate file does not exist."});return 1;}
+                parsed.SslCa=Path.GetFullPath(caFile);connection=parsed.ConnectionString;
+            }
             await using var db=new TaskFlowDbContext(new DbContextOptionsBuilder<TaskFlowDbContext>().UseMySQL(connection).Options,TimeProvider.System,configuration);
             async Task<DatabaseSchemaState> Status()=>DatabaseSchemaState.Compare(db.Database.GetMigrations(),await db.Database.GetAppliedMigrationsAsync(token));
             var before=await Status();
@@ -33,7 +41,9 @@ public static class DatabaseMaintenanceCommand
         catch(Exception error)
         {
             var mysql=error;while(mysql is not MySqlException&&mysql.InnerException is not null)mysql=mysql.InnerException;
-            Report(new{code="database.maintenance_failed",databaseErrorNumber=mysql is MySqlException sql?(int?)sql.Number:null,message="Verify the private connection, network access, verified TLS and migration-account privileges. Raw diagnostics withheld. Check status before retrying partially applied DDL."});return 1;
+            Report(new{code="database.maintenance_failed",databaseErrorNumber=mysql is MySqlException sql?(int?)sql.Number:null,message=mysql is MySqlException denied&&denied.Number==1142
+                ?"The database account was denied an operation. Use a dedicated application database (not a system schema) and a migration account with schema-change privileges. Do not grant broad system-schema access."
+                :"Verify the private connection, network access, verified TLS and migration-account privileges. Raw diagnostics withheld. Check status before retrying partially applied DDL."});return 1;
         }
     }
 }

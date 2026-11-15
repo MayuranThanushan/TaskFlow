@@ -4,6 +4,22 @@ The 15 November 2026 logs show a successful container build followed by repeated
 
 The repair keeps the database readiness gate. Render must receive HTTP 200 from `/api/v1/health/ready` before the release is accepted; changing the health path to liveness would hide the broken schema.
 
+## Error 1142 and a connection ending in /sys
+
+`sys` is a TiDB system schema, not an application database. Do not apply TaskFlow migrations there or grant additional system-schema privileges. The repair tool now refuses sys, mysql, information_schema, performance_schema and metrics_schema before making a connection; readiness also rejects a system-schema target.
+
+If a full connection/password has been shared in chat or logs, reset that SQL user's password first in TiDB -> cluster -> Settings -> SQL Users -> the user's action menu -> Edit. Update all affected application secrets privately; never share the replacement.
+
+In the cluster SQL Editor, using an authorized database-administration account, create the application database:
+
+```sql
+CREATE DATABASE IF NOT EXISTS taskflow;
+```
+
+Use the same host and appropriate user with the rotated password, but change the URL database suffix from `/sys` to `/taskflow` (or `Database=sys` to `Database=taskflow` in .NET format). Set that application database in **both** the hidden migration prompt and Render's `ConnectionStrings__TaskFlow`, using the appropriate migration/runtime identities. Then rerun the repair and deploy the matching commit. The tool does not create a database or change account privileges automatically.
+
+Sources: [TiDB sys schema](https://docs.pingcap.com/tidbcloud/sys-schema/), [create a database](https://docs.pingcap.com/developer/dev-guide-create-database/), [SQL user/password management](https://docs.pingcap.com/tidbcloud/configure-sql-users/).
+
 ## Day-one checklist
 
 - [ ] Open PowerShell on your own computer and get the matching code:
@@ -56,6 +72,17 @@ python scripts/smoke_deployment.py $taskflowOrigin --public-only
 ```
 
 Expected: readiness 200 and the public smoke checks pass. Startup warnings for the inherited HTTP port and redundant in-app HTTPS redirect are also corrected by this revision. Strict authentication HTTPS checks remain enforced; the validated Render edge owns redirection. See [Microsoft's proxy/HTTPS guidance](https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl?view=aspnetcore-10.0) and [Render health checks](https://render.com/docs/health-checks).
+
+## Optional local CA certificate
+
+With the public ISRG Root X1 file on Windows, use:
+
+```powershell
+.\scripts\Repair-HostedDatabase.ps1 -CaFile 'D:\TaskFlow\deploy\certs\isrgrootx1.pem'
+.\scripts\Repair-HostedDatabase.ps1 -Apply -CaFile 'D:\TaskFlow\deploy\certs\isrgrootx1.pem'
+```
+
+Enter the rotated `/taskflow` migration URL at the hidden prompt. `-CaFile` preserves verified TLS and hostname checks. The wrapper restores prior CA configuration when it exits. The certificate is public; the database password remains private. Do not configure the Windows `D:\...` path in Render's Linux container: Render uses its system CA trust store unless a separate Linux certificate path has been provisioned. See [TiDB verified TLS connections](https://docs.pingcap.com/tidbcloud/secure-connections-to-serverless-clusters/).
 
 ## Existing private environment / published runtime
 

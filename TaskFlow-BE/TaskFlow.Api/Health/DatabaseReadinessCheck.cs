@@ -22,6 +22,7 @@ public sealed class DatabaseReadinessCheck(IServiceScopeFactory scopeFactory, IL
             cancellationToken.ThrowIfCancellationRequested();
             await using var scope = scopeFactory.CreateAsyncScope();
             var database = scope.ServiceProvider.GetRequiredService<TaskFlowDbContext>();
+            if (DatabaseSchemaState.IsSystemDatabase(database.Database.GetDbConnection().Database)) return NotReady("database.system_schema");
             if (!await database.Database.CanConnectAsync(cancellationToken)) return NotReady("database.unreachable");
             var compiled = database.Database.GetMigrations().ToHashSet(StringComparer.Ordinal);
             var applied = (await database.Database.GetAppliedMigrationsAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);

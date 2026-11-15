@@ -27,4 +27,25 @@ public sealed class DatabaseMaintenanceTests
         var configuration=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["ConnectionStrings:TaskFlow"]=connection}).Build();using var output=new StringWriter();
         Assert.Equal(1,await DatabaseMaintenanceCommand.ExecuteAsync(["--database-status"],configuration,output));Assert.DoesNotContain("PRIVATE_",output.ToString());
     }
+    [Theory]
+    [InlineData("sys")][InlineData("SYS")][InlineData("mysql")][InlineData("information_schema")][InlineData("performance_schema")][InlineData("metrics_schema")]
+    public async Task SystemSchemasAreRefusedBeforeAnyConnectionOrMigration(string database)
+    {
+        var connection="mysql://PRIVATE_USER_CANARY:PRIVATE_PASSWORD_CANARY@does-not-exist.invalid:4000/"+database;
+        var configuration=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["ConnectionStrings:TaskFlow"]=connection}).Build();using var output=new StringWriter();
+        Assert.Equal(1,await DatabaseMaintenanceCommand.ExecuteAsync(["--database-update"],configuration,output));Assert.Contains("database.system_schema",output.ToString());Assert.DoesNotContain("database.migration_starting",output.ToString());Assert.DoesNotContain("PRIVATE_",output.ToString());
+    }
+    [Theory][InlineData("taskflow")][InlineData("taskflow_test")][InlineData("test")]
+    public void ApplicationDatabaseNamesRemainSupported(string database)=>Assert.False(DatabaseSchemaState.IsSystemDatabase(database));
+
+    [Fact] public async Task MissingCaFailsBeforeNetworkAndDoesNotExposeConnectionOrPath()
+    {
+        var configuration=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{
+            ["ConnectionStrings:TaskFlow"]="mysql://PRIVATE_USER_CANARY:PRIVATE_PASSWORD_CANARY@does-not-exist.invalid:4000/taskflow",
+            ["DatabaseMaintenance:CaFile"]="PRIVATE_CA_CANARY/missing.pem"
+        }).Build();using var output=new StringWriter();
+        Assert.Equal(1,await DatabaseMaintenanceCommand.ExecuteAsync(["--database-status"],configuration,output));
+        Assert.Contains("database.ca_missing",output.ToString());Assert.DoesNotContain("PRIVATE_",output.ToString());
+    }
+
 }
