@@ -38,3 +38,4 @@ Thumbs.db
 # Private local email captures (use an ACL-restricted directory outside wwwroot)
 **/*.eml
 **/mail-capture/
+deploy/certs/
