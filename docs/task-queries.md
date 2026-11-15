@@ -30,5 +30,7 @@ The published Production release passed verified HTTPS migration/readiness/resta
 
 SaaS-030 adds [company-scoped board counts and per-column pages](saas/board-read-model.md), sharing v2 task-list visibility, filters and sorting. The v1 query baseline above remains historical and unchanged.
 
+SaaS-031 allows explicit sortBy=rank and preserves created-date list defaults. Board columns use rank/asc by default. Rank is per status, so compare list/board order within the same status/filter scope. See [ordering](saas/board-moves.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

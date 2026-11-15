@@ -28,7 +28,8 @@ export function asApiError(error: unknown): ApiError {
     }
   }
   const code = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : undefined
-  const message = code === 'mfa.administration_required' ? 'Open Account security and confirm your identity with a fresh authenticator code before this company action.'
+  const message = code?.startsWith('board.') ? 'The board position changed or its ordering limit was reached. Reload the affected columns before choosing a new position.'
+    : code === 'mfa.administration_required' ? 'Open Account security and confirm your identity with a fresh authenticator code before this company action.'
     : code === 'quota.exceeded' ? 'Pilot capacity reached. Contact your company owner or operations team.'
     : code === 'resource.conflict' ? 'This record changed. Your draft is kept. Compare the latest version before saving again.'
     : status === 428 ? 'Reload this record before making changes.'

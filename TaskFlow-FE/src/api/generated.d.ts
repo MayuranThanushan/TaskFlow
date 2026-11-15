@@ -1011,7 +1011,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_Board"];
         put?: never;
         post?: never;
@@ -1028,7 +1028,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
+        /** @description Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. */
         get: operations["WorkspaceReads_BoardColumn"];
         put?: never;
         post?: never;
@@ -1103,6 +1103,23 @@ export interface paths {
         put?: never;
         /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
         post: operations["WorkspaceWrites_CreateTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks/{taskId}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Atomic scoped move/reorder: requires X-Expected-Version for the moved task and captured versions for supplied previous/next adjacent target-column cards. Null endpoints denote true column boundaries, not a filtered page boundary. Stale revisions or nonadjacent positions return 409; foreign/missing neighbors return 404. Server chooses rank; rebalance touches at most 500 cards and increments changed card revisions. Status/rank/version/audit/outbox commit together; a no-op creates no history. Reload affected columns after a move/conflict; never silently replay with fetched revisions. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available. */
+        post: operations["WorkspaceWrites_MoveTask"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1868,6 +1885,14 @@ export interface components {
             updatedAtUtc: string;
             /** @default 1 */
             version: string;
+        };
+        TaskMoveRequest: {
+            nextTaskId?: null | string;
+            nextVersion?: null | string;
+            previousTaskId?: null | string;
+            previousVersion?: null | string;
+            /** @enum {string} */
+            status: "ToDo" | "InProgress" | "Done";
         };
         TaskPage: {
             items: components["schemas"]["TaskDto"][];
@@ -4467,7 +4492,7 @@ export interface operations {
                 pageSize?: number;
                 priority?: "Low" | "Medium" | "High";
                 search?: string;
-                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc";
+                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc" | "rank";
                 sortDirection?: "asc" | "desc";
                 status?: "ToDo" | "InProgress" | "Done";
             };
@@ -8958,7 +8983,7 @@ export interface operations {
                 pageSize?: number;
                 priority?: "Low" | "Medium" | "High";
                 search?: string;
-                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc";
+                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc" | "rank";
                 sortDirection?: "asc" | "desc";
             };
             header?: never;
@@ -9585,7 +9610,7 @@ export interface operations {
                 pageSize?: number;
                 priority?: "Low" | "Medium" | "High";
                 search?: string;
-                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc";
+                sortBy?: "title" | "priority" | "dueDateUtc" | "createdAtUtc" | "rank";
                 sortDirection?: "asc" | "desc";
                 status?: "ToDo" | "InProgress" | "Done";
             };
@@ -9757,6 +9782,138 @@ export interface operations {
             };
             /** @description Unsupported Media Type */
             415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    WorkspaceWrites_MoveTask: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout. */
+                "X-CSRF-TOKEN": string;
+                /** @description Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft. */
+                "X-Expected-Version": string;
+            };
+            path: {
+                projectId: string;
+                taskId: string;
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskMoveRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    "Cache-Control"?: string;
+                    /** @description Correlation ID; matches error traceId. */
+                    "X-Trace-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Precondition Required */
+            428: {
                 headers: {
                     "Cache-Control"?: string;
                     /** @description Correlation ID; matches error traceId. */

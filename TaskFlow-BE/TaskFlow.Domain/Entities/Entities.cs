@@ -38,6 +38,7 @@ public sealed class ProjectMember
 
 public sealed class TaskItem : AuditableEntity, IVersionedResource
 {
+    public long BoardRank { get; set; }
     public long Version { get; set; } = 1;
     public long? WorkspaceId { get; set; }
     public long ProjectId { get; set; }
@@ -79,5 +80,5 @@ public enum ActivityAction
 {
     ProjectCreated, ProjectUpdated, ProjectDeleted, MemberAdded, MemberRemoved,
     TaskCreated, TaskUpdated, TaskAssigned, TaskUnassigned, TaskStatusChanged, TaskDeleted,
-    MemberRoleChanged, ProjectOwnershipTransferred
+    MemberRoleChanged, ProjectOwnershipTransferred, TaskMoved, TaskRankRebalanced
 }

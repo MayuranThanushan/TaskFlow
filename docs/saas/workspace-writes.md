@@ -71,5 +71,7 @@ MySQL DDL is not generally transactionally reversible. A partially failed FK mig
 
 The local suite adds nine HTTP/MySQL cases covering scoped CRUD/CSRF, server-derived scope, company/private-project denials, foreign members/assignees, PATCH, suspension, queue rechecks, both assignment/removal orders, failed-activity rollback and direct SQL constraint rejection. See [verification evidence](../evidence/saas010-writes.json), including the populated-backup upgrade and published HTTPS checks. Hosted CI/container and selected-host rollout remain separate gates. Next is SaaS-011 company navigation and resource keys.
 
+SaaS-031 adds [atomic scoped board movement](board-moves.md), using the same admission/project locks, CSRF/MFA policies and task revisions. Creation/status changes append ranks, while explicit moves validate captured adjacent neighbors and bound rebalance work.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

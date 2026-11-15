@@ -51,6 +51,7 @@ public sealed class ActivityService(TaskFlowDbContext database) : IActivityServi
         ActivityAction.MemberAdded => "Added " + User(activity) + " to the project.", ActivityAction.MemberRemoved => "Removed " + User(activity) + " from the project.",
         ActivityAction.MemberRoleChanged => "Project access role changed.",
         ActivityAction.ProjectOwnershipTransferred => "Project ownership transferred.",
+        ActivityAction.TaskMoved => "Task moved on the board.", ActivityAction.TaskRankRebalanced => "Board order spacing updated.",
         ActivityAction.TaskCreated => "Task created.", ActivityAction.TaskUpdated => "Task updated.", ActivityAction.TaskDeleted => "Task deleted.",
         ActivityAction.TaskAssigned => "Task assigned to " + User(activity) + ".", ActivityAction.TaskUnassigned => "Unassigned " + User(activity) + " from the task.",
         ActivityAction.TaskStatusChanged => Status(Detail(activity, "from")) is { } from && Status(Detail(activity, "to")) is { } to ? "Status changed from " + from + " to " + to + "." : "Task status changed.",

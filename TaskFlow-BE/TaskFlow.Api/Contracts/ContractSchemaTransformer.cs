@@ -54,7 +54,7 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
                 property.Description = "ISO timestamp with Z or explicit offset, UTC years 1000-9999. Task deadlines stored at microsecond precision; responses use UTC.";
             }
             if (type == typeof(TaskPatchRequest) && name == "priority") { property.Type = JsonSchemaType.String; SetEnum(property, ["Low", "Medium", "High"]); }
-            if (type == typeof(TaskStatusRequest) && name == "status") { property.Type = JsonSchemaType.String; SetEnum(property, ["ToDo", "InProgress", "Done"]); }
+            if ((type == typeof(TaskStatusRequest) || type == typeof(TaskMoveRequest)) && name == "status") { property.Type = JsonSchemaType.String; SetEnum(property, ["ToDo", "InProgress", "Done"]); }
             if (response && name == "status" && type.Name.StartsWith("Task")) SetEnum(property, ["ToDo", "InProgress", "Done"]);
             if (response && name == "priority") SetEnum(property, ["Low", "Medium", "High"]);
             if (response && name == "role") SetEnum(property, type.Name is "WorkspaceDto" or "WorkspaceMemberDto" ? ["Owner", "Admin", "Member", "Guest"] : ["Owner", "Member", "Editor", "Viewer"]);

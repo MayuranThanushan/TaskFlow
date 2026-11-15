@@ -27,7 +27,7 @@ public sealed partial class ProjectApiTests
             Assert.Equal(total,first.GetProperty("totalCount").GetInt32());Assert.Equal(2,first.GetProperty("totalPages").GetInt32());Assert.Equal(100,first.GetProperty("items").GetArrayLength());Assert.Equal(total-100,second.GetProperty("items").GetArrayLength());
             var items=first.GetProperty("items").EnumerateArray().Concat(second.GetProperty("items").EnumerateArray()).ToArray();
             Assert.All(items,t=>{Assert.Equal(state,t.GetProperty("status").GetString());Assert.True(all.Add(t.GetProperty("id").GetString()!));Assert.NotNull(t.GetProperty("version").GetString());});
-            var list=await Body(await owner.GetAsync(W(c.A)+"/projects/"+c.A1.Id+"/tasks?status="+state+"&pageSize=100"));Assert.Equal(first.ToString(),list.ToString());
+            var list=await Body(await owner.GetAsync(W(c.A)+"/projects/"+c.A1.Id+"/tasks?status="+state+"&pageSize=100&sortBy=rank&sortDirection=asc"));Assert.Equal(first.ToString(),list.ToString());
             var ids=items.Select(t=>long.Parse(t.GetProperty("id").GetString()!)).ToArray();Assert.Equal(ids.OrderDescending(),ids);
         }
         Assert.Equal(364,all.Count);

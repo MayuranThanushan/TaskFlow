@@ -10117,12 +10117,13 @@
             "name": "sortBy",
             "in": "query",
             "schema": {
-              "pattern": "^(title|priority|dueDateUtc|createdAtUtc)$",
+              "pattern": "^(title|priority|dueDateUtc|createdAtUtc|rank)$",
               "enum": [
                 "title",
                 "priority",
                 "dueDateUtc",
-                "createdAtUtc"
+                "createdAtUtc",
+                "rank"
               ],
               "type": "string",
               "default": "createdAtUtc"
@@ -17985,12 +17986,13 @@
             "name": "sortBy",
             "in": "query",
             "schema": {
-              "pattern": "^(title|priority|dueDateUtc|createdAtUtc)$",
+              "pattern": "^(title|priority|dueDateUtc|createdAtUtc|rank)$",
               "enum": [
                 "title",
                 "priority",
                 "dueDateUtc",
-                "createdAtUtc"
+                "createdAtUtc",
+                "rank"
               ],
               "type": "string",
               "default": "createdAtUtc"
@@ -18418,7 +18420,7 @@
         "tags": [
           "WorkspaceReads"
         ],
-        "description": " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "description": " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
         "operationId": "WorkspaceReads_Board",
         "parameters": [
           {
@@ -18609,7 +18611,7 @@
         "tags": [
           "WorkspaceReads"
         ],
-        "description": " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
+        "description": " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032. Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Read-only workspace preview: requires WorkspaceReads:Enabled (default false); disabled routes return 404. Active workspace membership plus private-project access are required. No company-admin private-project override; production cutover remains pending. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable.",
         "operationId": "WorkspaceReads_BoardColumn",
         "parameters": [
           {
@@ -18672,15 +18674,16 @@
             "name": "sortBy",
             "in": "query",
             "schema": {
-              "pattern": "^(title|priority|dueDateUtc|createdAtUtc)$",
+              "pattern": "^(title|priority|dueDateUtc|createdAtUtc|rank)$",
               "enum": [
                 "title",
                 "priority",
                 "dueDateUtc",
-                "createdAtUtc"
+                "createdAtUtc",
+                "rank"
               ],
               "type": "string",
-              "default": "createdAtUtc"
+              "default": "rank"
             }
           },
           {
@@ -18693,7 +18696,7 @@
                 "desc"
               ],
               "type": "string",
-              "default": "desc"
+              "default": "asc"
             }
           },
           {
@@ -19914,6 +19917,307 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaskStatusDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionLocal": [],
+            "CsrfCookieLocal": [],
+            "CsrfHeader": []
+          },
+          {
+            "SessionStrict": [],
+            "CsrfCookieStrict": [],
+            "CsrfHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks/{taskId}/move": {
+      "post": {
+        "tags": [
+          "WorkspaceWrites"
+        ],
+        "description": " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. Scoped write preview: requires both WorkspaceReads:Enabled and WorkspaceWrites:Enabled (defaults false). Disabled routes return 404. Scope and actor are server-derived; no query parameters are allowed. Active company membership and explicit project permissions are rechecked under transaction locks. Company administration grants no private-project override. Canonical JSON properties use camelCase. Typed body binding is case-insensitive; dynamic task PATCH fields are case-sensitive. Unknown/duplicate fields fail validation. Permission checks use current database membership. Inaccessible/deleted resources return 404; visible forbidden operations return 403 where applicable. Atomic scoped move/reorder: requires X-Expected-Version for the moved task and captured versions for supplied previous/next adjacent target-column cards. Null endpoints denote true column boundaries, not a filtered page boundary. Stale revisions or nonadjacent positions return 409; foreign/missing neighbors return 404. Server chooses rank; rebalance touches at most 500 cards and increments changed card revisions. Status/rank/version/audit/outbox commit together; a no-op creates no history. Reload affected columns after a move/conflict; never silently replay with fetched revisions. Opt-in Mfa:RequireForCompanyAdministrators requires currently active company Owner/Admin actors to have authenticator proof younger than five minutes. Recovery-code sign-in cannot satisfy this policy; account security and authenticator restoration remain available.",
+        "operationId": "WorkspaceWrites_MoveTask",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^0*[1-9][0-9]*$",
+              "type": "string",
+              "description": "Positive decimal-string ID within signed BIGINT range."
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "description": "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Expected-Version",
+            "in": "header",
+            "description": "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft.",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]{0,18}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Trace-Id": {
+                "description": "Correlation ID; matches error traceId.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "description": "Includes no-store; may also include no-cache."
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskDto"
                 }
               }
             }
@@ -22525,6 +22829,48 @@
             "default": "1"
           }
         }
+      },
+      "TaskMoveRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "minLength": 1,
+            "enum": [
+              "ToDo",
+              "InProgress",
+              "Done"
+            ],
+            "type": "string"
+          },
+          "previousTaskId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "previousVersion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nextTaskId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nextVersion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
       },
       "TaskPage": {
         "required": [

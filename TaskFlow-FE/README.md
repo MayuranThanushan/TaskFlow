@@ -25,5 +25,7 @@ The [workspace UI refresh](../docs/workspace-ui.md) covers the modern sidebar, r
 
 SaaS-030 adds a typed read-only board client in src/features/board/board-api.ts and regenerated wire types. It uses captured company clients, cancellation and server access rules. Board UI is not shipped yet; see the [read model](../docs/saas/board-read-model.md) and current release index.
 
+SaaS-031 adds moveBoardTask with captured X-Expected-Version, neighbor revisions, CSRF, cancellation and conflict propagation. It does not fetch fresh revisions or silently replay a move. Rank stays server-owned. The board screen follows in SaaS-032.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

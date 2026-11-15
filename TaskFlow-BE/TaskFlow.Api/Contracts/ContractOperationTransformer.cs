@@ -39,9 +39,9 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
                 Description = "Request token returned by GET /api/v1/auth/csrf. Requires its paired cookie. Refresh after login/logout.", Schema = new OpenApiSchema { Type = JsonSchemaType.String, MinLength = 1 } });
         }
         if (controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus"
-            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateTask" or "Status")
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateTask" or "Status" or "MoveTask")
         {
-            var bodyType = action.ActionName is "Update" or "UpdateTask" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
+            var bodyType = action.ActionName == "MoveTask" ? typeof(TaskMoveRequest) : action.ActionName is "Update" or "UpdateTask" ? typeof(TaskPatchRequest) : typeof(TaskStatusRequest);
             var schema = await context.GetOrCreateSchemaAsync(bodyType, null, cancellationToken);
             if (context.Document!.Components?.Schemas?.ContainsKey(bodyType.Name) != true) context.Document.AddComponent(bodyType.Name, schema);
             operation.RequestBody = new OpenApiRequestBody { Required = true, Content = new Dictionary<string, OpenApiMediaType>
@@ -63,17 +63,17 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             if (name is "page" or "pageSize") schema.Default = JsonValue.Create(name == "page" ? 1 : 20);
             if (name == "sortBy")
             {
-                ContractSchemaTransformer.SetEnum(schema, (controller == typeof(ProjectsController) || controller == typeof(WorkspaceReadsController) && action.ActionName == "Projects") ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc"]);
-                schema.Default = JsonValue.Create("createdAtUtc");
+                ContractSchemaTransformer.SetEnum(schema, (controller == typeof(ProjectsController) || controller == typeof(WorkspaceReadsController) && action.ActionName == "Projects") ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc", "rank"]);
+                schema.Default = JsonValue.Create(controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" ? "rank" : "createdAtUtc");
             }
-            if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create("desc"); }
+            if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create(controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" ? "asc" : "desc"); }
             if (name == "status") ContractSchemaTransformer.SetEnum(schema, ["ToDo", "InProgress", "Done"]);
             if (name == "priority") ContractSchemaTransformer.SetEnum(schema, ["Low", "Medium", "High"]);
             if (name == "assigneeId") { schema.Pattern = ContractSchemaTransformer.IdPattern; schema.Description = "Positive decimal-string ID within signed BIGINT range; omit rather than supplying an empty filter."; }
             if (name is "fromUtc" or "toUtc") { schema.Format = "date-time"; schema.Pattern = ContractSchemaTransformer.TimestampPattern; }
         }
         if (controller == typeof(WorkspaceReadsController) && action.ActionName is "Board" or "BoardColumn")
-            operation.Description += " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release.";
+            operation.Description += " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032.";
         operation.Description = (operation.Description ?? "") +
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)
@@ -86,7 +86,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
         if (controller == typeof(WorkspaceAuditConsoleController)) operation.Description += " Company Owner/Admin only; project activity additionally requires an unrevoked project grant, including deleted projects. Filters combine with AND. Page size is at most 100 and offset at most 10000. Export tickets are protected, actor/company-bound and expire after five minutes; download repeats current authorization and regenerates at most 1000 records below the captured event ID watermark, with an explicit truncation flag. No security records, raw Details or private titles are exported. Export JSON is returned through authenticated CSRF-protected POST; tickets are not URLs or authority grants.";
         bool versionedWrite = controller == typeof(ProjectsController) && action.ActionName is "Update" or "Delete"
             || controller == typeof(TasksController) && action.ActionName is "Update" or "SetStatus" or "Delete"
-            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateProject" or "DeleteProject" or "UpdateTask" or "Status" or "DeleteTask";
+            || controller == typeof(WorkspaceWritesController) && action.ActionName is "UpdateProject" or "DeleteProject" or "UpdateTask" or "Status" or "DeleteTask" or "MoveTask";
         if (versionedWrite)
         {
             operation.Parameters ??= [];
@@ -94,6 +94,8 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
                 Required = controller == typeof(WorkspaceWritesController), Schema = new OpenApiSchema { Type = JsonSchemaType.String, Pattern = "^[1-9][0-9]{0,18}$" },
                 Description = "Revision returned by the loaded record, as a positive canonical decimal string within signed BIGINT. Scoped writes require it (428 if missing); legacy v1 accepts it optionally during cutover. Checked after authorization under the transaction gate. Stale revision returns 409 resource.conflict; no mutation or success audit commits. Never fetch a fresh revision automatically before retrying a draft." });
         }
+        if (controller == typeof(WorkspaceWritesController) && action.ActionName == "MoveTask")
+            operation.Description += " Atomic scoped move/reorder: requires X-Expected-Version for the moved task and captured versions for supplied previous/next adjacent target-column cards. Null endpoints denote true column boundaries, not a filtered page boundary. Stale revisions or nonadjacent positions return 409; foreign/missing neighbors return 404. Server chooses rank; rebalance touches at most 500 cards and increments changed card revisions. Status/rank/version/audit/outbox commit together; a no-op creates no history. Reload affected columns after a move/conflict; never silently replay with fetched revisions.";
         if (controller == typeof(AccountSecurityController)) operation.Description += " Account-security mail preview is default off and restricted to Development/Staging. Email requests return the same empty 202 for absent, unverified, cooling-down and accepted accounts. Tokens are submitted in JSON, expire within one hour and are never returned by this API. Confirmation/reset rotate the security stamp and reject replay; password change signs out all sessions. MFA accounts additionally require an authenticator code for password change/reauthentication; email-token password reset also requires an authenticator or unused recovery code and never disables MFA. Reauthentication is password-proven, five-minute and bound to the session stamp. No real email transport is enabled.";
         if (controller == typeof(WorkspacePolicyController)) operation.Description += " Policy and aggregate capacity require active Owner/Admin membership; only Owner can update, with current-password proof and expectedVersion. Fixed pilot quotas are server-controlled. Retention periods are review settings; automatic purge is false. Disabling company audit exports is checked again on ticket creation/download. Query parameters and unknown body fields are rejected.";
         if (controller == typeof(InvitationsController)) operation.Description += " Requires all workspace rollout flags and Invitations:Enabled (default false). Company Owner/Admin can invite Member/Guest; Editor/Viewer invitations require both company Owner/Admin and current private-project ownership. The API never returns raw tokens or token hashes. Intended verified recipient and current inviter authority are checked under the workspace gate. Pending invitations reserve company seats; acceptance consumes a one-use SHA-256 token and commits grants/audit atomically. Resend rotates the token without extending expiry, requires expectedVersion, one-minute cooldown and at most three resends. Creates and resends share a database-serialized 20/hour company send budget; exhaustion returns 429 invitation.send_limited with bounded Retry-After. ProviderAccepted means SendGrid API acceptance, not recipient delivery. Sending is default off and staged recipient allowlisting is required.";

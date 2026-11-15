@@ -39,6 +39,11 @@ public sealed class WorkspaceWrites(IWorkspaceTransactions transactions, TimePro
         await transactions.ExecuteAsync(context, projectId, ProjectOperation.ManageMembers, async (scope, ct) => { await scope.RemoveMemberAsync(userId, ct); return true; }, token);
     public async Task<TaskDto> CreateTaskAsync(WorkspaceWriteContext context, long projectId, CreateTask request, CancellationToken token = default) =>
         TaskService.Map(await transactions.ExecuteAsync(context, projectId, ProjectOperation.WriteTasks, (scope, ct) => scope.CreateTaskAsync(request, ct), token));
+    public async Task<TaskDto> MoveTaskAsync(WorkspaceWriteContext context, long projectId, long taskId, TaskMove move, CancellationToken token = default)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(20));
+        return TaskService.Map(await transactions.ExecuteAsync(context, projectId, ProjectOperation.WriteTasks, (scope, ct) => scope.MoveTaskAsync(taskId, move, ct), deadline.Token));
+    }
     public async Task<TaskDto> UpdateTaskAsync(WorkspaceWriteContext context, long taskId, TaskPatch patch, CancellationToken token = default) =>
         TaskService.Map(await transactions.ExecuteTaskAsync(context, taskId, ProjectOperation.WriteTasks, (scope, ct) => scope.UpdateTaskAsync(taskId, patch, ct), token));
     public async Task<TaskStatusDto> SetStatusAsync(WorkspaceWriteContext context, long taskId, TaskState status, CancellationToken token = default)

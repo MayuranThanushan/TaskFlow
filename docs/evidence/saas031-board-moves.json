@@ -1,0 +1,165 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-031",
+  "status": "implemented and verified locally; selected-host acceptance and SaaS-032 board UI remain separate gates",
+  "changes": [
+    "server-owned sparse BIGINT task ranks with order-preserving migration seventeen",
+    "versioned scoped POST move with captured neighbor revisions and exact canonical adjacency",
+    "bounded 500-card rebalance with task revisions and separate metadata-only bookkeeping facts",
+    "atomic status/rank/version/audit/outbox commit and rollback under current company/project locks",
+    "rank-default board reads, compatible TaskDto, explicit rank list sorting and typed cancellation/conflict-safe move client"
+  ],
+  "verification": {
+    "frontend": {
+      "passed": 188,
+      "files": 20,
+      "newMoveTests": 3,
+      "execution": "one worker; no timeout/assertion changes",
+      "lint": "passed",
+      "typecheck": "passed",
+      "productionBuild": "passed",
+      "initialBundleKilobytes": 482.76,
+      "initialBundleGzipKilobytes": 141.88
+    },
+    "operations": {
+      "passed": 40
+    },
+    "modelSnapshot": "no pending model changes",
+    "migration": {
+      "release": "SaaS-031",
+      "populatedUpgrade": "16 to 17",
+      "legacyAndRetainedTasks": 5,
+      "priorColumnOrderPreserved": true,
+      "versionsAndTimestampsUnchanged": true,
+      "fabricatedAuditOrOutbox": false,
+      "repeatedUpgradeNoop": true,
+      "schemaRemoved": true,
+      "hostedDatabaseTouched": false,
+      "freshSeventeenMigrationSchema": "verified by integration fixture"
+    },
+    "generatedTypes": "regenerated from live snapshot and drift check passed",
+    "sourceNoisePolicy": "TaskMoved watched update; TaskRankRebalanced excluded by source-kind gate and explicit integration assertion",
+    "backend": {
+      "passed": 452,
+      "failed": 0,
+      "skipped": 0,
+      "newRankMoveTests": 15,
+      "database": "dedicated seventeen-migration MySQL 8.4 schema removed",
+      "cases": [
+        {
+          "name": "BoardRankDestructiveDownMigrationIsRefused",
+          "outcome": "Passed",
+          "duration": "00:00:00.0006447"
+        },
+        {
+          "name": "BoardMoveCreationAndExistingStatusActionAppendUsingServerRanks",
+          "outcome": "Passed",
+          "duration": "00:00:00.8206369"
+        },
+        {
+          "name": "BoardMoveQueuedBehindRevocationRechecksCurrentProjectAuthority",
+          "outcome": "Passed",
+          "duration": "00:00:00.6582561"
+        },
+        {
+          "name": "BoardMoveReordersWithinColumnAndCurrentPositionIsANoop",
+          "outcome": "Passed",
+          "duration": "00:00:00.7709161"
+        },
+        {
+          "name": "BoardMoveRebalanceAt500CardLimitAndOversizedColumnFailsUnchanged",
+          "outcome": "Passed",
+          "duration": "00:00:02.7451609"
+        },
+        {
+          "name": "BoardMoveNeighborsUseTheSameAssigneeVisibilityAsBoardReads",
+          "outcome": "Passed",
+          "duration": "00:00:00.7625767"
+        },
+        {
+          "name": "BoardMoveConcurrentDifferentCardsCannotBothOccupyCapturedGap",
+          "outcome": "Passed",
+          "duration": "00:00:00.8069360"
+        },
+        {
+          "name": "BoardMoveStatusRankRevisionAuditAndOutboxCommitAsOneFact",
+          "outcome": "Passed",
+          "duration": "00:00:00.6896133"
+        },
+        {
+          "name": "BoardMoveRequiresCapturedTaskRevisionCsrfAndEditorAccess",
+          "outcome": "Passed",
+          "duration": "00:00:01.0030353"
+        },
+        {
+          "name": "BoardMoveRepairsExhaustedTailWithoutOverflowAndStatusWriteFailsSafely",
+          "outcome": "Passed",
+          "duration": "00:00:00.7488367"
+        },
+        {
+          "name": "BoardMoveConcurrentSameCardHasOneWinnerAndNoLostUpdate",
+          "outcome": "Passed",
+          "duration": "00:00:00.7549097"
+        },
+        {
+          "name": "BoardMoveOutboxFailureRollsBackRebalanceStatusVersionsAndHistory",
+          "outcome": "Passed",
+          "duration": "00:00:00.6685156"
+        },
+        {
+          "name": "BoardMoveDenseGapRebalancesWithIndependentRevisionAndMetadataFacts",
+          "outcome": "Passed",
+          "duration": "00:00:00.8919502"
+        },
+        {
+          "name": "BoardMoveRejectsForeignMissingSelfStaleAndNonadjacentAnchors",
+          "outcome": "Passed",
+          "duration": "00:00:00.7782453"
+        },
+        {
+          "name": "BoardMoveStrictPayloadNeverAcceptsRankOrActorAndDuplicateFields",
+          "outcome": "Passed",
+          "duration": "00:00:00.6669219"
+        }
+      ]
+    },
+    "secretScan": "redacted staged patch scan passed"
+  },
+  "contract": {
+    "paths": 72,
+    "operations": 94,
+    "newRoute": "POST /api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks/{taskId}/move",
+    "requiredHeader": "X-Expected-Version",
+    "neighborVersions": "required for supplied adjacent IDs",
+    "rankWireField": false,
+    "columnDefaultSort": "rank/asc",
+    "listDefaultSort": "createdAtUtc/desc",
+    "maximumRebalanceCards": 500,
+    "moveDeadlineSeconds": 20
+  },
+  "rollout": {
+    "migration": "20261115134543_BoardRank",
+    "migrationNumber": 17,
+    "newDependency": false,
+    "newWorker": false,
+    "hostedDatabaseTouched": false,
+    "realEmailSent": false,
+    "newFeatureFlag": false,
+    "existingPolicy": "workspace read/write, task roles, CSRF, administrator MFA proof and current scoped locks",
+    "downMigration": "refuses destructive rollback; roll forward or restore matching earlier backup/binary in a new schema"
+  },
+  "limitations": [
+    "Board UI, pointer/keyboard/click movement and optimistic reconciliation remain SaaS-032.",
+    "Positions must use full unfiltered canonical adjacency, not loaded/filtered page boundaries.",
+    "Rebalance can change neighboring task versions; response contains only moved task and clients reload affected columns.",
+    "500-card pilot bound is not unlimited enterprise capacity; oversized work is rejected before mutation.",
+    "Selected-host/TiDB migration, transaction/lock behavior, latency and hosted CI/container acceptance remain unverified."
+  ],
+  "next": "SaaS-032 responsive accessible board UI",
+  "documentation": {
+    "markdownFiles": 77,
+    "relativeLinksChecked": 706,
+    "brokenLinks": 0,
+    "activeMigrationInstructions": "seventeen through BoardRank; dated feature baselines identified as historical"
+  }
+}

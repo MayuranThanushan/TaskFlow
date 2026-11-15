@@ -7,6 +7,7 @@ public sealed record TaskPage(IReadOnlyList<TaskDto> Items, int Page, int PageSi
 public sealed record TaskBoardStatusCountDto(string Status, int TotalCount);
 public sealed record TaskBoardDto(string ProjectId, int TotalCount, IReadOnlyList<TaskBoardStatusCountDto> Columns);
 public sealed record TaskBoardFilters(string? Search = null, TaskPriority? Priority = null, long? AssigneeId = null);
+public sealed record TaskMove(TaskState Status, long? PreviousTaskId, long? PreviousVersion, long? NextTaskId, long? NextVersion);
 public sealed record CreateTask(string Title, string? Description, TaskPriority Priority, long? AssigneeId, DateTime? DueDateUtc);
 public readonly record struct FieldChange<T>(bool IsSpecified, T Value);
 public sealed record TaskPatch(FieldChange<string?> Title = default, FieldChange<string?> Description = default,

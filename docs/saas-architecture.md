@@ -116,5 +116,7 @@ Attachments require private storage, validation/scanning/quarantine, safe filena
 
 SaaS-030 implements the [board read model](saas/board-read-model.md): existing canonical statuses, full filtered counts and bounded independent column pages share list authorization. Rank/move transactions and accessible board UI remain SaaS-031/032.
 
+SaaS-031 implements [persisted rank and atomic moves](saas/board-moves.md) under the existing scoped transaction boundary, with version/adjacency fencing, bounded 500-card rebalance and metadata audit/outbox. SaaS-032 remains accessible board UI.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

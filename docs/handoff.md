@@ -88,5 +88,7 @@ No further numbered implementation step is assumed. The next work is closing the
 
 The current SaaS continuation includes [SaaS-030 board read APIs](saas/board-read-model.md). Rank/moves and board UI remain future SaaS-031/032 work; hosted readiness and commercial acceptance still require their recorded external gates.
 
+SaaS-031 [rank and atomic move APIs](saas/board-moves.md) are the current backend foundation; apply seventeen migrations. SaaS-032 remains the board UI and accessibility/reconciliation handoff. Hosted acceptance is still separate.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-030",
+  "release": "SaaS-031",
   "date": "2026-11-15",
-  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments plus default-off personal watchers, scoped grouping and deferred watcher noise controls. Local verification only; public hosting/provider gates remain open. Board counts and per-status pages use the exact scoped task-list predicates; no rank/move/UI is enabled.",
+  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments/watchers, board counts and atomic rank/move APIs. Local verification only; provider/selected-host gates remain open and board UI remains SaaS-032.",
   "operations": [
     {
       "operationId": "AccountSecurity_Capabilities",
@@ -1435,6 +1435,21 @@
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceWrites_MoveTask",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/tasks/{taskId}/move",
+      "controls": [
+        "Workspace write/lifecycle policy, CSRF and existing administrator MFA step-up; private project Owner/Editor task authority",
+        "Required captured task version after admission; parent and neighbor scope/deletion checks under company/project locks",
+        "Captured neighbor revisions plus exact unfiltered column adjacency; stale gap conflicts without automatic replay",
+        "Server-only sparse ranks; at most 500-card rebalance; status/rank/revisions/audit/outbox commit or roll back together"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.BoardMoves.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.ResourceVersions.cs"
       ]
     },
     {

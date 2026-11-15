@@ -1,5 +1,7 @@
 # Company and project invitation lifecycle
 
+Current deployment note (SaaS-031): publishing this checkout requires all seventeen migrations through BoardRank. Numbered migrations below identify this feature's original introduction. Follow the [current migration/deployment checklist](board-moves.md) and keep the matching binary/schema together.
+
 SaaS-020, 5 November 2026. The API now supports pending invitations, intended-recipient preview/acceptance, resend, revoke and effective expiry. This is a default-off API foundation; invite/manage/accept screens are now available in [SaaS-021](invitation-ui.md). The invitation mail command uses the existing private local/staging capture sink. No SMTP/provider, public signup launch or real recipient sending is enabled.
 
 ## Authority and grant rules

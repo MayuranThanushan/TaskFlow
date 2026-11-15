@@ -12,7 +12,7 @@ public sealed class ResourceVersionFilter(ResourcePrecondition precondition) : I
         var project = controller == "Projects" && name is "Update" or "Delete"
             || controller == "WorkspaceWrites" && name is "UpdateProject" or "DeleteProject";
         var task = controller == "Tasks" && name is "Update" or "SetStatus" or "Delete"
-            || controller == "WorkspaceWrites" && name is "UpdateTask" or "Status" or "DeleteTask";
+            || controller == "WorkspaceWrites" && name is "UpdateTask" or "Status" or "DeleteTask" or "MoveTask";
         if (!project && !task) return;
         precondition.Resource = project ? "Project" : "Task";
         long.TryParse(Convert.ToString(context.RouteData.Values[project ? "projectId" : "taskId"]), out var id);

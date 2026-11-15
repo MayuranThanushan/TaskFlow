@@ -1,5 +1,7 @@
 # Account verification, recovery and reauthentication
 
+Current deployment note (SaaS-031): publishing this checkout requires all seventeen migrations through BoardRank. Numbered migrations below identify this feature's original introduction. Follow the [current migration/deployment checklist](board-moves.md) and keep the matching binary/schema together.
+
 SaaS-019, 4 November 2026. TaskFlow now supports explicit email verification, generic password recovery, password reset/change and five-minute reauthentication. Global identity remains separate from company authorization. Password change and reauthentication work with the existing session configuration. Email-based workflows are a default-off Development/Staging preview using encrypted queued requests and the private local capture sink; no SMTP/provider or real customer sending is enabled.
 
 ## User flows

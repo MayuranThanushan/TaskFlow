@@ -19,6 +19,7 @@ public interface IWorkspaceWrites
     Task<ProjectMemberDto> AddMemberAsync(WorkspaceWriteContext context, long projectId, long userId, MembershipRole role, CancellationToken token = default);
     Task RemoveMemberAsync(WorkspaceWriteContext context, long projectId, long userId, CancellationToken token = default);
     Task<TaskDto> CreateTaskAsync(WorkspaceWriteContext context, long projectId, CreateTask request, CancellationToken token = default);
+    Task<TaskDto> MoveTaskAsync(WorkspaceWriteContext context, long projectId, long taskId, TaskMove move, CancellationToken token = default);
     Task<TaskDto> UpdateTaskAsync(WorkspaceWriteContext context, long taskId, TaskPatch patch, CancellationToken token = default);
     Task<TaskStatusDto> SetStatusAsync(WorkspaceWriteContext context, long taskId, TaskState status, CancellationToken token = default);
     Task DeleteTaskAsync(WorkspaceWriteContext context, long taskId, CancellationToken token = default);

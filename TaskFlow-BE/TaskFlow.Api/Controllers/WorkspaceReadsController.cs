@@ -174,8 +174,8 @@ public sealed class TaskBoardColumnQuery : TaskBoardQuery, IValidatableObject
 {
     [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
     [Range(1, 100)] public int PageSize { get; set; } = 20;
-    [Required, RegularExpression("^(title|priority|dueDateUtc|createdAtUtc)$")] public string SortBy { get; set; } = "createdAtUtc";
-    [Required, RegularExpression("^(asc|desc)$")] public string SortDirection { get; set; } = "desc";
+    [Required, RegularExpression("^(title|priority|dueDateUtc|createdAtUtc|rank)$")] public string SortBy { get; set; } = "rank";
+    [Required, RegularExpression("^(asc|desc)$")] public string SortDirection { get; set; } = "asc";
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if ((long)(Page - 1) * PageSize > int.MaxValue) yield return new ValidationResult("Page offset is too large.", [nameof(Page)]);

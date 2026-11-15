@@ -121,3 +121,6 @@ GRANT UPDATE (State, Outcome, CompletedAtUtc, AvailableAtUtc) ON taskflow.Watche
 -- GRANT SELECT (State, AvailableAtUtc, LeaseExpiresAtUtc, Attempts) ON taskflow.AccountEmailJobs TO 'taskflow_delivery_monitor'@'%';
 -- GRANT SELECT (State, DeliveryState, AvailableAtUtc, LeaseExpiresAtUtc, Attempts) ON taskflow.WorkspaceInvitations TO 'taskflow_delivery_monitor'@'%';
 -- GRANT SELECT (State, AvailableAtUtc) ON taskflow.WatcherNotificationIntents TO 'taskflow_delivery_monitor'@'%';
+
+-- SaaS-031 BoardRank: existing runtime Tasks INSERT/UPDATE grants cover rank writes.
+-- Apply migration seventeen with the migration identity; no worker DDL/rank-write grant is added.

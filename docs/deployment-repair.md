@@ -1,6 +1,6 @@
 # Repair the Render database readiness failure
 
-The 15 November 2026 logs show a successful container build followed by repeated `database.schema_mismatch` and readiness HTTP 503. The connected database's EF migration history differs from the image. This is not a frontend install/build failure. The current checkout expects sixteen migrations. Missing migrations, a different selected database or a newer database paired with an older image can all cause this code.
+The 15 November 2026 logs show a successful container build followed by repeated `database.schema_mismatch` and readiness HTTP 503. The connected database's EF migration history differs from the image. This is not a frontend install/build failure. The current checkout expects seventeen migrations. Missing migrations, a different selected database or a newer database paired with an older image can all cause this code.
 
 The repair keeps the database readiness gate. Render must receive HTTP 200 from `/api/v1/health/ready` before the release is accepted; changing the health path to liveness would hide the broken schema.
 

@@ -68,6 +68,7 @@ public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.HasIndex(task => new { task.WorkspaceId, task.ProjectId, task.Status });
         builder.HasOne<ApplicationUser>().WithMany().HasForeignKey(task => task.AssigneeId);
         builder.HasIndex(task => new { task.ProjectId, task.Status });
+        builder.HasIndex(task => new { task.WorkspaceId, task.ProjectId, task.Status, task.BoardRank, task.Id });
         builder.HasIndex(task => new { task.ProjectId, task.DueDateUtc });
         builder.HasQueryFilter(task => task.DeletedAtUtc == null && task.Project.DeletedAtUtc == null);
     }
@@ -78,7 +79,7 @@ public sealed class ActivityConfiguration : IEntityTypeConfiguration<ActivityLog
     public void Configure(EntityTypeBuilder<ActivityLog> builder)
     {
         builder.ToTable("ActivityLogs", table => table.HasCheckConstraint("CK_ActivityLogs_ActionType",
-            "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred')"));
+            "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred','TaskMoved','TaskRankRebalanced')"));
         builder.HasKey(activity => activity.Id);
         builder.HasOne<Workspace>().WithMany().HasForeignKey(activity => activity.WorkspaceId);
         builder.Property(activity => activity.ActionType).HasConversion<string>().HasMaxLength(50);

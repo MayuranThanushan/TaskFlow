@@ -302,7 +302,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("ActivityLogs", null, t =>
                         {
-                            t.HasCheckConstraint("CK_ActivityLogs_ActionType", "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred')");
+                            t.HasCheckConstraint("CK_ActivityLogs_ActionType", "`ActionType` IN ('ProjectCreated','ProjectUpdated','ProjectDeleted','MemberAdded','MemberRemoved','TaskCreated','TaskUpdated','TaskAssigned','TaskUnassigned','TaskStatusChanged','TaskDeleted','MemberRoleChanged','ProjectOwnershipTransferred','TaskMoved','TaskRankRebalanced')");
                         });
                 });
 
@@ -834,6 +834,9 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Property<long?>("AssigneeId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("BoardRank")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
@@ -888,6 +891,8 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("WorkspaceId", "ProjectId", "Status");
+
+                    b.HasIndex("WorkspaceId", "ProjectId", "Status", "BoardRank", "Id");
 
                     b.ToTable("Tasks", null, t =>
                         {

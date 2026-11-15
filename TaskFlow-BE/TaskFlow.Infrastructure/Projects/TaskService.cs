@@ -50,7 +50,7 @@ public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions
     {
         var actor = Actor(actorId);
         if (options.Page < 1 || options.PageSize is < 1 or > 100 || (long)(options.Page - 1) * options.PageSize > int.MaxValue
-            || options.Search?.Length > 200 || options.SortBy is not ("title" or "priority" or "dueDateUtc" or "createdAtUtc")
+            || options.Search?.Length > 200 || options.SortBy is not ("title" or "priority" or "dueDateUtc" or "createdAtUtc" or "rank")
             || options.SortDirection is not ("asc" or "desc") || options.Status is { } s && !Enum.IsDefined(s)
             || options.Priority is { } p && !Enum.IsDefined(p) || options.AssigneeId is <= 0) throw new ArgumentException("Invalid task list options.");
         await using var snapshot = await database.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, cancellationToken);
@@ -64,6 +64,7 @@ public sealed class TaskService(TaskFlowDbContext database, IProjectTransactions
         var total = await query.CountAsync(cancellationToken); var asc = options.SortDirection == "asc";
         var ordered = options.SortBy switch
         {
+            "rank" => asc ? query.OrderBy(t => t.BoardRank) : query.OrderByDescending(t => t.BoardRank),
             "title" => asc ? query.OrderBy(t => t.Title) : query.OrderByDescending(t => t.Title),
             "priority" => asc ? query.OrderBy(t => t.Priority == TaskPriority.Low ? 0 : t.Priority == TaskPriority.Medium ? 1 : 2) : query.OrderByDescending(t => t.Priority == TaskPriority.Low ? 0 : t.Priority == TaskPriority.Medium ? 1 : 2),
             "dueDateUtc" => asc ? query.OrderBy(t => t.DueDateUtc == null).ThenBy(t => t.DueDateUtc) : query.OrderBy(t => t.DueDateUtc == null).ThenByDescending(t => t.DueDateUtc),

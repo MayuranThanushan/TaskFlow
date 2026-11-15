@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createApiClient } from '../../api/client'
 import { reply } from '../../test/server'
-import { getBoard, getBoardColumn } from './board-api'
+import { getBoard, getBoardColumn, moveBoardTask } from './board-api'
 import type { BoardStatus } from './board-api'
 
 describe('board read client', () => {
@@ -42,4 +42,40 @@ describe('board read client', () => {
     await expect(getBoard(company, '3')).rejects.toMatchObject({ status: 404 })
     expect(sent).toBe(1)
   })
+  it('posts only captured position/revisions with paired CSRF and current company', async () => {
+    const writes: string[] = []
+    const draft = { status: 'Done' as const, previousTaskId: '7', previousVersion: '4', nextTaskId: '8', nextVersion: '2' }
+    const company = createApiClient(async c => {
+      if (c.url === '/auth/csrf') return reply(c, 200, { requestToken: 'paired' })
+      writes.push(c.url!)
+      expect(c.baseURL).toBe('/api/v2/workspaces/1')
+      expect(c.headers.get('X-Expected-Version')).toBe('3')
+      expect(c.headers.get('X-CSRF-TOKEN')).toBe('paired')
+      expect(JSON.parse(c.data)).toEqual(draft)
+      return reply(c, 200, { id: '5', status: 'Done', version: '4' })
+    }).forWorkspace('1')
+    const result = await moveBoardTask(company, '2', '5', '3', draft)
+    expect(result.version).toBe('4')
+    expect(writes).toEqual(['/projects/2/tasks/5/move'])
+  })
+  it('propagates a move conflict without fetching revisions or silently retrying', async () => {
+    const calls: string[] = []
+    const company = createApiClient(async c => {
+      calls.push(c.url!)
+      return c.url === '/auth/csrf' ? reply(c, 200, { requestToken: 'paired' }) : reply(c, 409, { code: 'board.position_conflict' })
+    }).forWorkspace('1')
+    await expect(moveBoardTask(company, '2', '5', '3', { status: 'Done' })).rejects.toMatchObject({ status: 409, code: 'board.position_conflict' })
+    expect(calls).toEqual(['/auth/csrf', '/projects/2/tasks/5/move'])
+  })
+  it('refuses invalid source revisions/IDs and cancels a pending move before dispatch', async () => {
+    let writes = 0
+    const root = createApiClient(async c => { writes++; return reply(c, 200, {}) }), company = root.forWorkspace('1')
+    for (const version of ['', '01', '0', '9223372036854775808']) expect(() => moveBoardTask(company, '2', '5', version, { status: 'Done' })).toThrow('Invalid revision')
+    expect(() => moveBoardTask(company, '2', '../5', '1', { status: 'Done' })).toThrow('Invalid task')
+    expect(() => moveBoardTask(root, '2', '5', '1', { status: 'Done' })).toThrow('Select a company')
+    const stop = new AbortController(); stop.abort()
+    await expect(moveBoardTask(company, '2', '5', '1', { status: 'Done' }, stop.signal)).rejects.toThrow()
+    expect(writes).toBe(0)
+  })
+
 })

@@ -1,5 +1,7 @@
 # Email abstraction, templates and local capture
 
+Current deployment note (SaaS-031): publishing this checkout requires all seventeen migrations through BoardRank. Numbered migrations below identify this feature's original introduction. Follow the [current migration/deployment checklist](board-moves.md) and keep the matching binary/schema together.
+
 SaaS-018 local foundation, 3 November 2026. The application exposes `IEmailSender` with an explicit recipient-bound `EmailRequest`, stable message ID, workspace, closed template and typed inputs. The separate worker has an offline preview command. This release has no SMTP/provider transport, automatic business-email enqueue, inbox UI or real sending. Staging delivery here means delivery to a private local capture sink; real staging mail/provider/bounce integration remains an acceptance gate before SaaS-023.
 
 ## What ships

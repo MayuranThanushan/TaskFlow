@@ -106,7 +106,7 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
     // List pages and board counts share the exact task visibility and filter query.
     private IQueryable<TaskItem> FilterTasks(WorkspaceReadContext context, long projectId, TaskListOptions options)
     {
-        if (options.Search?.Length > 200 || options.SortBy is not ("title" or "priority" or "dueDateUtc" or "createdAtUtc") || options.SortDirection is not ("asc" or "desc")
+        if (options.Search?.Length > 200 || options.SortBy is not ("title" or "priority" or "dueDateUtc" or "createdAtUtc" or "rank") || options.SortDirection is not ("asc" or "desc")
             || options.Status is { } s && !Enum.IsDefined(s) || options.Priority is { } p && !Enum.IsDefined(p) || options.AssigneeId is <= 0) throw new ArgumentException("Invalid task filters.");
         var query = Tasks(context).Where(t => t.ProjectId == projectId); var search = options.Search?.Trim();
         if (!string.IsNullOrEmpty(search)) query = query.Where(t => t.Title.Contains(search));
@@ -131,6 +131,7 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
         var total = await query.CountAsync(token); var asc = options.SortDirection == "asc";
         var ordered = options.SortBy switch
         {
+            "rank" => asc ? query.OrderBy(t => t.BoardRank) : query.OrderByDescending(t => t.BoardRank),
             "title" => asc ? query.OrderBy(t => t.Title) : query.OrderByDescending(t => t.Title),
             "priority" => asc ? query.OrderBy(t => t.Priority == TaskPriority.Low ? 0 : t.Priority == TaskPriority.Medium ? 1 : 2) : query.OrderByDescending(t => t.Priority == TaskPriority.Low ? 0 : t.Priority == TaskPriority.Medium ? 1 : 2),
             "dueDateUtc" => asc ? query.OrderBy(t => t.DueDateUtc == null).ThenBy(t => t.DueDateUtc) : query.OrderBy(t => t.DueDateUtc == null).ThenByDescending(t => t.DueDateUtc),

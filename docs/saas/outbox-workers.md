@@ -1,5 +1,7 @@
 # Transactional outbox and checkpoint worker
 
+Current deployment note (SaaS-031): publishing this checkout requires all seventeen migrations through BoardRank. Numbered migrations below identify this feature's original introduction. Follow the [current migration/deployment checklist](board-moves.md) and keep the matching binary/schema together.
+
 SaaS-017, 3 November 2026. Scoped business mutations now append immutable, ID-only outbox intent and initial delivery work in the same transaction as business data and its success audit. A separately hosted worker leases committed work, records immutable attempt transitions and acknowledges an internal metadata checkpoint. No email, inbox notification, webhook or customer-facing delivery adapter is enabled.
 
 ## Producer and scope
@@ -76,6 +78,8 @@ Use immutable attempt rows for replay/failure history. The worker can read only 
 Live MySQL tests cover atomic enqueue/rollback, ID-only canaries, competing claims, expiry/restart, stale/foreign/duplicate acknowledgements, a synchronized acknowledgement lock wait, retry/backoff, bounded replay, malformed versions, scoped FK rejection, immutable history and consumer failure sanitization. Metrics tests check actual names/units/state and zero tenant dimensions. A published HTTPS rehearsal uses real restricted producer and worker accounts, two independent worker OS processes and bounded restarts, proving no duplicate internal receipts and negative content/source/history permissions. A populated synthetic restore upgrades to eight migrations and confirms no historical outbox work appears before any new writes.
 
 See [release evidence](../evidence/saas017-outbox-workers.json). HTTP inventory remains 40 paths / 57 operations; no frontend delivery/inbox UI is shipped. Hosted CI/CodeQL/container verification, deployment grants, supervisor, backlog/storage/fairness load, collector/alerts, recovery and coordinated tenant cutover remain acceptance gates. SaaS-018 now adds [explicit offline email capture](email-capture.md), without connecting the checkpoint backlog to a sender. Real provider/recipient delivery remains gated.
+
+SaaS-031 source kinds Project.TaskMoved and Project.TaskRankRebalanced are recognized metadata checkpoints. Both remain scoped immutable source facts; replay never retargets notifications. Only TaskMoved participates in existing watcher capture; spacing-only bookkeeping does not notify.
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -38,7 +38,7 @@ internal sealed class AuditCapture
             string[] properties = entry.Entity switch
             {
                 Project => ["Name", "Description", "OwnerId", "DeletedAtUtc"],
-                TaskItem => ["Title", "Description", "Status", "Priority", "AssigneeId", "DueDateUtc", "DeletedAtUtc"],
+                TaskItem => ["BoardRank", "Title", "Description", "Status", "Priority", "AssigneeId", "DueDateUtc", "DeletedAtUtc"],
                 ProjectMember => ["Role", "RevokedAtUtc"], WorkspaceMembership => ["Role", "State"], Workspace => ["Name", "AuditRetentionDays", "DeletedContentRetentionDays", "LegalHold", "AuditExportsEnabled"], _ => []
             };
             foreach (var field in properties)
@@ -72,7 +72,8 @@ internal sealed class AuditCapture
                 changes = candidates.Select(c => c.Delta).Where(d => activity.ActionType switch
                 {
                     ActivityAction.TaskAssigned or ActivityAction.TaskUnassigned => d.Field == "assigneeId",
-                    ActivityAction.TaskStatusChanged => d.Field == "status",
+                    ActivityAction.TaskStatusChanged or ActivityAction.TaskMoved => d.Field is "status" or "boardRank",
+                    ActivityAction.TaskRankRebalanced => d.Field == "boardRank",
                     ActivityAction.TaskUpdated => d.Field is "title" or "description" or "priority" or "dueDateUtc",
                     ActivityAction.ProjectUpdated => d.Field is "name" or "description",
                     ActivityAction.TaskDeleted or ActivityAction.ProjectDeleted => d.Field == "deletedAtUtc",

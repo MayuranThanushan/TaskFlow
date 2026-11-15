@@ -102,5 +102,7 @@ The workspace UI refresh adds three component regressions (95 frontend tests tot
 
 SaaS-030 adds MySQL board tests for 364 cards, per-column completeness, list parity, filters/sorts, query bounds, company/role/deletion denials and a synchronized count/page snapshot. Typed-client tests cover scope, cancellation and safe denial. Current measured totals are recorded in [release evidence](evidence/saas030-board.json), not the historical step counts above.
 
+SaaS-031 adds move correctness, same-card and same-gap races, stale/foreign/hidden anchors, strict payload/CSRF/revision/role denials, no-op, 500-card rebalance, overflow, queued revocation and rollback tests. A populated 16-to-17 migration rehearsal verifies old order and unchanged versions/timestamps. See [release evidence](evidence/saas031-board-moves.json).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

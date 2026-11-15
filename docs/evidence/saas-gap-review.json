@@ -451,6 +451,8 @@
     {
       "order": 31,
       "id": "SaaS-031",
+      "status": "implemented and verified locally; selected-host and board UI acceptance remain gated",
+      "evidence": "docs/evidence/saas031-board-moves.json",
       "work": "Add server-owned rank and atomic move/reorder API",
       "dependencies": "030",
       "acceptance": "Status/rank/version/audit/outbox commit together; concurrent moves conflict/reconcile; bounded rebalance; unknown neighbor IDs and foreign-company cards rejected",

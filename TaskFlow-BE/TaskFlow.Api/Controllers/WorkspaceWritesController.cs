@@ -77,6 +77,12 @@ public sealed class WorkspaceWritesController(IWorkspaceWrites writes, IWorkspac
         var status = new TaskInputParser(ModelState).Status(body); if (!ModelState.IsValid) return ValidationProblem(ModelState);
         return Ok(await writes.SetStatusAsync(Scope(workspaceId), Id(taskId), status, token));
     }
+    [HttpPost("projects/{projectId}/tasks/{taskId}/move"), ProducesResponseType<TaskDto>(200)]
+    public async Task<IActionResult> MoveTask(string workspaceId, string projectId, string taskId, [FromBody] JsonElement body, CancellationToken token)
+    {
+        var move=new TaskInputParser(ModelState).Move(body);if(!ModelState.IsValid)return ValidationProblem(ModelState);
+        return Ok(await writes.MoveTaskAsync(Scope(workspaceId),Id(projectId),Id(taskId),move,token));
+    }
     [HttpDelete("tasks/{taskId}"), ProducesResponseType(204)]
     public async Task<IActionResult> DeleteTask(string workspaceId, string taskId, CancellationToken token)
     { await writes.DeleteTaskAsync(Scope(workspaceId), Id(taskId), token); return NoContent(); }
@@ -91,4 +97,13 @@ public sealed class WorkspaceProjectMemberRequest
 {
     [Required] public string UserId { get; set; } = "";
     public string Role { get; set; } = "Member";
+}
+
+public sealed class TaskMoveRequest
+{
+    [Required] public string Status { get; set; } = "";
+    public string? PreviousTaskId { get; set; }
+    public string? PreviousVersion { get; set; }
+    public string? NextTaskId { get; set; }
+    public string? NextVersion { get; set; }
 }

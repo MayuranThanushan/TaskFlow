@@ -92,5 +92,7 @@ Step 22 prepared application/migration packages with source and checksum receipt
 
 SaaS-030 board reads require no new migration, worker or provider setup. The existing workspace-read configuration controls both new GET routes. Deploy matching API/generated-client artifacts and verify [board rollout checks](saas/board-read-model.md).
 
+SaaS-031 requires migration seventeen (BoardRank), unlike the no-migration SaaS-030 read release. Back up/quiesce writers, apply the complete forward migration set and deploy a matching binary. Review [atomic moves and rollback constraints](saas/board-moves.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

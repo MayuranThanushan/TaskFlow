@@ -45,6 +45,21 @@ public sealed class TaskInputParser(ModelStateDictionary state)
         if ((!nullable && text.Length == 0) || text.Length > limit) state.AddModelError(field, "Text is empty or exceeds the allowed length.");
         return nullable && text.Length == 0 ? null : text;
     }
+    public TaskMove Move(JsonElement body)
+    {
+        var fields=Fields(body,["status","previousTaskId","previousVersion","nextTaskId","nextVersion"]);
+        TaskState status=TaskState.ToDo;
+        if(!fields.TryGetValue("status",out var raw)||raw.ValueKind!=JsonValueKind.String||!Enum.TryParse(raw.GetString(),false,out status)||!Enum.IsDefined(status)||status.ToString()!=raw.GetString())state.AddModelError("status","Choose ToDo, InProgress or Done.");
+        long? Number(string field,bool version=false)
+        {
+            if(!fields.TryGetValue(field,out var value)||value.ValueKind==JsonValueKind.Null)return null;
+            if(value.ValueKind==JsonValueKind.String&&WorkspaceReadFilter.TryId(value.GetString(),out var parsed)&&(!version||value.GetString()![0]!='0'))return parsed;
+            state.AddModelError(field,"Supply a positive decimal string or null.");return null;
+        }
+        var previous=Number("previousTaskId");var previousVersion=Number("previousVersion",true);var next=Number("nextTaskId");var nextVersion=Number("nextVersion",true);
+        if((previous is null)!=(previousVersion is null)||(next is null)!=(nextVersion is null))state.AddModelError("position","Each neighbor requires its captured version.");
+        return new(status,previous,previousVersion,next,nextVersion);
+    }
     public TaskPatch Patch(JsonElement body)
     {
         var fields = Fields(body, ["title", "description", "priority", "assigneeId", "dueDateUtc"]);

@@ -1,5 +1,7 @@
 # SaaS-026: due reminders and daily inbox digest
 
+Current deployment note (SaaS-031): publishing this checkout requires all seventeen migrations through BoardRank. Numbered migrations below identify this feature's original introduction. Follow the [current migration/deployment checklist](board-moves.md) and keep the matching binary/schema together.
+
 13 November 2026. In-app scheduling is implemented behind a separate default-off flag. This is not email delivery, public deployment or hosted acceptance. SendGrid staging account-security/invitation mail is unchanged.
 
 ## User behavior

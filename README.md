@@ -219,15 +219,17 @@ The implemented MVP is locally verified. Container execution, hosted CI and sele
 
 ## Deployment repair
 
-If Render builds successfully but readiness reports `database.schema_mismatch`, follow [the repair checklist](docs/deployment-repair.md). From `D:\TaskFlow`, run `.\scripts\Repair-HostedDatabase.ps1` to check, then `.\scripts\Repair-HostedDatabase.ps1 -Apply` with your private TiDB migration connection before deploying the same commit. The current release requires all sixteen migrations.
+If Render builds successfully but readiness reports `database.schema_mismatch`, follow [the repair checklist](docs/deployment-repair.md). From `D:\TaskFlow`, run `.\scripts\Repair-HostedDatabase.ps1` to check, then `.\scripts\Repair-HostedDatabase.ps1 -Apply` with your private TiDB migration connection before deploying the same commit. The current release requires all seventeen migrations.
 
 ## SaaS release status
 
-SaaS-030 adds the [board read model, full status counts and independently paged columns](docs/saas/board-read-model.md), plus a typed company-scoped client. The API contract now has 71 paths / 93 operations. No new migration is needed; the existing workspace-read gate applies. Rank/moves and the board UI remain SaaS-031/032. See the [documentation index](docs/documentation-index.md) for current implementation and rollout status across all guides.
+SaaS-031 adds [server-owned rank and atomic move/reorder APIs](docs/saas/board-moves.md). Apply all **seventeen migrations**, including BoardRank, before this binary. Moves require captured task and adjacent-neighbor revisions, preserve atomic audit/outbox history and bound rebalancing to 500 cards. Board reads now default to rank order; the API inventory is 72 paths / 94 operations. Next: SaaS-032 accessible board UI.
+
+SaaS-030 adds the [board read model, full status counts and independently paged columns](docs/saas/board-read-model.md), plus a typed company-scoped client. The API contract now has 71 paths / 93 operations. No new migration is needed; the existing workspace-read gate applies. SaaS-031 implements rank/moves; the board UI remains SaaS-032. See the [documentation index](docs/documentation-index.md) for current implementation and rollout status across all guides.
 
 SaaS-029 adds [delivery reliability, final invitation dispatch authority, private queue-health checks and revocation/load verification](docs/saas/delivery-reliability.md). No additional migration or hosted activation is required. Existing flags remain off; selected-host locking and alert routing remain rollout gates. SaaS-030 implements that read foundation; rank/moves follow in SaaS-031.
 
-SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Apply all sixteen migrations and updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. SaaS-029 adds the linked reliability verification above.
+SaaS-028 adds [personal task watchers, grouped inbox and quiet/digest controls](docs/saas/task-watchers.md). Its sixteenth migration is included in the current seventeen-migration requirement; apply updated runtime/scheduler grants before deploying. Watcher capture/delivery and the scheduler remain off in the free profile. SaaS-029 adds the linked reliability verification above.
 
 SaaS-027 adds [task comments, safe mentions and revision metadata](docs/saas/comments.md). Apply all fifteen migrations and the matching runtime grants before deploying this revision. Comments and mention delivery remain opt-in; both comment flags are disabled in the free deployment profile. Next: SaaS-028 watchers and notification grouping/noise controls.
 
@@ -235,7 +237,7 @@ SaaS-026 added [due reminders, daily inbox digest and delivery status](docs/saas
 
 SaaS-025 adds the default-off [company inbox, bulk read and recipient preferences](docs/saas/notification-inbox.md). Apply migration thirteen and new runtime grants before deploying this revision. Enable both API and frontend notification flags only in the reviewed preview. SaaS-026 scheduling is described above.
 
-SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current sixteen-migration deployment requirement; public-host acceptance remains pending.
+SaaS-024 added the default-off [notification API and transactional materialization](docs/saas/notifications.md), extended by the SaaS-025 inbox UI/preferences above. Its twelfth migration is included in the current seventeen-migration deployment requirement; public-host acceptance remains pending.
 
 SaaS-023 adds the [SendGrid staging setup, shared invitation send budget and onboarding support runbook](docs/saas/onboarding-acceptance.md). Configure your key privately with [Set-SendGridSecrets.ps1](scripts/Set-SendGridSecrets.ps1). Real delivery, bounce callbacks and selected-host acceptance remain explicit gates; public production email remains disabled.
 

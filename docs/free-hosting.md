@@ -26,7 +26,7 @@ dotnet restore TaskFlow.slnx --locked-mode
 dotnet build TaskFlow.slnx -c Release --no-restore
 ```
 
-- [ ] Set `ConnectionStrings__TaskFlow` privately in the current terminal to the migration connection. Do not put credentials in the command line or shell history. Apply all sixteen migrations explicitly (through SaaS-028 TaskWatchersAndNoiseControls) and the matching runtime grants before deploying the current binary:
+- [ ] Set `ConnectionStrings__TaskFlow` privately in the current terminal to the migration connection. Do not put credentials in the command line or shell history. Apply all seventeen migrations explicitly (through SaaS-031 BoardRank) and the matching runtime grants before deploying the current binary:
 
 ```powershell
 dotnet ef database update --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build

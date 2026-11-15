@@ -48,5 +48,7 @@ Verification includes live MySQL same-revision competing editors, no-op and stal
 
 Next: SaaS-016 tenant regression coverage, pilot quotas and privacy/retention controls.
 
+SaaS-031 [atomic moves](board-moves.md) require captured moved-task and adjacent-neighbor revisions. Rebalance bumps each changed card revision; callers reload affected columns and never silently retry drafts with fetched revisions.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

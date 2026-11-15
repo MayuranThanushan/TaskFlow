@@ -40,7 +40,7 @@ View updates opens the existing flat inbox with an opaque `taskId` filter; indiv
 
 ## Operator rollout checklist
 
-- [ ] Back up and rehearse recovery into a new schema. Apply migration sixteen (`20261115073915_TaskWatchersAndNoiseControls`) and all earlier migrations before deploying this binary.
+- [ ] Back up and rehearse recovery into a new schema. Apply all seventeen migrations through BoardRank before deploying the current binary; watchers were introduced in migration sixteen (`20261115073915_TaskWatchersAndNoiseControls`).
 - [ ] Apply [runtime and scheduler grants](../../deploy/database-roles.sql.example). Runtime may read/insert subscription/intent metadata, update only subscription state/version, and reschedule/cancel pending recipient intent through scoped services. It cannot retarget/delete subscriptions or intent.
 - [ ] The optional scheduler account needs metadata reads on watcher rows, source outbox, only comment identity/deletion columns, and only audit-ID/scope/actor/target/action columns; it must not read comment Body or identity secrets. Grant state/availability updates only on watcher intent; retain existing inbox-insert/cursor grants. Do not use migration/root/API credentials for the worker.
 - [ ] Enable existing workspace and Notifications flags plus `Notifications__WatchersEnabled=true` for the reviewed API/worker preview. Compile the frontend with `VITE_TASK_WATCHERS_ENABLED=true`. Both watcher flags remain false in the free Render blueprint.
@@ -51,6 +51,8 @@ View updates opens the existing flat inbox with an opaque `taskId` filter; indiv
 See [release evidence](../evidence/saas028-watchers.json). Hosted/container acceptance, real-provider delivery and manual assistive-technology review remain external gates. Next: SaaS-029 revocation races, delivery reliability/load and operational alert verification.
 
 SaaS-029 now adds [delivery reliability, synchronized revocation races, bounded backlog verification and private alert checks](delivery-reliability.md). Selected-host activation remains gated.
+
+SaaS-031 atomic TaskMoved facts participate in watcher capture under existing self-action, preference and revocation rules. TaskRankRebalanced spacing facts are deliberately excluded from watcher delivery.
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

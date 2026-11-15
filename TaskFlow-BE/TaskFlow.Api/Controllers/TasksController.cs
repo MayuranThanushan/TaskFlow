@@ -159,6 +159,6 @@ public sealed class TaskListQuery
     public string? Status { get; set; }
     public string? Priority { get; set; }
     public string? AssigneeId { get; set; }
-    [Required, RegularExpression("^(title|priority|dueDateUtc|createdAtUtc)$")] public string SortBy { get; set; } = "createdAtUtc";
+    [Required, RegularExpression("^(title|priority|dueDateUtc|createdAtUtc|rank)$")] public string SortBy { get; set; } = "createdAtUtc";
     [Required, RegularExpression("^(asc|desc)$")] public string SortDirection { get; set; } = "desc";
 }

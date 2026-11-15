@@ -10,7 +10,7 @@ public static class WatcherNotificationDelivery
     {
         if(db.Database.CurrentTransaction is null)throw new InvalidOperationException("Watcher capture requires the business transaction.");
         if(!db.WatchersEnabled||message.Id!=0||db.Entry(message).State!=EntityState.Added||message.SchemaVersion!=1||message.ProjectId is null||message.TaskId is null
-            ||message.Kind is not ("Comment.Created" or "Project.TaskUpdated" or "Project.TaskAssigned" or "Project.TaskUnassigned" or "Project.TaskStatusChanged"))return;
+            ||message.Kind is not ("Comment.Created" or "Project.TaskUpdated" or "Project.TaskAssigned" or "Project.TaskUnassigned" or "Project.TaskStatusChanged" or "Project.TaskMoved"))return;
         var watchers=await db.TaskWatchers.AsNoTracking().Where(w=>w.WorkspaceId==message.WorkspaceId&&w.TaskId==message.TaskId&&w.ProjectId==message.ProjectId&&w.IsWatching&&w.UserId!=message.ActorUserId).Take(91).ToArrayAsync(token);
         if(watchers.Length>90)throw new InvalidOperationException("Watcher recipient limit exceeded.");
         var watermark=await db.WorkspaceAuditLogs.Where(a=>a.WorkspaceId==message.WorkspaceId).Select(a=>(long?)a.Id).MaxAsync(token)??0;

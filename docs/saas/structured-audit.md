@@ -63,5 +63,7 @@ Local verification includes actual MySQL transaction/failure tests, cross-compan
 
 No live development/customer database was migrated by this implementation. Fresh hosted CI/CodeQL/container results and selected-host privilege/monitoring verification remain gates. The [SaaS-014 console](audit-console.md) extends these readers with filters, deleted-resource review and bounded exports.
 
+SaaS-031 adds TaskMoved and TaskRankRebalanced metadata facts with safe status/boardRank deltas. They commit with the task/rank/version/outbox mutation; rebalance does not copy private text or fan out watcher noise. Migration seventeen extends the database action allowlist.
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

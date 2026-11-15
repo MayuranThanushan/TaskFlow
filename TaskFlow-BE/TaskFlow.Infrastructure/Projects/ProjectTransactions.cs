@@ -167,6 +167,16 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
                 ?? throw new ProjectAccessException(ProjectAccessDecision.NotFound);
         }
 
+        public async Task<TaskItem> MoveTaskAsync(long taskId, TaskFlow.Application.Features.Tasks.TaskMove move, CancellationToken cancellationToken = default)
+        {
+            if (workspaceId is null) throw new InvalidOperationException("Moves require company scope.");
+            var task = await TaskForWriteAsync(taskId, ProjectOperation.WriteTasks, cancellationToken);
+            if (task.AssigneeId is { } assigned && !await IsEligibleAssigneeAsync(assigned, cancellationToken))
+                throw new TaskFlow.Application.Features.Tasks.TaskValidationException("assigneeId", "Choose an active company/project collaborator.");
+            await BoardOrdering.MoveAsync(database, task, move, RecordRank, cancellationToken);
+            void RecordRank(ActivityAction action, long id) => Record(action, taskId: id);
+            return task;
+        }
         public async Task<TaskItem> UpdateTaskAsync(long taskId, TaskFlow.Application.Features.Tasks.TaskPatch patch, CancellationToken cancellationToken = default)
         {
             var task = await TaskForWriteAsync(taskId, ProjectOperation.WriteTasks, cancellationToken);
@@ -200,6 +210,7 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
             if (task.Status != status)
             {
                 Record(ActivityAction.TaskStatusChanged, new Dictionary<string, string?> { ["from"] = task.Status.ToString(), ["to"] = status.ToString() }, task.Id);
+                task.BoardRank = await BoardOrdering.AppendAsync(database, project.Id, workspaceId, status, task.Id, cancellationToken);
                 task.Status = status;
             }
             return task;
@@ -220,7 +231,8 @@ public sealed class ProjectTransactions(IServiceScopeFactory scopeFactory, Resou
             if (workspaceId is { } capacityWorkspace) await PilotQuotas.TaskAsync(database, capacityWorkspace, project.Id, cancellationToken);
             var task = new TaskItem { ProjectId = project.Id, WorkspaceId = workspaceId, Title = TextRules.Required(request.Title, 200, "title"),
                 Description = TextRules.Optional(request.Description, 10_000, "description"), Priority = request.Priority,
-                Status = TaskState.ToDo, AssigneeId = request.AssigneeId, DueDateUtc = request.DueDateUtc };
+                Status = TaskState.ToDo, AssigneeId = request.AssigneeId, DueDateUtc = request.DueDateUtc,
+                BoardRank = await BoardOrdering.AppendAsync(database, project.Id, workspaceId, TaskState.ToDo, null, cancellationToken) };
             database.Tasks.Add(task);
             Events.Add(new(ActivityAction.TaskCreated, null, null, task));
             if (task.AssigneeId is { } userId) Events.Add(new(ActivityAction.TaskAssigned,

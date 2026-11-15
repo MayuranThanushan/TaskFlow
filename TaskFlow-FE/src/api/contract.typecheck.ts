@@ -8,6 +8,8 @@ type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B 
 // Compile-time consumers of the external contract. These fail if numeric IDs,
 // nullable required fields, status allowlists or PATCH nullability drift.
 export type ContractChecks = [
+  Assert<Equal<components['schemas']['TaskMoveRequest']['status'], 'ToDo' | 'InProgress' | 'Done'>>,
+  Assert<Equal<operations['WorkspaceWrites_MoveTask']['parameters']['header']['X-Expected-Version'], string>>,
   Assert<Equal<components['schemas']['TaskBoardDto']['projectId'], string>>,
   Assert<Equal<components['schemas']['TaskBoardStatusCountDto']['status'], 'ToDo' | 'InProgress' | 'Done'>>,
   Assert<Equal<components['schemas']['TaskBoardStatusCountDto']['totalCount'], number>>,

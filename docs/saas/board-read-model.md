@@ -1,5 +1,7 @@
 # SaaS-030: board read model, status counts and column pagination
 
+Current checkout (SaaS-031): board columns now default to rank/asc and migration seventeen is required. See [rank and atomic move rules](board-moves.md). The dated SaaS-030 sections below record the original read-only foundation and its release-time defaults.
+
 15 November 2026. Implemented read-only foundation for the project board. This release adds two company-scoped GET operations and a typed client; it does not add a board screen, persisted rank, drag/drop or move commands. Those are SaaS-031 and SaaS-032. There is no new database migration, dependency, worker or paid resource. The schema remains at sixteen migrations.
 
 ## API and filters
@@ -44,7 +46,7 @@ SaaS-032 will wire these reads into the accessible board UI. Do not label the ex
 
 ## Verification and rollout checklist
 
-- [ ] Deploy matching frontend/backend contract artifacts after the normal CI/release checks. No migration beyond the existing sixteen is required and no grants beyond current task-read privileges are introduced.
+- [ ] Deploy matching frontend/backend contract artifacts after the normal CI/release checks. The original SaaS-030 read model added no migration; the current SaaS-031 binary requires all seventeen migrations. Existing task-read privileges remain sufficient.
 - [ ] Confirm the existing workspace-read configuration and private-project access behavior in the selected environment.
 - [ ] In a disposable project, verify all three counts, empty columns and second pages for columns with more than 100 cards. Compare filters/sorting against task list results.
 - [ ] Verify guest/viewer reads, administrator-without-project denial, suspended/revoked membership, soft-deleted task/parent and mixed-company URLs.
@@ -54,6 +56,10 @@ SaaS-032 will wire these reads into the accessible board UI. Do not label the ex
 Automated tests cover 364 visible cards across three independently paged columns, full filtered counts, every supported sort mode, empty/far pages, canonical statuses, strict query validation, scope/deletion/role denials and synchronized concurrent creation. Client tests cover company capture, read-only transport, filters, ID validation, cancellation and access failure. See [release evidence](../evidence/saas030-board.json) and the [documentation index](../documentation-index.md).
 
 Next: SaaS-031 server-owned rank and atomic move/reorder API, then SaaS-032 board UI and keyboard/non-drag movement.
+
+## SaaS-031 current behavior amendment
+
+The SaaS-030 baseline above records its original created-date defaults and sixteen-migration scope. SaaS-031 now adds [persisted rank and atomic movement](board-moves.md): canonical board columns default to rank ascending, and all seventeen migrations are required by the current binary. Alternate title/priority/deadline/date sorts remain available. Movement validates neighbors in the full unfiltered canonical column, not an arbitrary filtered page. The existing TaskPage/TaskDto wire shapes are preserved; the current full API has 72 paths / 94 operations. Board UI remains SaaS-032.
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -121,5 +121,9 @@ Self-only watcher GET/PUT uses expectedVersion, current task visibility and shar
 
 Two scoped GET routes add board counts and independently paged columns. Summary counts cover all authorized matching tasks and always include ToDo/InProgress/Done. Column pages reuse TaskPage and the exact existing list query, with default page 1/20, max 100 and deterministic sorting. Status is a canonical path enum. Search/priority/assignee filters combine with AND; unsupported/repeated parameters are rejected. Each response uses a repeatable-read snapshot; cross-request pages remain live and can shift after mutations. No rank/move/UI or new migration is implied. See [board read contract](../saas/board-read-model.md).
 
+## SaaS-031 rank/move amendment
+
+POST scoped project/task move uses required X-Expected-Version plus captured previous/next card versions and exact current canonical column adjacency. Missing/foreign neighbors return safe 404; stale revisions/positions return 409 without overwrite. The server chooses rank and rebalances at most 500 cards. Status/rank/versions/metadata audit/outbox commit together; no-op history is suppressed. Rank is not a TaskDto-editable field. Board columns default rank/asc, list defaults stay created-date/desc and can explicitly sort by rank. Migration seventeen preserves prior existing-task order and extends the audit event constraint. See [full rules and rollout](../saas/board-moves.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

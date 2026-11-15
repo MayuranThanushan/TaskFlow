@@ -34,5 +34,7 @@ Step 16 [assignment/removal concurrency](assignment-concurrency.md) is now verif
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge owner/member editing, nullable clearing with omitted-value preservation, status/reload/progress refresh, member deletion 403, owner confirmation/Escape/deletion/list refresh and deleted deep-link rejection. Mobile edit/confirmation layouts passed overflow checks, and the confirmation screenshot was inspected. The disposable database was removed and verification services stopped.
 
+SaaS-031 create/status paths maintain server-owned append ranks; the new scoped POST move validates task and neighbor revisions and preserves atomic status/rank/audit/outbox. See [move API](saas/board-moves.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

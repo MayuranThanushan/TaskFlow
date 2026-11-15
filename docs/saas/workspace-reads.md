@@ -58,5 +58,7 @@ SaaS-010 now provides [scoped writes and composite references](workspace-writes.
 
 The original nine-route inventory above is the SaaS-009 baseline. SaaS-030 adds [board summary counts and independently paged status columns](board-read-model.md) using this same workspace gate, repeatable-read snapshot, private-project visibility and task filters. No board-specific grant, worker, migration or new status is introduced. The free Render blueprint currently enables workspace reads explicitly; application defaults remain off.
 
+SaaS-031 switches canonical board-column reads to stored rank ascending and supports explicit rank list sorting. Visibility/count predicates remain shared; TaskDto is unchanged. See [move/order contract](board-moves.md).
+
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

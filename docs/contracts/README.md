@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003 foundation, updated through SaaS-030. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 71 paths / 93 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003 foundation, updated through SaaS-031. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 72 paths / 94 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -15,6 +15,8 @@ SaaS-026 extends the existing preferences GET/PUT with opt-in reminder/digest se
 SaaS-028 adds watcher GET/PUT and grouped notification GET (release-time inventory: 69 paths / 91 operations), optional taskId source filtering, TaskWatched kind and watcherDeliveryMode/quiet-hour preferences. See [watcher and grouping rules](../saas/task-watchers.md).
 
 SaaS-030 adds GET board counts and GET independently paged status columns (71 paths / 93 operations). Both use the existing workspace read gate, project visibility and task filters. Status in the column path is a canonical enum, not a resource ID. See [board semantics](../saas/board-read-model.md).
+
+SaaS-031 adds versioned POST task move (72 paths / 94 operations), strict canonical status/neighbor inputs and captured neighbor revisions. TaskDto stays compatible: rank is internal. Board-column defaults become rank/asc; explicit list rank sort is also available. New audit action enums are TaskMoved/TaskRankRebalanced. Apply migration seventeen; see [move contract](../saas/board-moves.md).
 
 ## Generate a reviewed contract change
 
