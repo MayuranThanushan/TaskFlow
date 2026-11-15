@@ -6,6 +6,7 @@ public sealed class UserNotification
     public long Id { get; set; }
     public long WorkspaceId { get; set; }
     public long RecipientUserId { get; set; }
+    public long? CommentId { get; set; }
     public long? EventId { get; set; }
     public string? ScheduleKey { get; set; }
     public DateTime? SourceDueDateUtc { get; set; }

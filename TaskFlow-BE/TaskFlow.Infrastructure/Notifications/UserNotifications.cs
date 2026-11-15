@@ -24,6 +24,7 @@ public sealed class UserNotifications(TaskFlowDbContext db, TimeProvider clock) 
         && db.Projects.Any(p => p.Id == n.ProjectId && p.WorkspaceId == c.WorkspaceId && p.DeletedAtUtc == null
             && db.WorkspaceMemberships.Any(m => m.WorkspaceId == c.WorkspaceId && m.UserId == p.OwnerId)
             && (p.OwnerId == c.ActorId || db.ProjectMembers.Any(m => m.WorkspaceId == c.WorkspaceId && m.ProjectId == p.Id && m.UserId == c.ActorId && m.RevokedAtUtc == null)))
+        && (n.CommentId == null || db.TaskComments.Any(comment => comment.WorkspaceId == c.WorkspaceId && comment.Id == n.CommentId && comment.TaskId == n.TaskId && comment.DeletedAtUtc == null))
         && db.Tasks.Any(t => t.Id == n.TaskId && t.ProjectId == n.ProjectId && t.WorkspaceId == c.WorkspaceId && t.DeletedAtUtc == null && (n.ScheduleKey == null || (t.AssigneeId == c.ActorId && t.Status != TaskState.Done && t.DueDateUtc == n.SourceDueDateUtc))));
 
     public async Task<NotificationPage> ListAsync(WorkspaceReadContext c, int page, int pageSize, bool unreadOnly, CancellationToken token = default)

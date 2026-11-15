@@ -306,6 +306,45 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.CommentRevision", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<long>("ActorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("WorkspaceId", "CommentId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("CommentRevisions", t =>
+                        {
+                            t.HasCheckConstraint("CK_CommentRevisions_Action", "Action IN ('Created','Edited','Deleted')");
+                        });
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.InvitationTransition", b =>
                 {
                     b.Property<long>("Id")
@@ -721,6 +760,56 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("SecurityEvents", (string)null);
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.TaskComment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("varchar(5000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("EditedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L);
+
+                    b.Property<long>("WorkspaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId", "AuthorId");
+
+                    b.HasIndex("WorkspaceId", "TaskId", "Id");
+
+                    b.ToTable("TaskComments", t =>
+                        {
+                            t.HasCheckConstraint("CK_TaskComments_Body", "(DeletedAtUtc IS NULL AND CHAR_LENGTH(TRIM(Body)) BETWEEN 1 AND 5000) OR (DeletedAtUtc IS NOT NULL AND Body = '')");
+                        });
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.TaskItem", b =>
                 {
                     b.Property<long>("Id")
@@ -801,6 +890,9 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("CommentId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
@@ -837,6 +929,8 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("WorkspaceId", "CommentId");
+
                     b.HasIndex("WorkspaceId", "EventId");
 
                     b.HasIndex("WorkspaceId", "RecipientUserId", "EventId")
@@ -851,7 +945,7 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("UserNotifications", t =>
                         {
-                            t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)");
+                            t.HasCheckConstraint("CK_UserNotifications_Kind", "(Kind = 'TaskAssigned' AND EventId IS NOT NULL AND CommentId IS NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind = 'TaskMention' AND EventId IS NOT NULL AND CommentId IS NOT NULL AND ScheduleKey IS NULL AND SourceDueDateUtc IS NULL) OR (Kind IN ('TaskDue', 'TaskDigest') AND EventId IS NULL AND CommentId IS NULL AND ScheduleKey IS NOT NULL AND SourceDueDateUtc IS NOT NULL)");
                         });
                 });
 
@@ -1303,6 +1397,22 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Task");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.CommentRevision", b =>
+                {
+                    b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TaskFlow.Domain.Entities.TaskComment", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "CommentId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.InvitationTransition", b =>
                 {
                     b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
@@ -1404,6 +1514,15 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("TaskFlow.Domain.Entities.TaskComment", b =>
+                {
+                    b.HasOne("TaskFlow.Domain.Entities.WorkspaceMembership", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("TaskFlow.Domain.Entities.TaskItem", b =>
                 {
                     b.HasOne("TaskFlow.Infrastructure.Identity.ApplicationUser", null)
@@ -1427,6 +1546,12 @@ namespace TaskFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TaskFlow.Domain.Entities.UserNotification", b =>
                 {
+                    b.HasOne("TaskFlow.Domain.Entities.TaskComment", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "CommentId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TaskFlow.Domain.Entities.OutboxEvent", "Event")
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "EventId")

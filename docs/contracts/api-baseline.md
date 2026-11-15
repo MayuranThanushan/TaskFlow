@@ -108,3 +108,7 @@ The [typed contract workflow](README.md) replaces the earlier route-only snapsho
 ## SaaS-026 scheduling amendment
 
 Notification kinds now include TaskDue and TaskDigest; deliveryStatus InAppDelivered denotes only a committed inbox row. Preferences add dueReminderEnabled, dailyDigestEnabled, timeZoneId (IANA), digestHour (0..23). Both switches default off, UTC/09:00. Supply all four scheduling request values or omit all to preserve them; existing revision/CSRF/MFA rules apply. Scheduled notifications also require the same current assignee, unchanged deadline and incomplete task on reads/counts/writes. [Detailed scheduling rules](../saas/notification-scheduling.md).
+
+## SaaS-027 comment amendment
+
+Scoped task comments add list/create, PUT/DELETE by comment ID, metadata-only revision history and bounded project mention candidate search. All routes require Comments plus workspace flags; task authorization precedes validation. PUT/DELETE use a required expectedVersion body; 409 preserves a stale draft. Text is escaped plain text; only canonical project-local mention IDs resolve. TaskMention inbox rows contain no comment body. See [comment limits, history and permission rules](../saas/comments.md). Current inventory: 67 paths / 88 operations.

@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-027",
+  "status": "implemented and verified locally; default off; not publicly deployed",
+  "features": [
+    "plain-text company/task comments and explicit project-local mention picker",
+    "author edits and author/project-owner confirmed text-clearing deletion",
+    "metadata-only append-only revision history and explicit version conflict protection",
+    "transactional metadata outbox and delta-only non-self mention notifications honoring in-app mute",
+    "task visibility before validation; current authority under shared company gate; bounded history/search/paging"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 389,
+      "failed": 0,
+      "skipped": 0,
+      "newTests": 11,
+      "database": "dedicated local fifteen-migration MySQL schema removed after run",
+      "finalFocusedRegression": {
+        "passed": 10,
+        "scope": "comment CRUD/permission/mute/rollback and parsing; includes added guest and same-company private-project cases"
+      }
+    },
+    "frontend": {
+      "passed": 175,
+      "files": 18,
+      "failed": 0,
+      "newTests": 5,
+      "lint": "passed",
+      "build": "passed with comments/inbox preview enabled",
+      "regression": "new fast-response double-click test found and verified successful-action latching fix"
+    },
+    "operations": {
+      "passed": 35
+    },
+    "contract": {
+      "paths": 67,
+      "operations": 88,
+      "snapshotAndTypes": "regenerated from live controller/DTO schema; drift and inventory checks passed"
+    },
+    "publishedHttpsRehearsal": {
+      "passed": true,
+      "checks": 7,
+      "identity": "separate restricted API database account; temporary schema/accounts removed",
+      "verified": [
+        "real browser post/mention/edit/delete/history",
+        "exactly one initial mention notification; unchanged recipient not replayed on edit",
+        "deleted body empty in database; tombstone and three metadata revisions persist",
+        "runtime cannot retarget/delete comments or update/delete revisions",
+        "foreign actor and revoked project requests return opaque 404"
+      ]
+    },
+    "browser": {
+      "journeys": 3,
+      "accessibilityScans": 6,
+      "widths": [
+        1440,
+        320
+      ],
+      "violations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "visualReview": "mobile expanded discussion and revision history screenshot inspected"
+    },
+    "renderBlueprint": "validated against cached official schema; free plan and disabled flags retained"
+  },
+  "rollout": {
+    "migration": "20261115061917_TaskComments",
+    "migrationNumber": 15,
+    "backendFlag": "Comments:Enabled=false",
+    "frontendFlag": "VITE_COMMENTS_ENABLED=false",
+    "runtimeGrants": "SELECT/INSERT comments/history; UPDATE body/version/edit/delete timestamps only; append-only revision history",
+    "publicActivation": "unchanged; disabled",
+    "newDependencies": false,
+    "downgrade": "refuses destructive rollback; disable and roll forward or restore verified backup into a new schema"
+  },
+  "limitations": [
+    "flat comments only; attachments, replies, watchers and grouping not introduced",
+    "metadata history does not retain former text or join project activity/company audit export",
+    "no automatic comment purge; backups retain capture-time content under existing recovery policy",
+    "no mention email; real SendGrid/provider and hosted CI/container acceptance remain external gates",
+    "no public hosting activation or live/shared database migration performed",
+    "manual assistive-technology review remains open"
+  ]
+}

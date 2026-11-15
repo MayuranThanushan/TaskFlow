@@ -65,4 +65,4 @@ The published HTTPS browser journey checks recipient read/unread/bulk/filter/tas
 
 Preferences affect future materialization and do not purge data. Review retention/legal hold and restored preferences under the existing recovery runbook. Support must not turn a revoked notification back into an access grant or overwrite another user's preferences. New events arriving after a page action remain unread; that is expected. Account security is the recovery path for an administrator step-up error.
 
-SaaS-026 now extends this inbox with [due reminders, daily digest task cards and delivery status](notification-scheduling.md). Scheduling is separately gated and defaults off. Next task: SaaS-027 comments and mentions.
+SaaS-026 now extends this inbox with [due reminders, daily digest task cards and delivery status](notification-scheduling.md). Scheduling is separately gated and defaults off. SaaS-027 now adds [task comments and project-local mentions](comments.md). Next task: SaaS-028 watchers and notification grouping/noise controls.

@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-026",
-  "date": "2026-11-13",
-  "scope": "Current identity/company/MFA and staged SendGrid controls plus default-off recipient inbox, opted-in due reminders and local-time daily digest task cards. Local evidence only; hosting and real provider delivery remain gated.",
+  "release": "SaaS-027",
+  "date": "2026-11-15",
+  "scope": "Current identity/company/MFA, staged SendGrid, default-off inbox/scheduling and task comments with project-local mentions. Local verification only; hosted and provider gates remain open.",
   "operations": [
     {
       "operationId": "Activity_List",
@@ -1327,6 +1327,108 @@
         "docs/saas/notification-inbox.md",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
+    },
+    {
+      "operationId": "Comments_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Candidates",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/mention-candidates",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_History",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}/history",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Edit",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Delete",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
     }
   ],
   "nonHttpEntryPoints": [
@@ -1617,6 +1719,18 @@
       "TaskFlow-BE/TaskFlow.Tests/NotificationScheduleTests.cs",
       "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs",
       "docs/evidence/saas026-scheduling.json"
+    ]
+  },
+  "commentPolicy": {
+    "controls": [
+      "1000 comments/task including tombstones, up to 100 text revisions plus final deletion",
+      "Latest text only; soft deletion clears body; no historical text in history, outbox or notifications",
+      "No company-admin private-project override; guest/viewer read-only",
+      "Candidate search 2-100 characters, at most 10 public names/opaque IDs; max 10 distinct mentions/comment"
+    ],
+    "evidenceSources": [
+      "docs/saas/comments.md",
+      "TaskFlow-BE/TaskFlow.Infrastructure/Projects/TaskComments.cs"
     ]
   }
 }

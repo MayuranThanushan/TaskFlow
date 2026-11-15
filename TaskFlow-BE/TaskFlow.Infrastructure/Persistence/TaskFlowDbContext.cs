@@ -12,6 +12,8 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
 {
     private readonly AuditCapture auditCapture = new();
     public DbSet<NotificationScheduleCursor> NotificationScheduleCursors => Set<NotificationScheduleCursor>();
+    public DbSet<TaskComment> TaskComments => Set<TaskComment>();
+    public DbSet<CommentRevision> CommentRevisions => Set<CommentRevision>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
     public bool NotificationsEnabled => configuration?.GetValue<bool>("Notifications:Enabled") == true;
@@ -82,8 +84,9 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
         var now = clock.GetUtcNow().UtcDateTime;
         foreach (var entry in ChangeTracker.Entries().ToList())
         {
-            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition) && entry.State is EntityState.Modified or EntityState.Deleted)
+            if (entry.Entity is (ActivityLog or WorkspaceAuditLog or SecurityEvent or OutboxEvent or OutboxAttempt or InvitationTransition or CommentRevision) && entry.State is EntityState.Modified or EntityState.Deleted)
                 throw new InvalidOperationException("Activity history is append-only.");
+            if (entry.Entity is TaskComment && entry.State == EntityState.Deleted) throw new InvalidOperationException("Comments require soft deletion.");
             if (entry.Entity is UserNotification && (entry.State == EntityState.Deleted || entry.State == EntityState.Modified && entry.Properties.Any(p => p.IsModified && p.Metadata.Name != nameof(UserNotification.ReadAtUtc))))
                 throw new InvalidOperationException("Only notification read state is mutable.");
             if (entry.State == EntityState.Deleted && entry.Entity is Project or TaskItem)

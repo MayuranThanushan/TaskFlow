@@ -94,3 +94,8 @@ GRANT UPDATE (InAppEnabled, TaskAssignedEnabled, DueReminderEnabled, DailyDigest
 -- GRANT SELECT, INSERT ON taskflow.UserNotifications TO 'taskflow_notifications_worker'@'%';
 -- GRANT SELECT, INSERT ON taskflow.NotificationScheduleCursors TO 'taskflow_notifications_worker'@'%';
 -- GRANT UPDATE (LastTaskId, LastBatchAtUtc) ON taskflow.NotificationScheduleCursors TO 'taskflow_notifications_worker'@'%';
+
+-- SaaS-027 comments: latest text only, tombstone deletion, append-only metadata revisions.
+GRANT SELECT, INSERT ON taskflow.TaskComments TO 'taskflow'@'%';
+GRANT UPDATE (Body, Version, EditedAtUtc, DeletedAtUtc) ON taskflow.TaskComments TO 'taskflow'@'%';
+GRANT SELECT, INSERT ON taskflow.CommentRevisions TO 'taskflow'@'%';
