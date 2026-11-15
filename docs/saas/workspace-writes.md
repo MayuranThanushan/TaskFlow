@@ -70,3 +70,6 @@ dotnet ./TaskFlow.Api.dll
 MySQL DDL is not generally transactionally reversible. A partially failed FK migration may leave some constraints/indexes installed without a migration-history entry. Keep maintenance active and use reviewed forward repair or restore the coordinated snapshot; do not blindly rerun or use a destructive Down migration as recovery. Backfill DML rollback/retry is separate from DDL recovery.
 
 The local suite adds nine HTTP/MySQL cases covering scoped CRUD/CSRF, server-derived scope, company/private-project denials, foreign members/assignees, PATCH, suspension, queue rechecks, both assignment/removal orders, failed-activity rollback and direct SQL constraint rejection. See [verification evidence](../evidence/saas010-writes.json), including the populated-backup upgrade and published HTTPS checks. Hosted CI/container and selected-host rollout remain separate gates. Next is SaaS-011 company navigation and resource keys.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

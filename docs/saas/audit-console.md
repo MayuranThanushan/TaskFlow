@@ -47,3 +47,6 @@ Backend MySQL tests exercise intersected filters, legacy outcomes, deleted histo
 Run the existing full backend, frontend and contract checks. In a disposable preview instance run companies.cjs, lifecycle.cjs, structured-audit.cjs and then audit-console.cjs using the same synthetic fixture. See [browser setup](../../tests/browser/README.md) and [release evidence](../evidence/saas014-audit-console.json). Hosted preview CI, selected-host workload measurements, human accessibility review and coordinated tenant cutover remain release gates; no live database or service is changed by local verification.
 
 Next: SaaS-015 expected-version conflicts and draft-preserving conflict resolution.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

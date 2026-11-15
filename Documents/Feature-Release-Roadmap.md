@@ -6,7 +6,7 @@ Read the [gap assessment](Product-Gap-Assessment.md) for evidence and the [SaaS 
 
 ## Release sequence
 
-SaaS-025 adds the local [inbox UI and self/company preferences](../docs/saas/notification-inbox.md) on 12 November 2026. Migration thirteen and matching API/frontend flags are required; task-assignment email remains unavailable. SaaS-026 is implemented locally with [due reminders and daily inbox digest task cards](../docs/saas/notification-scheduling.md), a separate disabled scheduler gate and migration fourteen. SaaS-027 adds [task comments and project-local mentions](../docs/saas/comments.md) locally on 15 November 2026 with migration fifteen. SaaS-028 adds [personal watchers, grouping and noise controls](../docs/saas/task-watchers.md) locally on 15 November 2026 with migration sixteen. SaaS-029 reliability/revocation/load verification is next; hosted/commercial acceptance remains gated.
+SaaS-025 adds the local [inbox UI and self/company preferences](../docs/saas/notification-inbox.md) on 12 November 2026. Migration thirteen and matching API/frontend flags are required; task-assignment email remains unavailable. SaaS-026 is implemented locally with [due reminders and daily inbox digest task cards](../docs/saas/notification-scheduling.md), a separate disabled scheduler gate and migration fourteen. SaaS-027 adds [task comments and project-local mentions](../docs/saas/comments.md) locally on 15 November 2026 with migration fifteen. SaaS-028 adds [personal watchers, grouping and noise controls](../docs/saas/task-watchers.md) locally on 15 November 2026 with migration sixteen. SaaS-029 [reliability/revocation/load verification](../docs/saas/delivery-reliability.md) is complete locally. SaaS-030 adds the [board read foundation](../docs/saas/board-read-model.md); SaaS-031 rank/moves and SaaS-032 board UI remain next. Hosted/commercial acceptance remains gated.
 
 SaaS-024 adds the local [recipient notification foundation](../docs/saas/notifications.md) on 12 November 2026, with assignment materialization, list/count and read/unread APIs behind a default-off flag. Migration twelve and new grants are required. Inbox UI/preferences remain SaaS-025; hosted acceptance is not claimed.
 
@@ -133,3 +133,6 @@ Custom workflow/column editors are deferred until actual usage justifies them. D
 ## Recommended next execution
 
 SaaS-001 design is recorded; finish the SaaS-002 hosted gates and proceed with SaaS-003 typed contracts before the tenant migration prototype. Produce a tested legacy-to-workspace mapping before implementing invitation emails. Adopted boundaries and remaining proposals are in the architecture document; hosting/mail/billing providers remain decisions at the point they are needed. This roadmap itself creates no external accounts/issues/releases and changes no runtime behavior.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -25,3 +25,6 @@ Oracle's EF configuration extension is `UseMySQL`, not Pomelo's `UseMySql`. Prov
 ## Step 05 correction and verification
 
 The originally chosen 8.4.12 was listed in release notes but its Windows archive was unavailable. Oracle publishes 8.4.11 on its actual download page; the selected target and Compose recipe were corrected accordingly. The portable 8.4.11 ZIP matched Oracle's published checksum. Initial migrations and 16 tests passed against isolated live databases, and the server was stopped afterward. Earlier no-live-database statements in this record describe step 02 evidence, not the current state. See [database setup](../database-setup.md).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

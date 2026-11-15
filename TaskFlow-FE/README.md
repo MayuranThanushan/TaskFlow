@@ -22,3 +22,8 @@ Vitest uses jsdom and Testing Library; use `npm run test:watch` for interactive 
 The isolated [browser review suite](../tests/browser/README.md) covers published-app journeys, accessibility, keyboard behavior, security and local demo timings. Its dependencies are separate from this application. See [step 21 evidence](../docs/verification-review.md).
 
 The [workspace UI refresh](../docs/workspace-ui.md) covers the modern sidebar, responsive project/task screens, inline task status, activity center/JSON export, and account/form improvements. See src/workspace.css for shared workspace tokens and responsive rules. Run node tests/browser/workspace.cjs from the repository root for the isolated mocked-API UI review.
+
+SaaS-030 adds a typed read-only board client in src/features/board/board-api.ts and regenerated wire types. It uses captured company clients, cancellation and server access rules. Board UI is not shipped yet; see the [read model](../docs/saas/board-read-model.md) and current release index.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

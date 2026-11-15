@@ -46,3 +46,6 @@ Three new MySQL HTTP tests cover flags/session/CSRF/body validation, two-company
 The published HTTPS company journey is `node tests/browser/companies.cjs`; use the disposable setup and credentials in [browser verification](../../tests/browser/README.md). It creates companies/projects/tasks and checks switching, reloads, cross-company denial and desktop/mobile accessibility. It is separate from the default v1 browser suite, which keeps flags off in hosted CI until the coordinated preview job is configured. See [local evidence](../evidence/saas011-navigation.json).
 
 Next is SaaS-012: company/project role lifecycle, suspension/leave, ownership transfer, assignment cleanup and company audit coverage. Company quotas, non-null scope, legacy route retirement, hosted CI/container evidence and the full acceptance/cutover remain open. Do not market this preview as completed tenant enforcement.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

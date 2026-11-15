@@ -1,5 +1,7 @@
 # TaskFlow ordered delivery backlog
 
+Current implementation note (15 November 2026): this document preserves its original planning/MVP baseline. SaaS-029 reliability and SaaS-030 board reads are now implemented locally; rank/moves and the board screen follow in SaaS-031/032. Consult the [current documentation index](../docs/documentation-index.md) before treating an original gap or next step below as current.
+
 Post-MVP direction (25 October 2026): the confirmed product target is multi-company SaaS. Continue with the separate [gap assessment](Product-Gap-Assessment.md), [feature release roadmap](Feature-Release-Roadmap.md) and [proposed SaaS architecture](../docs/saas-architecture.md). New task IDs are SaaS-001 onward; the historical MVP tasks below are not renumbered.
 
 Prepared: 18 October 2026. Implementation steps 01-08 and 10-21 are complete. Steps 09 and 22 portable preparation/local production and recovery rehearsals are complete; Docker/hosted CI and selected-host verification remain pending release gates. Step 23 documentation/demo handoff is complete: [developer/demo guide and acceptance matrix](../docs/handoff.md), [accepted architecture/ERD](../docs/architecture.md), [OpenAPI snapshot](../docs/contracts/README.md) and [current README](../README.md). No remote issues, hosted runs or public deployments have been created.
@@ -61,3 +63,6 @@ Tests, pagination conventions, errors and activity writes begin with their featu
 The original phase estimates add up to **33–51 developer working days**, while the same document also says 5–8 weeks. These are not equivalent at a five-day workweek: 33–51 days is about 7–11 working weeks. Use the daily estimates only as a rough learning-project budget, then re-estimate after the authenticated shell is working; no calendar deadline is assumed.
 
 **Step 23 documentation/demo handoff is complete.** Local checks recorded 110 backend tests with live MySQL and zero skips, 92 frontend tests, 16 operations checks and published HTTPS browser/recovery rehearsals. See the [handoff](../docs/handoff.md) for acceptance coverage, evidence provenance and limitations. The next work is closing Docker, hosted CI and selected-host release gates from steps 09/22; there is no assumed step 24. No public release is claimed.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

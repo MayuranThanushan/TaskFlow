@@ -61,3 +61,6 @@ The MySQL suite covers atomic assignment/outbox/notification persistence, self-a
 A published HTTPS rehearsal uses a separate restricted runtime identity in a disposable schema. It applies twelve migrations, verifies assignment/read/unread/count and revocation, and confirms that the database account can update read state but cannot retarget or delete inbox rows. Its temporary schema and database identities are removed afterward. See [release evidence](../evidence/saas024-notifications.json).
 
 The OpenAPI inventory is 61 paths / 79 operations, with generated TypeScript updated. Hosted CI, public-host verification and commercial acceptance remain separate gates. Next: SaaS-025 inbox UI, bulk mark-read and per-user/company channel/event preferences.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

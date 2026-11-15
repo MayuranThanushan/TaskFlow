@@ -40,3 +40,6 @@ Inspect generated SQL/indexes for duplicates and validate actual query plans bef
 ## Migration acceptance gate
 
 Use the versions selected in [decision 0004](../decisions/0004-runtime-and-database-provider.md): Oracle MySQL provider 10.0.9, EF Core/Identity 10.0.11, MySQL target 8.4.11. Then generate and inspect the initial migration, apply it to an isolated clean MySQL database, and inspect actual constraints/indexes. Test duplicate normalized emails and memberships, FK rejection, enum rejection, soft-deleted parent visibility, transaction rollback, and concurrent member removal/assignment. Provider selection is complete in step 02; entities/mappings and the initial migration were implemented and live-verified in step 05. See [database setup](../database-setup.md) for evidence and remaining feature-level checks.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

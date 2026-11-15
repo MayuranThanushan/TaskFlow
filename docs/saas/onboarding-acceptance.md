@@ -84,3 +84,6 @@ Keep provider credentials, recipient addresses and message-level evidence in res
 SaaS-023 local implementation can be reviewed independently; the unchecked external gates remain open. Next planned product feature is SaaS-024 notification materialization/read/unread API, subject to the existing release dependencies.
 
 Sources: [SendGrid Mail Send API](https://www.twilio.com/docs/sendgrid/api-reference/mail-send/mail-send), [sender verification](https://www.twilio.com/docs/sendgrid/ui/sending-email/sender-verification), [API-key permissions](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys), [trial/pricing](https://www.twilio.com/en-us/products/email-api/pricing).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

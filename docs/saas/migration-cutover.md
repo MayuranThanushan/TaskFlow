@@ -39,3 +39,6 @@ WorkspaceId is server-derived from authorized route context, never accepted as a
 SaaS-003 defines typed route/DTO/error contracts; SaaS-008 implements mapping; SaaS-009/010 enforce read/write boundaries; SaaS-011/012 implement switching/lifecycle; SaaS-016 supplies the release acceptance report. No customer rollout is complete solely because a migration succeeds.
 
 SaaS-008 implements the [expand/offline-backfill stage](workspace-expansion.md), including a private persisted mapping and source/access reconciliation. Scope columns remain nullable while v1 writers exist. Non-null/composite-parent enforcement and customer cutover remain gated on the tenant-aware read/write/UI/role stages; the checklist above is not declared complete by expansion.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

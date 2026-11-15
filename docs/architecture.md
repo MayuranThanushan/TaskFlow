@@ -92,3 +92,6 @@ Project/task deletion sets DeletedAtUtc. Filters hide deleted projects and their
 ## Deployment boundary
 
 Migration execution is separate from API startup. Runtime readiness requires the applied migration set to equal the compiled set, including rejection of unknown future migrations. Runtime accounts cannot perform DDL; only membership rows require physical DELETE. Release receipts hash the application and migration artifacts. Recovery restores a logical snapshot and matching protection keys, then rotates account stamps to invalidate pre-recovery cookies. See [release operations](release-runbook.md) and [recovery](backup-recovery.md). Container/hosted verification remains pending; the Windows HTTPS published-app rehearsal passed.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

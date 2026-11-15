@@ -87,3 +87,6 @@ Pilot sizing, SLI eligibility, proposed alert thresholds and operations ownershi
 SaaS-017 implements the reserved worker names in the separate TaskFlow.Outbox meter, not the API meter. See [worker operations](saas/outbox-workers.md) and [worker contract](contracts/worker-telemetry.json). Readiness follows actual queue sampling; pending/age/dead-letter are last-observed database samples and attempts count processing tries, not delivered notifications. No tenant/entity dimensions or configured OTLP collector/alerts are implied. The checkpoint consumer sends nothing externally.
 
 SaaS-029 adds a separate [private queue snapshot and alert evaluator](saas/delivery-reliability.md) covering checkpoint, account mail, invitation mail and watcher due backlog, age, retries, expired leases and dead letters. It is explicit read-only operations tooling, not an API metrics export or an installed alert-routing service.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

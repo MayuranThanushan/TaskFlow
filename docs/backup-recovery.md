@@ -64,3 +64,6 @@ Compare representative accounts/projects/tasks/assignments/deletions/activity to
 ## Local rehearsal
 
 The sanitized [step 22 evidence](evidence/step22.json) contains timings/checks from a real, fresh-target recovery with restricted accounts. The source was changed and its saved session revoked after backup. Restoration recovered the earlier data, retained deleted rows/history, matched all business-data fingerprints and key hashes, rejected the old cookie and accepted fresh sign-in. Re-running restore against the occupied target failed without altering it. These are small local demo measurements, not a production-scale recovery SLA.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

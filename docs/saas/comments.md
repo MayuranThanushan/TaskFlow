@@ -34,3 +34,6 @@ This is not a promise to erase prior backups, logs at an external host, copied b
 - [ ] Disable comments by switching the flags off. The down migration refuses to destroy history; roll forward or restore a verified pre-release backup to a new schema. No live/shared database is migrated automatically by this release.
 
 The free Render blueprint keeps both comment flags false and adds no paid resources. See [local release evidence](../evidence/saas027-comments.json); hosted CI/container acceptance and manual assistive-technology review remain separate gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

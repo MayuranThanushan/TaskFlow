@@ -77,3 +77,6 @@ Step 06 added shared database fixture lifecycle, frontend test infrastructure an
 Step 06 verification passed 22 backend tests with no skips using the shared fixture, plus two frontend tests. Mandatory-MySQL mode also correctly fails when no connection is supplied.
 
 The current suite totals 30 backend tests. Auth HTTP tests clean up only their own synthetic accounts, while persistence tests retain transaction rollback isolation. See [authentication](authentication.md) for live HTTPS configuration.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

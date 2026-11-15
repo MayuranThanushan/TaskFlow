@@ -47,3 +47,6 @@ MySQL DDL can commit partially. Production recovery is maintenance plus forward 
 Verification includes live MySQL same-revision competing editors, no-op and stale/no-audit checks, required/invalid inputs after authorization, independent EF-context concurrency, task status/deletion, cleanup revisions, high string revisions in the UI and a populated synthetic-backup migration rehearsal. Published HTTPS journeys use real two-tab project/task editors, explicit comparison/rebase, rejected stale deletion/status, desktop/mobile accessibility scans and the previous company/audit journeys. Default-off legacy browser journeys are rehearsed separately. See [evidence](../evidence/saas015-resource-versions.json) and [browser instructions](../../tests/browser/README.md). Hosted CI/CodeQL/container, selected-host performance/operations, human accessibility review and tenant cutover remain release gates.
 
 Next: SaaS-016 tenant regression coverage, pilot quotas and privacy/retention controls.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

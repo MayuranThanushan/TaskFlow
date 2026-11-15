@@ -1,5 +1,7 @@
 # TaskFlow architecture plan
 
+Current implementation note (15 November 2026): this document preserves its original planning/MVP baseline. SaaS-029 reliability and SaaS-030 board reads are now implemented locally; rank/moves and the board screen follow in SaaS-031/032. Consult the [current documentation index](../docs/documentation-index.md) before treating an original gap or next step below as current.
+
 Current implementation: see the [accepted as-built architecture and ERD](../docs/architecture.md) and [handoff](../docs/handoff.md). The following is the original planning baseline.
 
 Prepared: 18 October 2026. Status: adopted implementation baseline. Delivery step 01 is recorded in [the decision register](../docs/decisions/README.md); API and database amendments are authoritative for the explicitly refined contracts.
@@ -149,3 +151,6 @@ Run backend build/tests, frontend type checks/tests/build, and database migratio
 Deploy a minimal shell early to prove HTTPS, SPA deep links, `/api` routing, MySQL connectivity, cookie/CSRF behavior, and persisted keys. Hosting publication and costs are later execution decisions. Apply migrations deliberately, keep the database private, provide health/readiness checks, and document backup/recovery and environment configuration for release.
 
 See [Delivery-Backlog.md](Delivery-Backlog.md) for the exact work order and acceptance gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

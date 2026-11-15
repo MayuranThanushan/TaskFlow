@@ -13,3 +13,6 @@ Date: 18 October 2026. Status: adopted implementation baseline under the instruc
 Related contracts: [API](../contracts/api-baseline.md), [database](../contracts/database-baseline.md). The Word BRD/SRS/SAD/API/ERD remain source requirements; the amendments explicitly resolve their open choices. Changing a decision requires updating this register, affected contracts, and relevant tests.
 
 Runtime/provider package selection is resolved by decision 0004. Initial MySQL migration and persistence checks passed in step 05; shared test infrastructure remains step 06. See [database setup](../database-setup.md), see [setup-review.md](../setup-review.md) and [the toolchain guide](../toolchain.md).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

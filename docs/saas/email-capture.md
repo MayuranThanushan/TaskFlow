@@ -98,3 +98,6 @@ Next is SaaS-019 account verification/recovery/change and reauthentication, with
 SaaS-019 adds [encrypted global account-mail capture](account-security.md), two account templates and a separate restricted batch command. Company checkpoint rows still cannot authorize a recipient send. Global account captures use a separate `account-<ID>` namespace.
 
 SaaS-023 adds a distinct [SendGrid staging adapter and onboarding acceptance runbook](onboarding-acceptance.md). Existing LocalCapture mode and the offline capture command remain network-free. The provider is default off and real inbox/bounce acceptance remains an external gate.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

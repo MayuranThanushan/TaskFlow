@@ -73,3 +73,6 @@ SaaS-009 now provides a [default-off scoped read preview](workspace-reads.md). S
 SaaS-010 adds [scoped writes and six composite FK constraints](workspace-writes.md). The SQL constraints enforce non-null reference tuples, while nullable legacy compatibility remains. Mandatory scope, v1 retirement and matching UI/role cutover remain pending.
 
 Current-release prerequisite (SaaS-016): current backfill commands require all seven reviewed migrations compiled into the current binary, including resource revisions and pilot policy. Do not run the current model against an expansion-only schema. The nullable scope/composite-reference compatibility remains intentional while migrating and backfilling offline; original two-migration rehearsal evidence describes its historical artifact only. Rehearse with backups in a disposable schema before production maintenance/cutover.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

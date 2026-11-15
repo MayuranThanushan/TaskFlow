@@ -110,3 +110,6 @@ Invitations, email flows, MFA enrollment/enforcement and workers remain disabled
 Local evidence: the published HTTPS application passed eleven migrations against disposable TiDB, synthetic authentication and scoped CRUD, outsider rejection, version conflicts, soft deletion, restart continuity and logout revocation. Docker execution and owner-account public deployment remain release gates.
 
 The local-to-cloud compatibility probe recorded several-second requests. It demonstrates behavior, not acceptable hosted latency. Select compatible regions and measure the actual hosted path before inviting users or making performance commitments.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

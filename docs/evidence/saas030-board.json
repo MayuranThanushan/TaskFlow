@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-15",
+  "release": "SaaS-030",
+  "status": "implemented and verified locally; selected-host acceptance and board rank/move/UI remain subsequent gates",
+  "changes": [
+    "project board summary with full filtered counts for all three canonical statuses",
+    "independent bounded per-status task pages reusing task-list visibility/filter/sort query",
+    "typed company-scoped board client with cancellation and access failure handling",
+    "reviewed OpenAPI, generated TypeScript and tenant-control inventory",
+    "current documentation index and release context across every Markdown guide"
+  ],
+  "verification": {
+    "focusedBackend": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    "clientFocused": {
+      "passed": 3
+    },
+    "operations": {
+      "passed": 40
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "generatedTypes": "checked against regenerated live snapshot",
+    "frontend": {
+      "passed": 185,
+      "files": 20,
+      "failed": 0,
+      "newClientTests": 3,
+      "execution": "one worker; original timeouts/assertions retained",
+      "initialParallelRun": "ten existing-screen timing failures during concurrent build/backend load; complete one-worker rerun passed",
+      "lint": "passed",
+      "typecheck": "passed",
+      "build": "passed",
+      "initialBundleKilobytes": 482.61,
+      "initialBundleGzipKilobytes": 141.82
+    },
+    "backend": {
+      "passed": 437,
+      "failed": 0,
+      "skipped": 0,
+      "newBoardTests": 6,
+      "database": "dedicated sixteen-migration MySQL 8.4 schema removed",
+      "cases": [
+        {
+          "name": "BoardRejectsUnknownRepeatedAndInvalidQueryValuesWithoutChangingData",
+          "outcome": "Passed",
+          "duration": "00:00:01.3894112"
+        },
+        {
+          "name": "BoardSharesCompanyPrivateProjectGuestAndRevocationAccessRules",
+          "outcome": "Passed",
+          "duration": "00:00:01.3093428"
+        },
+        {
+          "name": "BoardHidesDeletedParentsAndDisabledPreviewAndHasNoLegacyEndpoint",
+          "outcome": "Passed",
+          "duration": "00:00:01.7293746"
+        },
+        {
+          "name": "BoardColumnCountAndPageKeepOneSnapshotAcrossConcurrentCreation",
+          "outcome": "Passed",
+          "duration": "00:00:01.0166985"
+        },
+        {
+          "name": "BoardFiltersCountsAndColumnSortingMatchTaskListWithEmptyColumns",
+          "outcome": "Passed",
+          "duration": "00:00:01.4375977"
+        },
+        {
+          "name": "BoardCountsAndIndependentColumnsEnumerateMoreThan100TasksPerStatus",
+          "outcome": "Passed",
+          "duration": "00:00:01.3336341"
+        }
+      ]
+    },
+    "secretScan": "redacted staged patch scan passed"
+  },
+  "contract": {
+    "paths": 71,
+    "operations": 93,
+    "statuses": [
+      "ToDo",
+      "InProgress",
+      "Done"
+    ],
+    "pageDefaults": "1/20",
+    "maximumPageSize": 100,
+    "paging": "independent offset pages; live between requests"
+  },
+  "documentation": {
+    "markdownFiles": 76,
+    "relativeLinksChecked": 678,
+    "allTrackedMarkdownIncluded": true,
+    "historicalEvidencePreserved": true,
+    "brokenRelativeLinks": 0
+  },
+  "rollout": {
+    "newMigration": false,
+    "migrationCount": 16,
+    "newDependencies": false,
+    "newWorker": false,
+    "newFeatureFlag": false,
+    "existingGate": "WorkspaceReads:Enabled; default false, current free Render blueprint explicitly true",
+    "hostedConfigurationChanged": false,
+    "hostedDatabaseTouched": false,
+    "realEmailSent": false
+  },
+  "limitations": [
+    "Rank and atomic movement remain SaaS-031; board screen, keyboard and drag alternatives remain SaaS-032.",
+    "Separate requests are live offset pages, not a durable multi-page snapshot; refresh after mutations.",
+    "Selected-host query plans, latency/capacity and hosted CI/container acceptance remain external gates."
+  ],
+  "next": "SaaS-031 server-owned rank and atomic move/reorder API"
+}

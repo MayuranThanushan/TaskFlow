@@ -56,3 +56,6 @@ Implementation follows [ASP.NET Core error-handling guidance](https://learn.micr
 Step 07 account routes now require HTTPS and use default controller authorization plus global CSRF protection. Liveness remains explicitly public. The initial HTTP proxy configuration is for foundation checks; see [authentication](authentication.md) for the implemented HTTPS proxy configuration.
 
 Step 09 adds database/schema readiness at `/api/v1/health/ready` and production static SPA hosting with preserved JSON API errors. See [deployment](deployment.md) for the published-app smoke check and remaining host/container gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

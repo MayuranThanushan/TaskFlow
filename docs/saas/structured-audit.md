@@ -62,3 +62,6 @@ The additive migration is required for new binaries in every environment, even w
 Local verification includes actual MySQL transaction/failure tests, cross-company and platform-reader denials, unknown/legacy schema handling, tracing-disabled correlation, frontend redaction and the bounded exporter safety checks. A published HTTPS rehearsal uses the actual runtime/operations grant template and checks negative SQL privileges, export and sensitive canaries. Another rehearsal upgrades a populated synthetic backup and confirms old events remain version 0 before exercising legacy journeys. See [evidence](../evidence/saas013-structured-audit.json).
 
 No live development/customer database was migrated by this implementation. Fresh hosted CI/CodeQL/container results and selected-host privilege/monitoring verification remain gates. The [SaaS-014 console](audit-console.md) extends these readers with filters, deleted-resource review and bounded exports.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

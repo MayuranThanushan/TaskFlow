@@ -7,6 +7,8 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 EXPECTED = {
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/board": {"get"},
+    "/api/v2/workspaces/{workspaceId}/projects/{projectId}/board/columns/{status}": {"get"},
     "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher": {"get", "put"},
     "/api/v2/workspaces/{workspaceId}/notifications/groups": {"get"},
     "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments": {"get", "post"},

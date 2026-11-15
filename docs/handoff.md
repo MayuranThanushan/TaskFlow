@@ -85,3 +85,8 @@ The following must be completed in the selected environment before public releas
 5. Record the host/CI results and obtain stakeholder acceptance. Browser compatibility beyond reviewed Edge, production capacity and external security testing remain outside the recorded local evidence.
 
 No further numbered implementation step is assumed. The next work is closing these environment-specific release gates when a target is available.
+
+The current SaaS continuation includes [SaaS-030 board read APIs](saas/board-read-model.md). Rank/moves and board UI remain future SaaS-031/032 work; hosted readiness and commercial acceptance still require their recorded external gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -27,3 +27,8 @@ All 72 frontend tests passed, including six new cases covering URL initializatio
 Step 18 [dashboard totals/project progress](dashboard.md) is implemented. Next is step 19 activity reading.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge combined filtering/assignee selection, priority and nullable-deadline ordering, URL reload/back/forward, out-of-range recovery, no-match/invalid reset and mobile controls. Rendered task IDs matched API order. The mobile filter screenshot was inspected with no horizontal overflow. Existing account/project/task/removal checks also passed. The disposable database was removed and verification services stopped.
+
+SaaS-030 adds [company-scoped board counts and per-column pages](saas/board-read-model.md), sharing v2 task-list visibility, filters and sorting. The v1 query baseline above remains historical and unchanged.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

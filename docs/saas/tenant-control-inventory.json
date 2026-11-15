@@ -1,8 +1,128 @@
 {
-  "release": "SaaS-028",
+  "release": "SaaS-030",
   "date": "2026-11-15",
-  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments plus default-off personal watchers, scoped grouping and deferred watcher noise controls. Local verification only; public hosting/provider gates remain open.",
+  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments plus default-off personal watchers, scoped grouping and deferred watcher noise controls. Local verification only; public hosting/provider gates remain open. Board counts and per-status pages use the exact scoped task-list predicates; no rank/move/UI is enabled.",
   "operations": [
+    {
+      "operationId": "AccountSecurity_Capabilities",
+      "method": "GET",
+      "path": "/api/v1/auth/capabilities",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ChangePassword",
+      "method": "POST",
+      "path": "/api/v1/auth/change-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ConfirmEmail",
+      "method": "POST",
+      "path": "/api/v1/auth/confirm-email",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ForgotPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Reauthenticate",
+      "method": "POST",
+      "path": "/api/v1/auth/reauthenticate",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_RequestVerification",
+      "method": "POST",
+      "path": "/api/v1/auth/request-verification",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_ResetPassword",
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
+    {
+      "operationId": "AccountSecurity_Security",
+      "method": "GET",
+      "path": "/api/v1/auth/security",
+      "controls": [
+        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
+        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
+        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
+        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
+        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
+      ]
+    },
     {
       "operationId": "Activity_List",
       "method": "GET",
@@ -70,6 +190,108 @@
       ]
     },
     {
+      "operationId": "Comments_Candidates",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/mention-candidates",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Delete",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_Edit",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_History",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}/history",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Comments_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
+      "controls": [
+        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
+        "Company row lock serializes permission changes with mutation and new mention delivery",
+        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
+        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
+        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
+        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
+        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
+      ]
+    },
+    {
       "operationId": "Csrf_Token",
       "method": "GET",
       "path": "/api/v1/auth/csrf",
@@ -117,6 +339,313 @@
       ],
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/OpenApiContractTests.cs"
+      ]
+    },
+    {
+      "operationId": "Invitations_Accept",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Preview",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Resend",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Invitations_Revoke",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke",
+      "controls": [
+        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
+        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
+        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
+        "No raw token/hash/ciphertext returned; no company-admin private-project override."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
+        "docs/saas/invitations.md"
+      ]
+    },
+    {
+      "operationId": "Mfa_Confirm",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/confirm",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Disable",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/disable",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_RecoveryCodes",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/recovery-codes",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Setup",
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/setup",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Mfa_Status",
+      "method": "GET",
+      "path": "/api/v1/auth/mfa",
+      "controls": [
+        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
+        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
+        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
+        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
+        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
+        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Notifications_Count",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/unread-count",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
+      ]
+    },
+    {
+      "operationId": "Notifications_Groups",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/groups",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
+      ]
+    },
+    {
+      "operationId": "Notifications_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
+      ]
+    },
+    {
+      "operationId": "Notifications_MarkRead",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/read",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
+      ]
+    },
+    {
+      "operationId": "Notifications_Preferences",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
+      ]
+    },
+    {
+      "operationId": "Notifications_SetPreferences",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
+      ]
+    },
+    {
+      "operationId": "Notifications_SetRead",
+      "method": "PATCH",
+      "path": "/api/v2/workspaces/{workspaceId}/notifications/{notificationId}",
+      "controls": [
+        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
+        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
+        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
+        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
+        "No task email enablement; account security and invitation email remain separate",
+        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
+        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
+        "docs/saas/notification-inbox.md",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
       ]
     },
     {
@@ -229,6 +758,40 @@
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "TaskWatchers_Get",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
+      ]
+    },
+    {
+      "operationId": "TaskWatchers_Set",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
+      "controls": [
+        "Current active task/company access; no private-project administrator override",
+        "Self-only versioned subscriptions; no watcher directory or actor selectors",
+        "Live grouped source rows with explicit-ID read writes and bounded paging",
+        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
+        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
+        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
+        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
       ]
     },
     {
@@ -581,6 +1144,34 @@
       ]
     },
     {
+      "operationId": "WorkspaceReads_Board",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/board",
+      "controls": [
+        "Workspace read preview gate and active company admission before binding",
+        "Private project visibility, deletion and assignee validity identical to task lists",
+        "Repeatable-read snapshot; strict AND filters and independent bounded column paging; no admin private-project override"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Board.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_BoardColumn",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/projects/{projectId}/board/columns/{status}",
+      "controls": [
+        "Workspace read preview gate and active company admission before binding",
+        "Private project visibility, deletion and assignee validity identical to task lists",
+        "Repeatable-read snapshot; strict AND filters and independent bounded column paging; no admin private-project override"
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Board.cs",
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs"
+      ]
+    },
+    {
       "operationId": "WorkspaceReads_Dashboard",
       "method": "GET",
       "path": "/api/v2/workspaces/{workspaceId}/dashboard",
@@ -916,569 +1507,6 @@
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_Capabilities",
-      "method": "GET",
-      "path": "/api/v1/auth/capabilities",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_Security",
-      "method": "GET",
-      "path": "/api/v1/auth/security",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_RequestVerification",
-      "method": "POST",
-      "path": "/api/v1/auth/request-verification",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_ForgotPassword",
-      "method": "POST",
-      "path": "/api/v1/auth/forgot-password",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_ConfirmEmail",
-      "method": "POST",
-      "path": "/api/v1/auth/confirm-email",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_ResetPassword",
-      "method": "POST",
-      "path": "/api/v1/auth/reset-password",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_ChangePassword",
-      "method": "POST",
-      "path": "/api/v1/auth/change-password",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "AccountSecurity_Reauthenticate",
-      "method": "POST",
-      "path": "/api/v1/auth/reauthenticate",
-      "controls": [
-        "Global account action; never a company grant. Session and CSRF according to endpoint metadata.",
-        "Generic bounded recovery; protected one-hour purpose/account tokens and row-locked single use.",
-        "Immediate stamp revocation after reset/change/verification; five-minute session-bound reauthentication.",
-        "Default-off Development/Staging email preview; no real provider or bypass of MFA."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.AccountSecurity.cs",
-        "TaskFlow-FE/src/features/auth/AccountSecurityPages.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Invitations_List",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Invitations_Create",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Invitations_Resend",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/resend",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Invitations_Revoke",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/revoke",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Invitations_Preview",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/preview",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Invitations_Accept",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/invitations/{invitationId}/accept",
-      "controls": [
-        "Default-off invitation feature and all workspace flags, validated session and CSRF for mutations.",
-        "Current company/project manager authority or exact verified intended recipient with scoped one-use token.",
-        "Workspace gate, seat reservation, revision-bound resend/revoke, composite references and atomic grants/audit.",
-        "No raw token/hash/ciphertext returned; no company-admin private-project override."
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Invitations.cs",
-        "docs/saas/invitations.md"
-      ]
-    },
-    {
-      "operationId": "Mfa_Status",
-      "method": "GET",
-      "path": "/api/v1/auth/mfa",
-      "controls": [
-        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
-        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
-        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
-        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
-        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
-        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Mfa_Setup",
-      "method": "POST",
-      "path": "/api/v1/auth/mfa/setup",
-      "controls": [
-        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
-        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
-        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
-        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
-        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
-        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Mfa_Confirm",
-      "method": "POST",
-      "path": "/api/v1/auth/mfa/confirm",
-      "controls": [
-        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
-        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
-        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
-        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
-        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
-        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Mfa_RecoveryCodes",
-      "method": "POST",
-      "path": "/api/v1/auth/mfa/recovery-codes",
-      "controls": [
-        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
-        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
-        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
-        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
-        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
-        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Mfa_Disable",
-      "method": "POST",
-      "path": "/api/v1/auth/mfa/disable",
-      "controls": [
-        "Authenticated self-only MFA metadata; CSRF and auth rate limit for mutations",
-        "Account row lock; password and applicable factor; atomic proof consumption, credential state and safe audit",
-        "Encrypted user-bound secrets, hashed one-use recovery codes, no request-body logging",
-        "Recovery sign-in cannot satisfy fresh authenticator administration policy"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/AuthTests.Mfa.cs",
-        "TaskFlow-BE/TaskFlow.Tests/MfaCodesTests.cs",
-        "TaskFlow-FE/src/features/auth/MfaPage.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Notifications_List",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Notifications_Count",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/unread-count",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Notifications_SetRead",
-      "method": "PATCH",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/{notificationId}",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Notifications_MarkRead",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/read",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Notifications_Preferences",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Notifications_SetPreferences",
-      "method": "PUT",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/preferences",
-      "controls": [
-        "Stamped self-only recipient within an active company; feature flags and current project checks retained",
-        "CSRF/rate limit and existing administrator MFA for mutations; no recipient selector",
-        "Bulk read validates 1-100 distinct explicit visible IDs before any write; late arrivals remain unread",
-        "Preferences use company-gated optimistic revisions; muted events/channels suppress future materialization without deleting history",
-        "No task email enablement; account security and invitation email remain separate",
-        "Scheduled rows require current assignee, open task and unchanged deadline; scheduling is separately gated, transaction-locked and deduplicated"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Notifications.cs",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationPreferences.cs",
-        "TaskFlow-FE/src/features/notifications/NotificationInboxPage.test.tsx",
-        "docs/saas/notification-inbox.md",
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.NotificationScheduling.cs"
-      ]
-    },
-    {
-      "operationId": "Comments_List",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Comments_Create",
-      "method": "POST",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Comments_Candidates",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/mention-candidates",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Comments_History",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}/history",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Comments_Edit",
-      "method": "PUT",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Comments_Delete",
-      "method": "DELETE",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/comments/{commentId}",
-      "controls": [
-        "Default-off Comments and workspace lifecycle gates; task visibility before binding and transactional reauthorization",
-        "Company row lock serializes permission changes with mutation and new mention delivery",
-        "Plain text and explicit canonical mention IDs; only active same-project collaborators resolved",
-        "Author edits; author/project owner soft-deletes; expected version prevents overwrite",
-        "Append-only metadata history without former bodies; in-app mute/self-action/delta suppression"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Comments.cs",
-        "TaskFlow-BE/TaskFlow.Tests/CommentMentionsTests.cs",
-        "TaskFlow-FE/src/features/tasks/CommentThread.test.tsx"
-      ]
-    },
-    {
-      "operationId": "Notifications_Groups",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/notifications/groups",
-      "controls": [
-        "Current active task/company access; no private-project administrator override",
-        "Self-only versioned subscriptions; no watcher directory or actor selectors",
-        "Live grouped source rows with explicit-ID read writes and bounded paging",
-        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
-        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
-        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
-        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
-      ]
-    },
-    {
-      "operationId": "TaskWatchers_Get",
-      "method": "GET",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
-      "controls": [
-        "Current active task/company access; no private-project administrator override",
-        "Self-only versioned subscriptions; no watcher directory or actor selectors",
-        "Live grouped source rows with explicit-ID read writes and bounded paging",
-        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
-        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
-        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
-        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
-      ]
-    },
-    {
-      "operationId": "TaskWatchers_Set",
-      "method": "PUT",
-      "path": "/api/v2/workspaces/{workspaceId}/tasks/{taskId}/watcher",
-      "controls": [
-        "Current active task/company access; no private-project administrator override",
-        "Self-only versioned subscriptions; no watcher directory or actor selectors",
-        "Live grouped source rows with explicit-ID read writes and bounded paging",
-        "Source transaction and recipient/event deduplication; subscription version and intervening revocation fence",
-        "Quiet/digest/mute handling with metadata-only pending work and bounded scheduler"
-      ],
-      "evidenceSources": [
-        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Watchers.cs",
-        "TaskFlow-BE/TaskFlow.Tests/WatcherTimingTests.cs",
-        "TaskFlow-FE/src/features/tasks/TaskWatchControl.test.tsx"
       ]
     }
   ],

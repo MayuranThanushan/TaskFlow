@@ -1,5 +1,7 @@
 # TaskFlow product and SaaS gap assessment
 
+Current implementation note (15 November 2026): this document preserves its original planning/MVP baseline. SaaS-029 reliability and SaaS-030 board reads are now implemented locally; rank/moves and the board screen follow in SaaS-031/032. Consult the [current documentation index](../docs/documentation-index.md) before treating an original gap or next step below as current.
+
 Review date: 25 October 2026. Baseline: commit 18ba5f6. Product direction confirmed by the user: multiple companies using TaskFlow as SaaS. This assessment proposes future work; it does not implement or ship the features below.
 
 ## Conclusion
@@ -80,3 +82,6 @@ Formal security/accessibility guidance and common product capabilities are diffe
 ## Recommendation
 
 Use the release scope in the [feature roadmap](Feature-Release-Roadmap.md) and the proposed [SaaS architecture](../docs/saas-architecture.md). Begin with SaaS-001 and SaaS-002: company-boundary/permission decisions and a CI/deployment evidence baseline. Tenant implementation can proceed locally while external hosting gates are pending, but no multi-company/public release should be declared ready until its isolation and operational gates pass.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

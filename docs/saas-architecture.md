@@ -113,3 +113,8 @@ Select measured service objectives and alert owners for latency/error rate, unav
 The current modern UI remains the starting point. Add real company switching, team/settings, invitations, inbox and board/list views incrementally using shared components. Replace the current 100-project activity selector with server search/paging. Add company audit routes/permissions; keep existing current-page export accurately scoped. Preserve field errors, duplicate-write guards, cancellation behavior and identity isolation.
 
 Attachments require private storage, validation/scanning/quarantine, safe filenames, scoped upload/download grants, quotas and cleanup/recovery behavior before release; see [OWASP upload guidance](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html). SSO/SCIM, residency, advanced reports, automation and AI features stay behind customer need and trustworthy permissions/audit. No provider, price, certification, legal retention period or production SLA is assumed here.
+
+SaaS-030 implements the [board read model](saas/board-read-model.md): existing canonical statuses, full filtered counts and bounded independent column pages share list authorization. Rank/move transactions and accessible board UI remain SaaS-031/032.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

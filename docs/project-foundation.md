@@ -67,3 +67,6 @@ The selected provider cannot execute a filtered bulk membership DELETE with its 
 Mutation tests commit only their own synthetic records, verify results from fresh contexts, then remove their own records in FK order. They do not wipe tables or alter the schema. The local MySQL process stopped afterward. No frontend behavior, publication or hosting configuration changed in this step; [step 09's container/selected-host gates](deployment.md) remain open. Next is step 11: project creation, authorized listing/detail and frontend forms/pages.
 
 Implementation references: [MySQL locking reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html), [MySQL transaction isolation](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html), [EF SQL queries](https://learn.microsoft.com/ef/core/querying/sql-queries), and [EF transactions](https://learn.microsoft.com/ef/core/saving/transactions).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

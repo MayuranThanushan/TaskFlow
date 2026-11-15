@@ -28,3 +28,6 @@ The [browser review](../tests/browser/workspace.cjs) passed 42 axe WCAG A/AA rou
 Browser requests were intercepted with synthetic API fixtures; no real user accounts or database data were modified. Those checks establish UI behavior, not production security certification or an independent audit. Backend policies continue to be covered by their existing integration tests. Deployment/browser compatibility outside the recorded local Edge environment remains a release check.
 
 [Sanitized machine-readable evidence](evidence/workspace-ui.json) is committed. Screenshots and the full browser report are generated under ignored TestResults/workspace-ui, including overview-desktop.png, tasks-desktop.png, activity-desktop.png, login-1440.png and mobile/form variants. Reproduce them with the [browser instructions](../tests/browser/README.md#local-workspace-ui-review).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -103,3 +103,6 @@ dotnet TaskFlow.Api.dll --database-update
 Supply its migration connection through environment or a dedicated private key-per-file directory. Do not change the Render web start command to a maintenance command. Normal web startup never migrates automatically.
 
 If the repair fails, share only its safe `code`, migration counts and `databaseErrorNumber` (if present), not the connection. The tool intentionally withholds raw exception strings. This repository fix has been rehearsed locally; applying it to the actual TiDB instance requires the owner's private connection and the resulting hosted readiness check.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

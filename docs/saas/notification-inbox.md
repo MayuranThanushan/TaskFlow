@@ -68,3 +68,6 @@ Preferences affect future materialization and do not purge data. Review retentio
 SaaS-026 now extends this inbox with [due reminders, daily digest task cards and delivery status](notification-scheduling.md). Scheduling is separately gated and defaults off. SaaS-027 now adds [task comments and project-local mentions](comments.md). SaaS-028 now adds [personal watchers, grouped inbox and quiet/digest controls](task-watchers.md). Next task: SaaS-029 reliability, revocation/load and operational alert verification.
 
 SaaS-029 now adds [delivery reliability, synchronized revocation races, bounded backlog verification and private alert checks](delivery-reliability.md). Selected-host activation remains gated.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

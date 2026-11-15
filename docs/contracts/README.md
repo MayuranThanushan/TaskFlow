@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003 foundation, updated through SaaS-028. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 69 paths / 91 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003 foundation, updated through SaaS-030. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 71 paths / 93 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -8,11 +8,13 @@ Canonical representations use application/json; problems use application/problem
 
 Typed body binding accepts case variants of canonical camelCase names; the dynamic task PATCH parser requires exact field names. Enums are case-sensitive. Collection query names are case-insensitive at runtime; the document uses canonical camelCase names. The API additionally checks signed BIGINT numeric range, timestamp parsing/UTC year range, trimming, authorization and cross-field pagination/date rules that are not completely expressible in these schemas. Generated types are compile-time checks, not runtime validation or authorization. They cannot enforce a nonempty PATCH object by themselves.
 
-SaaS-027 adds six comment operations across four paths (current inventory: 67 paths / 88 operations), plain-text comment DTOs and project-local mention search; TaskMention extends notification kinds. See [comment policy](../saas/comments.md).
+SaaS-027 adds six comment operations across four paths (release-time inventory: 67 paths / 88 operations), plain-text comment DTOs and project-local mention search; TaskMention extends notification kinds. See [comment policy](../saas/comments.md).
 
 SaaS-026 extends the existing preferences GET/PUT with opt-in reminder/digest settings and adds TaskDue/TaskDigest kinds and explicit InAppDelivered status. Scheduling fields must be supplied together or omitted to preserve settings. Path/operation counts remain unchanged. See [scheduling rules](../saas/notification-scheduling.md).
 
-SaaS-028 adds watcher GET/PUT and grouped notification GET (current inventory: 69 paths / 91 operations), optional taskId source filtering, TaskWatched kind and watcherDeliveryMode/quiet-hour preferences. See [watcher and grouping rules](../saas/task-watchers.md).
+SaaS-028 adds watcher GET/PUT and grouped notification GET (release-time inventory: 69 paths / 91 operations), optional taskId source filtering, TaskWatched kind and watcherDeliveryMode/quiet-hour preferences. See [watcher and grouping rules](../saas/task-watchers.md).
+
+SaaS-030 adds GET board counts and GET independently paged status columns (71 paths / 93 operations). Both use the existing workspace read gate, project visibility and task filters. Status in the column path is a canonical enum, not a resource ID. See [board semantics](../saas/board-read-model.md).
 
 ## Generate a reviewed contract change
 
@@ -38,7 +40,7 @@ npm run generate --prefix tools/api-contracts
 git diff -- docs/contracts/openapi.json TaskFlow-FE/src/api/generated.d.ts
 ```
 
-The export variable explicitly opts out of snapshot comparison for regeneration only. Never set it in CI. Review controller/DTO/transformer changes together with both generated files; do not edit generated output to hide drift. openapi-typescript 7.13.0 requires TypeScript 5, so its locked tooling package uses 5.9.3 independently of the frontend's TypeScript 6.0.3. No forced peer-dependency override is used. Generation disables default-non-nullable so a server default does not falsely make an optional input required.
+The export variable explicitly opts out of snapshot comparison for regeneration only. Never set it in CI. Review controller/DTO/transformer changes together with both generated files; do not edit generated output to hide drift. The locked tooling package uses openapi-typescript 7.13.0 and TypeScript 7.0.2 independently of the frontend's TypeScript 6.0.3. No forced peer-dependency override is used. Generation disables default-non-nullable so a server default does not falsely make an optional input required.
 
 ## Verify without rewriting
 
@@ -83,3 +85,6 @@ SaaS-020 adds six invitation operations on five paths (53 paths / 71 operations)
 SaaS-021 adds `InvitationDto.resendAvailableAtUtc` and `PilotCapacityDto.reservedMemberSeats` for accurate cooldown and reserved-capacity presentation. API and frontend must ship together. No routes were added: 53 paths / 71 operations.
 
 SaaS-022 adds five self-only MFA routes, optional login `code`/`recoveryCode`, factor-protected reset, and optional authenticator `code` on change-password/reauthenticate. MFA DTOs expose only self status and deliberately one-time setup/recovery responses. See [MFA rollout](../saas/mfa.md). Review these sensitive response types together with no-store/logging and generated-client changes.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

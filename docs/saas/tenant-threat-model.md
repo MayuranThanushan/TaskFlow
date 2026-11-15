@@ -38,3 +38,6 @@ Fixture: companies A/B; Alice owns A, Bob owns B; Sam is Editor in A and Viewer 
 For SaaS-016, enumerate every route, query, SQL bypass, background entry point and artifact type; map it to applicable cases. Run live MySQL integration tests and real API/browser journeys with the fixture above, including synchronized race tests. Assert business/audit/outbox state after rejection/rollback. Record revision, migrations, configuration, commands and reports. Cases for later features remain release-specific gates; no R1 claim that not-yet-built mail/storage/billing is verified.
 
 Residual risks: shared database compromise affects all customers; authorized users can copy visible content; already sent mail cannot be recalled; in-flight writes authorized before revocation can finish; backups retain historical data under the defined retention policy. Numerical quotas, production SLOs, host configuration, retention durations and incident owners must be settled in their roadmap tasks before launch. This catalog is a threat-informed starting point, not a penetration-test or compliance certification.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

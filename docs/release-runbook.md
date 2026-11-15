@@ -59,3 +59,6 @@ The [sanitized rehearsal record](evidence/step22.json) records real MySQL 8.4.11
 All 110 backend tests pass with live MySQL and no skips; all 92 frontend tests and 16 operations tests pass. Release build/publish, migration generation/idempotence, model-snapshot check, receipt verification, Compose configuration and actionlint checks pass locally. The operations tests are included in the backend CI job. Docker/container execution and hosted CI are still unrun.
 
 Before public release, select the host and verify DNS/certificate renewal, actual-host HSTS/TLS/proxy behavior, readiness supervision, non-root container/secret/volume permissions, private database TLS/grants, encrypted off-host backup scheduling/retention/alerts, a restore on that host and required hosted CI checks. No host-specific publication, RPO/RTO guarantee or production backup service is claimed. Next is step 23: final documentation/demo handoff, while these external release gates remain open.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

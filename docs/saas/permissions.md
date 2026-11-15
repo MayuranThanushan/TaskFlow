@@ -49,3 +49,6 @@ SaaS-014: the [company audit console](audit-console.md) requires an active Owner
 SaaS-016: active Owner/Admin can read aggregate capacity and review policy, including private-project totals without identifiers/content. Only Owner can change settings, using current-password proof and a policy revision. Company export controls are rechecked on every ticket creation/download and grant no security-event access. Support role claims confer no company permission. See [pilot policy](pilot-policy.md).
 
 SaaS-022 adds a default-off, deployment-wide [administrator MFA policy](mfa.md): active company Owner/Admin scoped mutations require authenticator proof younger than five minutes. Recovery sign-in permits device restoration without privileged-action proof. Existing authorization/ownership boundaries are rechecked independently. Read-only navigation remains available.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

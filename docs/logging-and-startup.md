@@ -118,3 +118,6 @@ Release build: zero warnings/errors. Full backend suite: 122 passes, live MySQL,
 ## Repeated-start correction
 
 The reported MSB3026/MSB3027 build failure was caused by an already-running Release API holding build output DLLs. The helper now identifies and stops only this checkout's Release API before building, then starts it again. An occupied API port belonging to another process is rejected before building. It also repairs missing Vite installation when node_modules exists but node_modules/.bin/vite.cmd is absent. Repeated startup with the API already running passed with zero build warnings/errors, migrations already current, four HTTP health/CSRF checks returning 200 and the sign-in screen verified in Edge. The [README](../README.md) now provides the complete manual checklist without invoking the helper.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

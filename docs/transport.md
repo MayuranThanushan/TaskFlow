@@ -40,3 +40,6 @@ CSRF validation, authorization, stamp revocation, expiry, rate limiting and erro
 Verification covers Local/UAT/Production registration, CSRF-protected login, profile, logout and replay rejection over both HTTP and HTTPS, plus default/override behavior and spoofed-forwarding rejection. Existing strict Production redirects and secure-cookie tests also remain in the suite.
 
 Final verification: Release build passed with zero warnings/errors; all 119 backend tests passed with live MySQL and zero skips, plus all 16 operations checks. Frontend application code and dependencies are unchanged. No migration is required.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

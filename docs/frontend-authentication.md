@@ -25,3 +25,6 @@ Twenty-four frontend tests cover API token sharing/refresh, one-retry limits, wr
 A local headless Edge check used the real HTTPS Vite proxy, API and MySQL: protected deep link, registration, failed login, successful login, original query/fragment, reload, logout and reload. It checked Secure/HttpOnly/SameSite cookies, empty local/session storage, no page errors and no horizontal overflow at 390px. Desktop and mobile screenshots were inspected. The browser was pinned to the local development certificate public key for this check; API/proxy certificate verification remained enabled. No machine trust configuration changed.
 
 The backend suite also passed all 30 tests with live MySQL and no skips. The separate HTTPS protocol check retained a session across API restart using persisted protection keys. Temporary services stopped and synthetic accounts were removed afterward. Local browser drivers/screenshots remain ignored verification artifacts, not CI dependencies; committed browser end-to-end automation remains later backlog work. No hosted CI run or deployment is claimed.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

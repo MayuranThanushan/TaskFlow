@@ -84,3 +84,6 @@ The journey posts escaped script-like text with an explicit picker mention, edit
 ## Task watchers (SaaS-028)
 
 `watchers.cjs` requires a disposable HTTPS API with watcher/inbox/comment/workspace flags, matching compiled frontend preview flags and two synthetic project collaborators. Point TASKFLOW_WATCHER_SCENARIO privately at workspaceId, taskId, recipientId, recipientEmail, ownerEmail, password, quietStart and quietEnd. The recipient starts subscribed with revision 1 and three source inbox updates for one task. The journey stops/re-subscribes, sets local noise controls, groups and reviews source updates, then switches to the owner to emit a quiet watcher update and direct mention. It scans task controls, expanded preferences and grouped inbox at desktop/mobile widths. A separate published scheduler rehearsal checks pending delivery/mute cancellation and restricted grants; never use a shared/live company.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../../docs/documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

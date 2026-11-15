@@ -44,3 +44,6 @@ A populated synthetic backup is restored and upgraded to all seven migrations, w
 The browser pilot journey confirms capacity cards, password/confirmation, persisted settings, safe audit deltas, old-ticket denial, disabled download UI and a quota rejection that retains its draft, with four desktop/mobile accessibility scans. It also records a bounded eight-worker, 480-request scoped hot-company regression at the project cap, including expected stale-revision conflicts without replay. This measures local behavior, not representative full-pilot sizing, cross-company fairness, selected-host capacity or an SLA. Existing default-off legacy journeys provide separate accessibility/security/demo performance checks. See [evidence](../evidence/saas016-pilot-policy.json).
 
 Fresh hosted CI/CodeQL/container, selected-host load/alert/recovery/key/grant evidence, human accessibility/privacy review, named responders, customer sizing and coordinated tenant cutover remain acceptance gates. Customer-facing quotas/retention terms require review before commercial launch. Next is SaaS-017: durable outbox and delivery workers.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

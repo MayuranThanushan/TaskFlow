@@ -97,3 +97,6 @@ MySQL/API tests cover protected enqueue, generic suppression/cooldown, concurren
 Real provider delivery, authenticated bounce/suppression handling, production activation, hosted CI/CodeQL/container runs, tenant cutover and manual assistive-technology review are not closed by local evidence. Next is SaaS-020 tenant/project-scoped invitation API/lifecycle; it must enforce verified intended recipient, single-use hashed tokens, current inviter authority, seat reservations and revocation independently of these global account tokens.
 
 SaaS-022 amendment: [MFA, recovery codes and administrator policy](mfa.md) now implements the next identity stage. Current inventory is 58 paths / 76 operations; migration eleven and API MFA grants are required.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

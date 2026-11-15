@@ -103,9 +103,9 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
     }, token);
     public Task<TaskDto> TaskAsync(WorkspaceReadContext context, long taskId, CancellationToken token = default) => Read(context, async () =>
         TaskService.Map(await Tasks(context).SingleOrDefaultAsync(t => t.Id == taskId, token) ?? throw Missing()), token);
-    public Task<TaskPage> TasksAsync(WorkspaceReadContext context, long projectId, TaskListOptions options, CancellationToken token = default) => Read(context, async () =>
+    // List pages and board counts share the exact task visibility and filter query.
+    private IQueryable<TaskItem> FilterTasks(WorkspaceReadContext context, long projectId, TaskListOptions options)
     {
-        await RequireProject(context, projectId, token); Page(options.Page, options.PageSize);
         if (options.Search?.Length > 200 || options.SortBy is not ("title" or "priority" or "dueDateUtc" or "createdAtUtc") || options.SortDirection is not ("asc" or "desc")
             || options.Status is { } s && !Enum.IsDefined(s) || options.Priority is { } p && !Enum.IsDefined(p) || options.AssigneeId is <= 0) throw new ArgumentException("Invalid task filters.");
         var query = Tasks(context).Where(t => t.ProjectId == projectId); var search = options.Search?.Trim();
@@ -113,6 +113,21 @@ public sealed class WorkspaceReads(TaskFlowDbContext database, TimeProvider cloc
         if (options.Status is { } status) query = query.Where(t => t.Status == status);
         if (options.Priority is { } priority) query = query.Where(t => t.Priority == priority);
         if (options.AssigneeId is { } assignee) query = query.Where(t => t.AssigneeId == assignee);
+        return query;
+    }
+    public Task<TaskBoardDto> BoardAsync(WorkspaceReadContext context, long projectId, TaskBoardFilters filters, CancellationToken token = default) => Read(context, async () =>
+    {
+        await RequireProject(context, projectId, token);
+        var query = FilterTasks(context, projectId, new(Search: filters.Search, Priority: filters.Priority, AssigneeId: filters.AssigneeId));
+        var counts = await query.GroupBy(t => t.Status).Select(g => new { Status = g.Key, Total = g.Count() }).ToArrayAsync(token);
+        var columns = new[] { TaskState.ToDo, TaskState.InProgress, TaskState.Done }
+            .Select(status => new TaskBoardStatusCountDto(status.ToString(), counts.SingleOrDefault(c => c.Status == status)?.Total ?? 0)).ToArray();
+        return new TaskBoardDto(Id(projectId), columns.Sum(c => c.TotalCount), columns);
+    }, token);
+    public Task<TaskPage> TasksAsync(WorkspaceReadContext context, long projectId, TaskListOptions options, CancellationToken token = default) => Read(context, async () =>
+    {
+        await RequireProject(context, projectId, token); Page(options.Page, options.PageSize);
+        var query = FilterTasks(context, projectId, options);
         var total = await query.CountAsync(token); var asc = options.SortDirection == "asc";
         var ordered = options.SortBy switch
         {

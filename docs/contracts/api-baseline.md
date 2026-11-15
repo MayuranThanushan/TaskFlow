@@ -116,3 +116,10 @@ Scoped task comments add list/create, PUT/DELETE by comment ID, metadata-only re
 ## SaaS-028 watcher amendment
 
 Self-only watcher GET/PUT uses expectedVersion, current task visibility and shared company transaction gate. GET notifications/groups groups live source rows by task; taskId on the source list filters only already authorized recipient rows. TaskWatched is a new notification kind. Preferences add Immediate/Digest/Off watcherDeliveryMode and paired nullable quiet hours; supplied mode replaces noise settings, omission preserves them. Digest requires daily digest. Muting cancels pending watcher work and timing changes reschedule it. See [full limits, deferred delivery and visibility policy](../saas/task-watchers.md). Current inventory: 69 paths / 91 operations.
+
+## SaaS-030 board amendment
+
+Two scoped GET routes add board counts and independently paged columns. Summary counts cover all authorized matching tasks and always include ToDo/InProgress/Done. Column pages reuse TaskPage and the exact existing list query, with default page 1/20, max 100 and deterministic sorting. Status is a canonical path enum. Search/priority/assignee filters combine with AND; unsupported/repeated parameters are rejected. Each response uses a repeatable-read snapshot; cross-request pages remain live and can shift after mutations. No rank/move/UI or new migration is implied. See [board read contract](../saas/board-read-model.md).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

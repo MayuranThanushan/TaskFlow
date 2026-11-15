@@ -69,3 +69,6 @@ The [release evidence](../evidence/saas022-mfa.json) records actual local result
 Hosted CI/CodeQL/container runs, real email-provider delivery, selected-host key custody/backup rehearsal, independent security review, manual assistive-technology review and mandatory tenant cutover remain gates. TOTP is not phishing-resistant; no NIST assurance-level/compliance certification is claimed. Next is SaaS-023 onboarding delivery, abuse controls and tenant acceptance; real staging delivery depends on a selected provider/host.
 
 References: [Microsoft ASP.NET Core MFA](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/mfa?view=aspnetcore-10.0), [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238), and [NIST replay-resistance guidance](https://pages.nist.gov/800-63-4/sp800-63b.html).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

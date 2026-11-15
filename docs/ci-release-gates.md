@@ -59,3 +59,6 @@ Downloaded reports: JavaScript/TypeScript 103 rules, zero findings; Python 50 ru
 C# build-free extraction also logged failed dependency restores; scanning now uses an explicit locked restore/build so restoration cannot silently degrade analysis. The original medium `cs/log-forging` finding in request logging remains for triage before customer release; this change does not suppress it or claim a clean fresh scan.
 
 All five artifact action declarations (seven jobs with the matrix) now pin [upload-artifact v7.0.2](https://github.com/actions/upload-artifact/releases/tag/v7.0.2), commit `cf430e030ddbb5b0abf93d22962f4752f3646cd9`. Its action metadata declares Node 24, removing the reported Node 20 dependency. Release checks continue to fail if any required job fails or is skipped. Push the changes and require a fresh successful full workflow before merging/releasing; re-running an old revision cannot validate this fix.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

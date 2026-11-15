@@ -9,3 +9,6 @@ Projects, tasks and activity use shared pagination while keeping filters/page st
 `TaskFlow-FE/src/hooks/use-api-resource.ts` is the existing resource hook moved out of the project feature and renamed. It preserves account/path identity keys, abort-on-unmount, late-response protection and explicit retry. The activity center now lives under `features/activity/ActivityHub.tsx`; `components/Workspace.tsx` contains presentation-only icons and badges. Loading and access-denied handling remain in each feature where their recovery actions differ.
 
 Validation retains all 95 frontend tests, including failed-write drafts, duplicate submissions, keyboard cancellation, stale responses, account switching, URL history and owner/member controls. The separate 42-scan synthetic UI baseline checks responsive layouts and accessibility. Published-app journeys use actual API mutations and an isolated database; see [verification evidence](evidence/saas006-ui-ci.json). These results do not establish multi-company isolation, which remains planned in SaaS-008 onward.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

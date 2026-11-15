@@ -75,3 +75,6 @@ For a preview image, pass both public build arguments to the app build; default 
 See [verification evidence](../evidence/saas012-lifecycle.json) and the [browser setup](../../tests/browser/README.md). Nine lifecycle MySQL HTTP cases plus five Viewer policy cases extend the existing suite; frontend tests cover confirmations, pending-write locks, Owner password handling, role visibility, Viewer task controls and legacy redirects. The published lifecycle journey uses a restricted synthetic fixture affiliation only until real invitations exist.
 
 Next is SaaS-013 versioned business audit and restricted security events. Invitations follow later in R2. Selected-host privilege verification, fresh hosted CI/CodeQL/container results, invitation/rejoin/custody workflows, non-null scope and final company cutover remain explicit gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

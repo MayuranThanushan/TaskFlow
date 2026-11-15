@@ -37,3 +37,8 @@ Release build has zero warnings/errors. All 76 backend tests passed against real
 All 57 frontend tests passed, including ten task cases for protected creation, defaults, opaque assignment, UTC conversion, safe text, invalid/pending submissions, retained field errors, search/pagination/history, failure recovery, private detail, expiry and account-switch safety. Type checking, ESLint and production build passed. No migration is pending. Existing CI discovers the tests; hosted CI, Docker execution and selected-host verification remain pending.
 
 The combined Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge owner/member task creation, eligible assignment, local deadlines, large IDs, safe text, reload, progress refresh, task search/pagination/reload, member-removal unassignment/access denial and mobile layouts. Form/detail screenshots were inspected. Final review also corrected field errors to clear when users edit the associated field. The disposable database was removed and verification services stopped.
+
+SaaS-030 exposes [board read APIs](saas/board-read-model.md) for company-scoped tasks. The existing task list/detail UI stays in place; board movement and UI follow in SaaS-031/032.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

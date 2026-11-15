@@ -22,3 +22,6 @@ Company, project and role previews require a verified intended-recipient account
 Local verification covers 280 backend tests, 146 frontend tests, 35 operations tests, production frontend builds, and an isolated published HTTPS browser journey with 16 desktop/mobile accessibility scans. The browser journey exercises signup, verification, wrong-account recovery, explicit Guest/Viewer acceptance, resend rotation, revoke confirmation and used-link recovery. See [release evidence](../evidence/saas021-invitation-ui.json) and `tests/browser/invitations.cjs`.
 
 This is local evidence. Hosted CI/CodeQL, container execution, selected-host deployment, production email, manual assistive-technology review and mandatory tenant cutover remain open. Next is SaaS-022 optional MFA, recovery codes and privileged-action policy.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

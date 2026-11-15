@@ -51,7 +51,11 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
         {
             if (parameter is not OpenApiParameter concreteParameter || parameter.Schema is not OpenApiSchema schema) continue;
             if (parameter.In == ParameterLocation.Path)
-            { schema.Pattern = ContractSchemaTransformer.IdPattern; schema.Description = "Positive decimal-string ID within signed BIGINT range."; }
+            {
+                if (controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" && parameter.Name == "status")
+                { ContractSchemaTransformer.SetEnum(schema, ["ToDo", "InProgress", "Done"]); schema.Description = "Canonical task status; each column is paged independently."; }
+                else { schema.Pattern = ContractSchemaTransformer.IdPattern; schema.Description = "Positive decimal-string ID within signed BIGINT range."; }
+            }
             if (parameter.In != ParameterLocation.Query) continue;
             concreteParameter.Required = controller == typeof(CommentsController) && action.ActionName == "Candidates" && concreteParameter.Name == "search";
             var name = char.ToLowerInvariant(parameter.Name![0]) + parameter.Name[1..];
@@ -68,6 +72,8 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             if (name == "assigneeId") { schema.Pattern = ContractSchemaTransformer.IdPattern; schema.Description = "Positive decimal-string ID within signed BIGINT range; omit rather than supplying an empty filter."; }
             if (name is "fromUtc" or "toUtc") { schema.Format = "date-time"; schema.Pattern = ContractSchemaTransformer.TimestampPattern; }
         }
+        if (controller == typeof(WorkspaceReadsController) && action.ActionName is "Board" or "BoardColumn")
+            operation.Description += " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; createdAtUtc desc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. No rank/move or board UI in this release.";
         operation.Description = (operation.Description ?? "") +
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)

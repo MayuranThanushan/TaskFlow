@@ -53,3 +53,10 @@ Nine live-MySQL HTTP cases exercise default-off/anonymous behavior, one identity
 The published HTTPS rehearsal runs current real-browser journeys with the flag off, backfills that disposable snapshot, enables the preview, then checks real-session workspace discovery and every reader plus outsider/invalid-filter denials. See [evidence](../evidence/saas009-reads.json). These are local results, not hosted production evidence or the full future SaaS-016 isolation acceptance matrix.
 
 SaaS-010 now provides [scoped writes and composite references](workspace-writes.md). Next: company navigation and resource keys under SaaS-011. Keep the [coordinated cutover checklist](migration-cutover.md), role lifecycle, frontend account/company switching, final backfill reconciliation and hosted release gates open.
+
+## SaaS-030 extension
+
+The original nine-route inventory above is the SaaS-009 baseline. SaaS-030 adds [board summary counts and independently paged status columns](board-read-model.md) using this same workspace gate, repeatable-read snapshot, private-project visibility and task filters. No board-specific grant, worker, migration or new status is introduced. The free Render blueprint currently enables workspace reads explicitly; application defaults remain off.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

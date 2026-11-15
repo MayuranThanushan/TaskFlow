@@ -85,6 +85,40 @@ public sealed class WorkspaceReadsController(IWorkspaceReads reads) : Controller
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         return Ok(await reads.TasksAsync(Scope(workspaceId), Id(projectId), new(query.Page, query.PageSize, query.Search, status, priority, assignee, query.SortBy, query.SortDirection), token));
     }
+    [HttpGet("{workspaceId}/projects/{projectId}/board"), ProducesResponseType<TaskBoardDto>(200)]
+    public async Task<IActionResult> Board(string workspaceId, string projectId, [FromQuery] TaskBoardQuery query, CancellationToken token)
+    {
+        Query("search", "priority", "assigneeId");
+        var (priority, assignee) = BoardFilters(query);
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        return Ok(await reads.BoardAsync(Scope(workspaceId), Id(projectId), new(query.Search, priority, assignee), token));
+    }
+    [HttpGet("{workspaceId}/projects/{projectId}/board/columns/{status}"), ProducesResponseType<TaskPage>(200)]
+    public async Task<IActionResult> BoardColumn(string workspaceId, string projectId, string status, [FromQuery] TaskBoardColumnQuery query, CancellationToken token)
+    {
+        Query("page", "pageSize", "search", "priority", "assigneeId", "sortBy", "sortDirection");
+        var (priority, assignee) = BoardFilters(query);
+        if (!Enum.TryParse<TaskState>(status, false, out var state) || !Enum.IsDefined(state) || state.ToString() != status)
+            ModelState.AddModelError("status", "Choose ToDo, InProgress or Done.");
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        // Reuse the list service: one column per request, never a shared first-100 slice.
+        return Ok(await reads.TasksAsync(Scope(workspaceId), Id(projectId), new(query.Page, query.PageSize, query.Search, state, priority, assignee, query.SortBy, query.SortDirection), token));
+    }
+    private (TaskPriority? Priority, long? Assignee) BoardFilters(TaskBoardQuery query)
+    {
+        TaskPriority? priority = null; long? assignee = null;
+        if (Request.Query.ContainsKey("priority"))
+        {
+            if (Enum.TryParse<TaskPriority>(query.Priority, false, out var value) && Enum.IsDefined(value) && value.ToString() == query.Priority) priority = value;
+            else ModelState.AddModelError("priority", "Choose Low, Medium or High.");
+        }
+        if (Request.Query.ContainsKey("assigneeId"))
+        {
+            if (WorkspaceReadFilter.TryId(query.AssigneeId, out var user)) assignee = user;
+            else ModelState.AddModelError("assigneeId", "Supply a positive decimal ID or omit this filter.");
+        }
+        return (priority, assignee);
+    }
     [HttpGet("{workspaceId}/projects/{projectId}/members"), ProducesResponseType<ProjectMemberList>(200)]
     public async Task<IActionResult> Members(string workspaceId, string projectId, CancellationToken token)
     {
@@ -123,6 +157,25 @@ public sealed class WorkspaceListQuery : IValidatableObject
 {
     [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
     [Range(1, 100)] public int PageSize { get; set; } = 20;
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if ((long)(Page - 1) * PageSize > int.MaxValue) yield return new ValidationResult("Page offset is too large.", [nameof(Page)]);
+    }
+}
+
+public class TaskBoardQuery
+{
+    private string? search;
+    [StringLength(200)] public string? Search { get => search; set => search = value?.Trim(); }
+    public string? Priority { get; set; }
+    public string? AssigneeId { get; set; }
+}
+public sealed class TaskBoardColumnQuery : TaskBoardQuery, IValidatableObject
+{
+    [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
+    [Range(1, 100)] public int PageSize { get; set; } = 20;
+    [Required, RegularExpression("^(title|priority|dueDateUtc|createdAtUtc)$")] public string SortBy { get; set; } = "createdAtUtc";
+    [Required, RegularExpression("^(asc|desc)$")] public string SortDirection { get; set; } = "desc";
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if ((long)(Page - 1) * PageSize > int.MaxValue) yield return new ValidationResult("Page offset is too large.", [nameof(Page)]);

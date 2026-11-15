@@ -27,3 +27,6 @@ All 70 backend tests passed with real MySQL and zero skips, including three new 
 Existing CI discovers these tests automatically. Hosted CI and Docker/selected-host verification remain pending; no external publication is claimed.
 
 The combined published Production app passed HTTPS migration/readiness/restart smoke checks and a real two-account Edge journey: owner add/reload, member listing with hidden owner controls, server-side 403 for a member write, keyboard cancellation, mobile confirmation, owner removal and next-request detail/list access revocation. The mobile confirmation screenshot was inspected without horizontal overflow. The disposable database was removed and verification services stopped.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

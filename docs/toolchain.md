@@ -60,3 +60,6 @@ The application connection string uses Oracle Connector/NET syntax: `Server=127.
 Use a separate taskflow_test database/credentials for integration tests. Do not point test reset or migration commands at shared/production databases. The Compose recipe has not been executed here because no Docker CLI/daemon is available. Step 05 instead verified Oracle portable MySQL 8.4.11, applied the migration and ran live tests. Validate the Docker image pull separately when provisioning with Compose.
 
 Node 22.23.4 replaces the old 22.15.0 baseline because jsdom 30.1.3 and its transitive dependencies require a newer runtime. Frontend engines require ^22.22.2, ^24.15.0 or >=26; .nvmrc and the container build pin the verified 22.23.4 release. Use the pinned npm 11.3.0. The merged OpenAPI update also requires refreshing the Tests project transitive lock; all solution restores must still use --locked-mode. Local Node archive checksums were checked against the [official release checksums](https://nodejs.org/dist/v22.23.4/SHASUMS256.txt).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

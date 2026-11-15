@@ -4,6 +4,9 @@ namespace TaskFlow.Application.Features.Tasks;
 public sealed record TaskDto(string Id, string ProjectId, string Title, string? Description, string Status, string Priority,
     string? AssigneeId, DateTime? DueDateUtc, DateTime CreatedAtUtc, DateTime UpdatedAtUtc, string Version = "1");
 public sealed record TaskPage(IReadOnlyList<TaskDto> Items, int Page, int PageSize, int TotalCount, int TotalPages);
+public sealed record TaskBoardStatusCountDto(string Status, int TotalCount);
+public sealed record TaskBoardDto(string ProjectId, int TotalCount, IReadOnlyList<TaskBoardStatusCountDto> Columns);
+public sealed record TaskBoardFilters(string? Search = null, TaskPriority? Priority = null, long? AssigneeId = null);
 public sealed record CreateTask(string Title, string? Description, TaskPriority Priority, long? AssigneeId, DateTime? DueDateUtc);
 public readonly record struct FieldChange<T>(bool IsSpecified, T Value);
 public sealed record TaskPatch(FieldChange<string?> Title = default, FieldChange<string?> Description = default,

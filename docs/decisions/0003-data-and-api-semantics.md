@@ -25,3 +25,6 @@ Pagination: defaults page=1/pageSize=20, maximum pageSize=100. Reject invalid nu
 ## Consequences and verification
 
 Frontend types use string IDs everywhere. Presence-aware PATCH requires dedicated parsing tests. Server owns validation and all aggregates. Verify ID boundaries, omitted/null/empty/unknown fields, enum behavior, UTF-16 length boundaries, timezone offsets, deadline equality, zero/rounding cases, stable sorting and authorization before pagination/counting. See the API and database amendments for exact implementation contracts.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

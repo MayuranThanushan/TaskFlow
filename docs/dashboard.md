@@ -29,3 +29,6 @@ All 78 frontend tests passed, including six new overview cases for protection, r
 Step 19 [activity reading](activity.md) is implemented. Step 20 [profile editing](profile.md) is implemented; step 21 [verification review](verification-review.md) is complete; step 22 [release/recovery preparation](release-runbook.md) is complete locally; next is step 23.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge zero/populated totals, owner/member scope, overdue/completion, cross-tab explicit refresh, assignment/removal, task/project deletion and 0/100 project progress. Desktop/mobile screenshots were captured and the mobile layout inspected without horizontal overflow. Existing project/task/account/removal/query checks also passed. The disposable database was removed and verification services stopped.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

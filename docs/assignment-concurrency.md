@@ -33,3 +33,6 @@ Release build passed without warnings/errors. All 90 backend tests passed with r
 Step 17 [task filtering/sorting/pagination](task-queries.md) is now complete. Next is step 18 dashboard totals and project progress.
 
 The unchanged step 15 Production artifact passed a fresh HTTPS migration/readiness/restart rehearsal and real Edge multi-tab verification: a stale owner edit kept a removal-cleared assignment null, a stale selected assignee returned a field error while retaining the draft, explicit unassigned retry succeeded, and removed-member create/edit/status each returned 404. Existing account/project/task/mobile checks also passed. The disposable database was removed and verification services stopped.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

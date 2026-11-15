@@ -127,3 +127,6 @@ Completed the current README, accepted architecture/ERD, Development OpenAPI exp
 ## Environment transport amendment
 
 Authentication transport is configurable for Local, UAT and Production. Local/Development accepts HTTP/HTTPS by default; other environments default to strict HTTPS and allow an explicit override. Cookie Secure flags follow the configured policy and request scheme; CSRF, authentication and logout revocation remain enforced. See [transport setup](transport.md).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -99,3 +99,8 @@ Step 21 adds a logging-safety backend test, a client account-change/CSRF dispatc
 Step 22 adds an unknown-applied-migration readiness case (safe 503, liveness 200) and 16 separate standard-library operations tests: `python -m unittest discover -s tests/operations -v`. They cover backup checksums/layout, traversal, invalid/occupied targets, incompatible table-case mode, failed import/count validation, session-stamp rotation and release-payload drift. All 110 backend and 92 frontend tests pass, alongside those 16 operations checks. The operations suite is in backend CI. Real restricted-role recovery, key/data verification and compatible rollback passed locally; see [release evidence](release-runbook.md). Hosted/container verification remains pending.
 
 The workspace UI refresh adds three component regressions (95 frontend tests total) and a separate mocked-API browser review covering 42 route/viewport scans and CRUD/keyboard/export flows. See [workspace UI evidence](workspace-ui.md). These synthetic API checks do not replace the published-app/backend integration suite.
+
+SaaS-030 adds MySQL board tests for 364 cards, per-column completeness, list parity, filters/sorts, query bounds, company/role/deletion denials and a synchronized count/page snapshot. Typed-client tests cover scope, cancellation and safe denial. Current measured totals are recorded in [release evidence](evidence/saas030-board.json), not the historical step counts above.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -33,3 +33,6 @@ All 64 frontend tests passed, including seven new mutation cases for changed-onl
 Step 16 [assignment/removal concurrency](assignment-concurrency.md) is now verified across creation, editing and status mutations, including both lock orderings and rollback. Next is step 17 filtering/sorting/pagination.
 
 The published Production release passed verified HTTPS migration/readiness/restart smoke checks and real Edge owner/member editing, nullable clearing with omitted-value preservation, status/reload/progress refresh, member deletion 403, owner confirmation/Escape/deletion/list refresh and deleted deep-link rejection. Mobile edit/confirmation layouts passed overflow checks, and the confirmation screenshot was inspected. The disposable database was removed and verification services stopped.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

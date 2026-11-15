@@ -32,3 +32,6 @@ Activity has a defined action type and structured backend-created details. No pu
 ## Consequences and verification
 
 Soft deletion adds schema/query rules but preserves history. All visibility tests must include deleted parent projects. Test owner protection, cross-user IDs, member restrictions, removal taking effect, transaction rollback, concurrent removal/assignment, and deletion visibility. The project's row lock is a concrete MySQL implementation requirement for the later persistence task.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

@@ -41,3 +41,6 @@ dotnet .local/releases/notifications-worker/TaskFlow.Worker.dll --notifications-
 - [ ] Stop scheduling by removing its flag/invocations. This preserves inbox history and read state. Backup/recovery must include cursors and notification occurrence keys together; restoring both prevents replay duplicates. An old backup naturally replays deliveries newer than that backup inside the restored database only.
 
 Free hosting remains off, no background scheduler resource is provisioned, no paid service or real email is activated. See [release evidence](../evidence/saas026-scheduling.json) for local verification and remaining hosted gates.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

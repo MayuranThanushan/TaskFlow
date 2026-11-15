@@ -52,3 +52,6 @@ Deletion retains project, task, membership and activity rows. Task deletion time
 Step 12 verification: 67 backend tests passed with real MySQL and zero skips, including HTTP role/CSRF enforcement, replacement/no-op validation, retained related rows, post-delete invisibility and activity-failure rollback for both mutations. All 42 frontend tests, type-check, lint and production build passed. No schema change is pending.
 
 The step 12 published Production app passed the HTTPS migration/readiness/restart smoke rehearsal and real Edge editing/reload, confirmation focus/Escape cancellation, confirmed deletion/list refresh/deleted deep-link rejection, plus the existing project/account/mobile checks. The disposable database was removed and all verification services stopped.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

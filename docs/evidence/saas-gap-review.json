@@ -441,6 +441,8 @@
     {
       "order": 30,
       "id": "SaaS-030",
+      "status": "implemented and verified locally; rank/moves/UI remain SaaS-031/032",
+      "evidence": "docs/evidence/saas030-board.json",
       "work": "Add board read model with status counts and per-column pagination",
       "dependencies": "015, 016",
       "acceptance": "ToDo/InProgress/Done remain canonical; more than 100 tasks load without silently omitting cards; list and board share access predicates",

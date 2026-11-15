@@ -37,3 +37,6 @@ The account API is now implemented. Password inputs are bounded to 128 UTF-16 co
 ## Transport amendment
 
 The user-authorized environment transport configuration supersedes the unconditional HTTPS requirement for Local/Development and explicitly opted-in UAT/Production environments. See [transport policy](../transport.md). HTTPS-only deployments retain the original Secure/__Host cookie contract; HTTP-compatible deployments use request-dependent Secure flags and ordinary host-scoped cookie names. CSRF and authorization remain mandatory.
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.

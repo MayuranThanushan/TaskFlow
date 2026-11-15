@@ -89,3 +89,8 @@ Implementation references: [ASP.NET Core static files](https://learn.microsoft.c
 Step 11 reran the published Production smoke and real Edge project journeys, including large string IDs, pagination, outsider isolation and a cross-tab account switch. See [projects](projects.md). Container/selected-host gates above remain pending.
 
 Step 22 prepared application/migration packages with source and checksum receipts, separated migration secret configuration, hardened readiness against unknown future migrations, and rehearsed restricted-role backup/restore, session invalidation and compatible binary rollback. All 110 backend, 92 frontend and 16 operations tests pass. See the [release runbook](release-runbook.md), [backup/recovery](backup-recovery.md) and [sanitized evidence](evidence/step22.json). Docker/hosted CI and selected-host checks above remain unexecuted.
+
+SaaS-030 board reads require no new migration, worker or provider setup. The existing workspace-read configuration controls both new GET routes. Deploy matching API/generated-client artifacts and verify [board rollout checks](saas/board-read-model.md).
+
+<!-- current-documentation-index -->
+Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
