@@ -108,3 +108,7 @@ SaaS-032 adds board interaction and placement-state tests plus a loopback-only p
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
+
+## SaaS-033 update
+
+[My work and authorized search](saas/my-work.md) adds one company-scoped GET route and a lazy screen with explicit assignment choices, deadline queues, URL filters and deterministic paging. Authorization is checked on every request; descriptions are excluded from summaries. Current contract: 73 paths / 95 operations, seventeen migrations unchanged. Local automated evidence is separate from hosted acceptance.

@@ -1,16 +1,17 @@
 # TaskFlow documentation index
 
-Reviewed for SaaS-032 on 15 November 2026. This index is the current entry point for every Markdown guide below. Original MVP plans, ADRs and numbered release records retain their release-time counts and follow-ups; they are evidence and design history, not a claim that the latest implementation still has those gaps.
+Reviewed for SaaS-033 on 16 November 2026. This index is the current entry point for every Markdown guide below. Original MVP plans, ADRs and numbered release records retain their release-time counts and follow-ups; they are evidence and design history, not a claim that the latest implementation still has those gaps.
 
 ## Current implementation and next work
 
 - SaaS-029: [delivery reliability and private queue-health checks](saas/delivery-reliability.md), verified locally. Hosted worker activation, selected-host locking and human alert routing remain separate gates.
 - SaaS-030: [board read model](saas/board-read-model.md), full filtered status counts and independently paged columns. The original SaaS-030 release added two GET routes without a migration (71 paths / 93 operations then); the current binary also needs SaaS-031 migration seventeen. The typed client/read foundation is extended by the SaaS-032 board screen.
-- SaaS-031: [rank and atomic move/reorder API](saas/board-moves.md), captured task/neighbor revisions, atomic audit/outbox and bounded 500-card rebalance. Canonical columns now default to rank/asc; current API inventory is 72 paths / 94 operations.
+- SaaS-031: [rank and atomic move/reorder API](saas/board-moves.md), captured task/neighbor revisions, atomic audit/outbox and bounded 500-card rebalance. Canonical columns now default to rank/asc; release-time API inventory was 72 paths / 94 operations.
 - SaaS-032: [responsive accessible project board](saas/board-ui.md), lazy-loaded columns, independent paging, keyboard/click/drag confirmation, optimistic rollback and explicit conflict/focus recovery.
-- Next: SaaS-033 tenant-scoped My work, due/overdue queues and authorized search.
+- SaaS-033: [My work, due/overdue queues and authorized search](saas/my-work.md), company-scoped compact summaries and URL-backed filters. Current inventory: 73 paths / 95 operations.
+- Next: SaaS-034 saved views and persisted list/board/filter preferences.
 - The database currently requires seventeen migrations through BoardRank. Follow [deployment repair](deployment-repair.md) for schema mismatch/system-schema errors; never use sys as the application database or publish database/email secrets.
-- Local verification is recorded in [SaaS-032 evidence](evidence/saas032-board-ui.json). Hosted CI, selected-host capacity, customer acceptance and commercial readiness must be assessed independently. No paid resource, real email activation or automatic migration is added by SaaS-032.
+- Local verification is recorded in [SaaS-033 evidence](evidence/saas033-my-work.json). Hosted CI, selected-host capacity, customer acceptance and commercial readiness must be assessed independently. No paid resource, real email activation or automatic migration is added by SaaS-033.
 
 ## Common workflows
 
@@ -25,7 +26,7 @@ Reviewed for SaaS-032 on 15 November 2026. This index is the current entry point
 
 ## Complete Markdown guide inventory
 
-All listed guides were checked for release/navigation context. Current workflow/contract pages were updated for SaaS-032; original release evidence and ADR decisions remain identifiable as historical. Every guide links back here so its recorded next step is not confused with the current product backlog.
+All listed guides were checked for release/navigation context. Current workflow/contract pages were updated for SaaS-033; original release evidence and ADR decisions remain identifiable as historical. Every guide links back here so its recorded next step is not confused with the current product backlog.
 
 | Guide | Documentation role |
 | --- | --- |
@@ -106,3 +107,4 @@ All listed guides were checked for release/navigation context. Current workflow/
 | [Published-app browser review](../tests/browser/README.md) | Setup, workflow or module entry point |
 | [SaaS-031: server-owned rank and atomic board movement](saas/board-moves.md) | Current move API, migration and reconciliation contract |
 | [SaaS-032: accessible project board UI](saas/board-ui.md) | Current board navigation, movement, accessibility and recovery guide |
+| [My work and authorized search](saas/my-work.md) | Current workflow and API reference |

@@ -16,6 +16,7 @@ public interface IWorkspaceReads
     Task<WorkspaceDto> WorkspaceAsync(WorkspaceReadContext context, CancellationToken token = default);
     Task<ProjectPage> ProjectsAsync(WorkspaceReadContext context, ProjectListOptions options, CancellationToken token = default);
     Task<ProjectDetailsDto> ProjectAsync(WorkspaceReadContext context, long projectId, CancellationToken token = default);
+    Task<WorkPage> WorkAsync(WorkspaceReadContext context, WorkOptions options, CancellationToken token = default);
     Task<TaskBoardDto> BoardAsync(WorkspaceReadContext context, long projectId, TaskBoardFilters filters, CancellationToken token = default);
     Task<TaskPage> TasksAsync(WorkspaceReadContext context, long projectId, TaskListOptions options, CancellationToken token = default);
     Task<TaskDto> TaskAsync(WorkspaceReadContext context, long taskId, CancellationToken token = default);

@@ -145,6 +145,24 @@ public sealed class WorkspaceReadsController(IWorkspaceReads reads) : Controller
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         return Ok(await reads.ActivityAsync(Scope(workspaceId), projectId, new(query.Page, query.PageSize, from, to), token));
     }
+    [HttpGet("{workspaceId}/work"), ProducesResponseType<WorkPage>(200)]
+    public async Task<IActionResult> Work(string workspaceId,[FromQuery] WorkQuery query,CancellationToken token)
+    {
+        Query("page","pageSize","assignment","queue","search","projectId","status","priority","fromUtc","toUtc","sortBy","sortDirection");
+        long? project=null;TaskState? status=null;TaskPriority? priority=null;
+        if(Request.Query.ContainsKey("projectId")){if(WorkspaceReadFilter.TryId(query.ProjectId,out var id))project=id;else ModelState.AddModelError("projectId","Supply a positive decimal ID or omit this filter.");}
+        if(Request.Query.ContainsKey("status")){if(Enum.TryParse<TaskState>(query.Status,false,out var value)&&Enum.IsDefined(value)&&value.ToString()==query.Status)status=value;else ModelState.AddModelError("status","Choose ToDo, InProgress or Done.");}
+        if(Request.Query.ContainsKey("priority")){if(Enum.TryParse<TaskPriority>(query.Priority,false,out var value)&&Enum.IsDefined(value)&&value.ToString()==query.Priority)priority=value;else ModelState.AddModelError("priority","Choose Low, Medium or High.");}
+        DateTime? Bound(string? text,string field)
+        {
+            if(text is null&&!Request.Query.ContainsKey(field))return null;
+            if(text is not null&&Regex.IsMatch(text,TaskFlow.Api.Contracts.ContractSchemaTransformer.TimestampPattern)&&DateTimeOffset.TryParse(text,CultureInfo.InvariantCulture,DateTimeStyles.None,out var date)&&date.UtcDateTime.Year>=1000)return date.UtcDateTime;
+            ModelState.AddModelError(field,"Supply an ISO timestamp with an explicit offset.");return null;
+        }
+        var from=Bound(query.FromUtc,"fromUtc");var to=Bound(query.ToUtc,"toUtc");if(from>to)ModelState.AddModelError("fromUtc","The start must not be later than the end.");
+        if(!ModelState.IsValid)return ValidationProblem(ModelState);
+        return Ok(await reads.WorkAsync(Scope(workspaceId),new(query.Page,query.PageSize,query.Assignment,query.Queue,query.Search,project,status,priority,from,to,query.SortBy,query.SortDirection),token));
+    }
     [HttpGet("{workspaceId}/dashboard"), ProducesResponseType<DashboardDto>(200)]
     public async Task<IActionResult> Dashboard(string workspaceId, CancellationToken token)
     {
@@ -180,4 +198,23 @@ public sealed class TaskBoardColumnQuery : TaskBoardQuery, IValidatableObject
     {
         if ((long)(Page - 1) * PageSize > int.MaxValue) yield return new ValidationResult("Page offset is too large.", [nameof(Page)]);
     }
+}
+
+public sealed class WorkQuery : IValidatableObject
+{
+    private string? search;
+    [Range(1,int.MaxValue)] public int Page {get;set;}=1;
+    [Range(1,100)] public int PageSize {get;set;}=20;
+    [Required,RegularExpression("^(mine|unassigned|all)$")] public string Assignment {get;set;}="mine";
+    [Required,RegularExpression("^(open|due|overdue|all)$")] public string Queue {get;set;}="open";
+    [StringLength(200)] public string? Search {get=>search;set=>search=value?.Trim();}
+    public string? ProjectId {get;set;}
+    public string? Status {get;set;}
+    public string? Priority {get;set;}
+    public string? FromUtc {get;set;}
+    public string? ToUtc {get;set;}
+    [Required,RegularExpression("^(dueDateUtc|createdAtUtc|title)$")] public string SortBy {get;set;}="dueDateUtc";
+    [Required,RegularExpression("^(asc|desc)$")] public string SortDirection {get;set;}="asc";
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {if((long)(Page-1)*PageSize>int.MaxValue)yield return new ValidationResult("Page offset is too large.",[nameof(Page)]);}
 }

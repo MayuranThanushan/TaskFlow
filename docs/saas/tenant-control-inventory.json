@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-032",
-  "date": "2026-11-15",
-  "scope": "Current identity/company/MFA, staged SendGrid, inbox/comments/watchers, board counts and atomic rank/move APIs. Local verification only; provider/selected-host gates remain open and board UI remains SaaS-032. Company-scoped board UI uses captured revisions, bounded canonical placement reads, optimistic rollback and explicit conflict/access recovery.",
+  "release": "SaaS-033",
+  "date": "2026-11-16",
+  "scope": "Company-scoped identity, collaboration, board moves and authorized My work search. Local verification; selected-host, provider and commercial acceptance gates remain open.",
   "operations": [
     {
       "operationId": "AccountSecurity_Capabilities",
@@ -1295,6 +1295,22 @@
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Pilot.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceReads.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceWrites.cs"
+      ]
+    },
+    {
+      "operationId": "WorkspaceReads_Work",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/work",
+      "controls": [
+        "Active company admission before query binding; shared private-project/task visibility and deletion checks, without company-admin override.",
+        "Explicit mine/unassigned/all assignment semantics; bounded literal title/project search, strict repeated/unknown parameter rejection and inclusive UTC bounds.",
+        "One microsecond cutoff and repeatable-read snapshot for facets/page; maximum 100 rows, deterministic ordering, null deadlines last and no per-project fetch fanout.",
+        "Read-only compact summaries exclude descriptions; revocation reauthorizes every request."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.Work.cs",
+        "TaskFlow-FE/src/features/work/WorkPage.test.tsx",
+        "TaskFlow-FE/src/features/work/work-query.test.ts"
       ]
     },
     {

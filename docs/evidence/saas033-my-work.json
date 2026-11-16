@@ -1,0 +1,75 @@
+{
+  "release": "SaaS-033",
+  "date": "2026-11-16",
+  "status": "implemented and verified locally; selected-host and human assistive-technology acceptance remain open",
+  "features": [
+    "company-scoped My work with explicit mine/unassigned/all assignment",
+    "authorized task-title/project-name search, combined strict filters and URL navigation",
+    "open/due/overdue/all queues, one cutoff and inclusive seven-day boundary",
+    "repeatable-read facets and compact paged rows, deterministic ties and null deadlines last",
+    "local-calendar bounds mapped to inclusive UTC microseconds",
+    "no description projection or per-project/per-assignee query fanout"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 461,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "full suite against dedicated disposable local MySQL schema; seventeen migrations"
+    },
+    "frontend": {
+      "passed": 212,
+      "files": 24,
+      "failed": 0,
+      "newTests": 11,
+      "typecheck": "passed",
+      "lint": "passed",
+      "productionBuild": "passed",
+      "initialBundleKilobytes": 485.06,
+      "initialBundleGzipKilobytes": 142.43,
+      "onDemandWorkJavascriptKilobytes": 9.92,
+      "onDemandWorkJavascriptGzipKilobytes": 3.08
+    },
+    "operations": {
+      "passed": 40
+    },
+    "contract": {
+      "paths": 73,
+      "operations": 95,
+      "snapshotLiveTest": "passed in full backend suite",
+      "generatedTypesDrift": "passed",
+      "tenantControlInventory": "passed"
+    },
+    "browser": {
+      "scope": "loopback production frontend with synthetic API responses, no real accounts/database",
+      "accessibilityScans": 10,
+      "widths": [
+        1440,
+        320
+      ],
+      "detectedViolations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "states": [
+        "default",
+        "due queue",
+        "empty",
+        "invalid filters",
+        "access lost"
+      ],
+      "visualReview": "desktop and 320px full-page screenshots inspected"
+    },
+    "documentation": {
+      "markdownGuidesChecked": 79,
+      "brokenLocalLinks": 0
+    }
+  },
+  "migrationCount": 17,
+  "newMigrations": 0,
+  "limitations": [
+    "Substring search requires selected-host latency/capacity verification before commercial acceptance.",
+    "Separate requests may change pages after concurrent edits; each response has consistent counts/rows.",
+    "Real hosted verification, CI outcome and manual assistive-technology acceptance are not implied by local checks."
+  ],
+  "next": "SaaS-034 saved views and persisted list/board/filter preferences"
+}

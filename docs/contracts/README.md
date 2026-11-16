@@ -1,6 +1,6 @@
 # Typed API contract and drift verification
 
-SaaS-003 foundation, updated through SaaS-031. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 72 paths / 94 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
+SaaS-003 foundation, updated through SaaS-033. [openapi.json](openapi.json) describes the implemented v1 API plus the opt-in v2 features: 73 paths / 95 operations. It is generated from controllers, application DTOs and [OpenAPI transformers](../../TaskFlow-BE/TaskFlow.Api/Contracts/ContractOperationTransformer.cs). [Generated TypeScript](../../TaskFlow-FE/src/api/generated.d.ts) supplies the frontend's wire models and operation definitions. Keep the [API amendments](api-baseline.md) alongside the machine contract for transaction, visibility, trimming and ordering rules.
 
 The snapshot documents success DTOs, nullable required response fields, presence-aware task PATCH bodies, query names/defaults/allowlists, Problem Details, correlation/cache headers and cookie/CSRF security. Both transport cookie alternatives are described: Local uses TaskFlow.Auth/TaskFlow.Csrf, Strict uses __Host-TaskFlow.Auth/__Host-TaskFlow.Csrf. These alternatives describe deployment configuration, not two interchangeable sessions accepted by one deployment. Login/register require CSRF but no authenticated session. Health and GET CSRF are public. Production still hides /openapi and has no Swagger UI.
 
@@ -92,3 +92,7 @@ SaaS-032 adds only UI/client consumers; API inventory remains 72 paths / 94 oper
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
+
+## SaaS-033 update
+
+[My work and authorized search](../saas/my-work.md) adds one company-scoped GET route and a lazy screen with explicit assignment choices, deadline queues, URL filters and deterministic paging. Authorization is checked on every request; descriptions are excluded from summaries. Current contract: 73 paths / 95 operations, seventeen migrations unchanged. Local automated evidence is separate from hosted acceptance.

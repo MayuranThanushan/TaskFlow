@@ -64,9 +64,13 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
             if (name == "sortBy")
             {
                 ContractSchemaTransformer.SetEnum(schema, (controller == typeof(ProjectsController) || controller == typeof(WorkspaceReadsController) && action.ActionName == "Projects") ? ["name", "createdAtUtc", "updatedAtUtc"] : ["title", "priority", "dueDateUtc", "createdAtUtc", "rank"]);
-                schema.Default = JsonValue.Create(controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" ? "rank" : "createdAtUtc");
+                if(controller==typeof(WorkspaceReadsController)&&action.ActionName=="Work")ContractSchemaTransformer.SetEnum(schema,["dueDateUtc","createdAtUtc","title"]);
+                schema.Default = JsonValue.Create(controller==typeof(WorkspaceReadsController)&&action.ActionName=="Work"?"dueDateUtc":controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" ? "rank" : "createdAtUtc");
             }
-            if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create(controller == typeof(WorkspaceReadsController) && action.ActionName == "BoardColumn" ? "asc" : "desc"); }
+            if (name == "sortDirection") { ContractSchemaTransformer.SetEnum(schema, ["asc", "desc"]); schema.Default = JsonValue.Create(controller == typeof(WorkspaceReadsController) && action.ActionName is "BoardColumn" or "Work" ? "asc" : "desc"); }
+            if(name=="assignment"){ContractSchemaTransformer.SetEnum(schema,["mine","unassigned","all"]);schema.Default=JsonValue.Create("mine");}
+            if(name=="queue"){ContractSchemaTransformer.SetEnum(schema,["open","due","overdue","all"]);schema.Default=JsonValue.Create("open");}
+            if(name=="projectId"){schema.Pattern=ContractSchemaTransformer.IdPattern;schema.Description="Optional currently visible project ID; inaccessible projects return 404.";}
             if (name == "status") ContractSchemaTransformer.SetEnum(schema, ["ToDo", "InProgress", "Done"]);
             if (name == "priority") ContractSchemaTransformer.SetEnum(schema, ["Low", "Medium", "High"]);
             if (name == "assigneeId") { schema.Pattern = ContractSchemaTransformer.IdPattern; schema.Description = "Positive decimal-string ID within signed BIGINT range; omit rather than supplying an empty filter."; }
@@ -74,6 +78,7 @@ public sealed class ContractOperationTransformer : IOpenApiOperationTransformer
         }
         if (controller == typeof(WorkspaceReadsController) && action.ActionName is "Board" or "BoardColumn")
             operation.Description += " Board read model: exact list visibility and AND filters. Counts include all matching tasks, with all three canonical statuses including empty columns. Column paging defaults to 1/20, max 100; server-owned rank asc with ID desc tie-break by default. Each response is a read snapshot; pages across requests are live and can shift after edits. Rank and atomic move commands are supported; board UI remains SaaS-032.";
+        if(controller==typeof(WorkspaceReadsController)&&action.ActionName=="Work")operation.Description+=" Company-wide authorized work query; exact shared task visibility, no company-admin private-project override or per-project fan-out. Assignment mine(default)/unassigned/all; mine never includes unassigned. Queue open(default)/due/overdue/all. One captured microsecond UTC cutoff: overdue is unfinished due<asOfUtc; due is unfinished due>=asOfUtc and <=dueThroughUtc (seven days). Completed tasks excluded from due/overdue. Search matches visible task titles or parent project names; filters AND together. Inclusive explicit-offset UTC bounds round lower up/upper down to database precision and exclude null deadlines. Facet counts apply all non-queue filters in the same read snapshot. Counts and page share a snapshot; pages across requests remain live. Default deadline asc/null-last then ID desc; max pageSize100, offset Int32. No write/audit/outbox side effect.";
         operation.Description = (operation.Description ?? "") +
             " Responses include X-Trace-Id and Cache-Control: no-store. IDs remain decimal strings. " +
             (controller == typeof(ProjectsController) || controller == typeof(TasksController) || controller == typeof(ActivityController)

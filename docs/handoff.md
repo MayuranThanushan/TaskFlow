@@ -94,3 +94,7 @@ The SaaS-032 [project board](saas/board-ui.md) is implemented locally with drag,
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
+
+## SaaS-033 verification
+
+[My work](saas/my-work.md) is implemented locally. `tests/browser/work-ui.cjs` reviews the production frontend with synthetic APIs only; set `TASKFLOW_WORK_UI_ORIGIN` to an explicit `http://127.0.0.1` preview origin and `TASKFLOW_WORK_UI_MOCKS=1`. It checks queue/filter navigation, empty/invalid/access-lost states, desktop/mobile axe scans and overflow. This does not verify a hosted account or email provider.
