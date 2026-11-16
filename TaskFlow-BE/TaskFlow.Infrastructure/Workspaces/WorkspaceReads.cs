@@ -12,7 +12,7 @@ using TaskFlow.Infrastructure.Projects;
 
 namespace TaskFlow.Infrastructure.Workspaces;
 
-public sealed partial class WorkspaceReads(TaskFlowDbContext database, TimeProvider clock) : IWorkspaceReads
+public sealed partial class WorkspaceReads(TaskFlowDbContext database, TimeProvider clock) : IWorkspaceReads, ISavedViews
 {
     private static string Id(long value) => value.ToString(CultureInfo.InvariantCulture);
     private static ProjectAccessException Missing() => new(ProjectAccessDecision.NotFound);

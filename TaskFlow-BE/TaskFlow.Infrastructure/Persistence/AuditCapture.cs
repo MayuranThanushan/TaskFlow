@@ -88,6 +88,12 @@ internal sealed class AuditCapture
             }
             else if (row is WorkspaceAuditLog governance)
             {
+                if(governance.Action is "SavedViewCreated" or "SavedViewUpdated" or "SavedViewDeleted")
+                {
+                    row.SubjectType="SavedView";row.SubjectId=governance.SubjectId??throw new InvalidOperationException("Saved view audit requires a subject.");changes=[];
+                }
+                else
+                {
                 row.SubjectType = governance.Action is "CompanyCreated" or "CompanyPolicyChanged" ? "Workspace" : governance.ProjectId is null ? "WorkspaceMembership"
                     : governance.Action == "ProjectOwnershipTransferred" ? "Project" : "ProjectMembership";
                 row.SubjectId = row.SubjectType switch
@@ -100,6 +106,7 @@ internal sealed class AuditCapture
                     : governance.Action == "ProjectOwnershipTransferred" ? pending.Where(c => c.Entity is Project p && p.Id == governance.ProjectId).Select(c => c.Delta).ToList()
                     : governance.FromRole is not null || governance.ToRole is not null ? [new(governance.Action.Contains("Suspended", StringComparison.Ordinal) || governance.Action.Contains("Reactivated", StringComparison.Ordinal) || governance.Action == "CompanyMemberRemoved" ? "state" : "role", governance.FromRole, governance.ToRole, false)]
                     : pending.Where(c => c.Entity is WorkspaceMembership m && m.WorkspaceId == governance.WorkspaceId && m.UserId == governance.TargetUserId).Select(c => c.Delta).ToList();
+                }
             }
             else throw new InvalidOperationException("Unsupported business audit record.");
             row.ChangesJson = JsonSerializer.Serialize(changes.OrderBy(c => c.Field, StringComparer.Ordinal).Take(16), Json);

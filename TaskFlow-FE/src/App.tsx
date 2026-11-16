@@ -34,7 +34,7 @@ function AppLayout({ companiesEnabled, lifecycleEnabled }: { companiesEnabled: b
   const previousPath = useRef(location.pathname)
   useEffect(() => {
     const titles: Record<string, string> = { '/work': 'My work', '/login': 'Sign in', '/register': 'Create account', '/dashboard': 'Overview', '/activity': 'Activity center', '/profile': 'Profile', '/account-security': 'Account security', '/invitations/accept': 'Invitation', '/invitations': 'Invitations', '/forgot-password': 'Password recovery', '/request-verification': 'Email verification', '/verify-email': 'Verify email', '/reset-password': 'Reset password', '/projects': 'Projects', '/projects/new': 'Create project', '/': 'A clearer way to work', '/companies': 'Companies', '/team': 'Company team', '/audit': 'Company audit', '/policy': 'Policy & capacity', '/notifications': 'Inbox' }
-    document.title = `${titles[routePath] ?? (routePath.endsWith('/activity') ? 'Project activity' : routePath.startsWith('/tasks/') ? 'Task' : routePath.endsWith('/tasks') ? 'Tasks' : routePath.endsWith('/tasks/new') ? 'Create task' : routePath.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
+    document.title = `${titles[routePath] ?? (routePath.startsWith('/views/') ? 'Saved view' : routePath.endsWith('/activity') ? 'Project activity' : routePath.startsWith('/tasks/') ? 'Task' : routePath.endsWith('/tasks') ? 'Tasks' : routePath.endsWith('/tasks/new') ? 'Create task' : routePath.startsWith('/projects/') ? 'Project' : 'Page not found')} | TaskFlow`
     if (previousPath.current !== location.pathname) document.getElementById('main-content')?.focus()
     previousPath.current = location.pathname
   }, [location.pathname, routePath])
@@ -93,7 +93,7 @@ function NotFoundPage() {
     <p>The link may have changed. Let us get you back on track.</p><Link className="button primary" to="/">Back to TaskFlow</Link></section>
 }
 
-export default function App({ client = api, companiesEnabled = import.meta.env.VITE_WORKSPACES_ENABLED === 'true', lifecycleEnabled = companiesEnabled && import.meta.env.VITE_WORKSPACE_LIFECYCLE_ENABLED === 'true', invitationsEnabled = lifecycleEnabled && import.meta.env.VITE_INVITATIONS_ENABLED === 'true', notificationsEnabled = lifecycleEnabled && import.meta.env.VITE_NOTIFICATIONS_ENABLED === 'true' }: { client?: ApiClient; companiesEnabled?: boolean; lifecycleEnabled?: boolean; invitationsEnabled?: boolean; notificationsEnabled?: boolean }) {
+export default function App({ client = api, companiesEnabled = import.meta.env.VITE_WORKSPACES_ENABLED === 'true' || (import.meta.env.VITE_WORKSPACES_ENABLED === undefined && import.meta.env.MODE === 'development'), lifecycleEnabled = companiesEnabled && (import.meta.env.VITE_WORKSPACE_LIFECYCLE_ENABLED === 'true' || (import.meta.env.VITE_WORKSPACE_LIFECYCLE_ENABLED === undefined && import.meta.env.MODE === 'development')), invitationsEnabled = lifecycleEnabled && import.meta.env.VITE_INVITATIONS_ENABLED === 'true', notificationsEnabled = lifecycleEnabled && import.meta.env.VITE_NOTIFICATIONS_ENABLED === 'true' }: { client?: ApiClient; companiesEnabled?: boolean; lifecycleEnabled?: boolean; invitationsEnabled?: boolean; notificationsEnabled?: boolean }) {
   return <AuthProvider client={client}><InvitationProvider><Routes><Route element={<AppLayout companiesEnabled={companiesEnabled} lifecycleEnabled={lifecycleEnabled} />}>
     <Route index element={<HomePage />} />
     <Route path="invitations/accept" element={<InvitationAcceptPage client={client} enabled={invitationsEnabled} />} />

@@ -22,7 +22,7 @@ describe('company My work', () => {
     const calls = setup(); expect(await screen.findByRole('link', { name: 'Review launch' })).toHaveAttribute('href', '/companies/1/tasks/101')
     expect(screen.getByRole('link', { name: 'Open board for Product launch' })).toHaveAttribute('href', '/companies/1/projects/41/board')
     expect(screen.getByText('Assigned to you')).toBeInTheDocument(); expect(screen.getByText('Overdue:')).toBeInTheDocument()
-    expect(calls.map(c => c.pathname)).toEqual(['/work'])
+    expect(calls.filter(c => c.pathname === '/work').map(c => c.pathname)).toEqual(['/work'])
   })
   it('changes queues while preserving filters and resetting the page', async () => {
     const calls = setup('/companies/1/work?page=4&search=launch'); await screen.findByRole('link', { name: 'Review launch' })

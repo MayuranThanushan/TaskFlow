@@ -411,6 +411,8 @@ public sealed partial class ProjectApiTests(MySqlFixture fixture)
             await factory.DisposeAsync(); await using var database = fixture.CreateContext(); var ids = Users.Select(user => user.Id).ToArray();
             var projects = await database.Projects.IgnoreQueryFilters().Where(project => ids.Contains(project.OwnerId)).Select(project => project.Id).ToArrayAsync();
             await using var transaction = await database.Database.BeginTransactionAsync();
+            await database.ViewPreferences.Where(p => ids.Contains(p.UserId)).ExecuteDeleteAsync();
+            await database.SavedViews.Where(v => ids.Contains(v.UserId)).ExecuteDeleteAsync();
             var invites = await database.WorkspaceInvitations.Where(i => ids.Contains(i.InviterUserId)).Select(i => i.Id).ToArrayAsync();
             await database.InvitationTransitions.Where(a => invites.Contains(a.InvitationId)).ExecuteDeleteAsync();
             await database.WorkspaceInvitations.Where(i => invites.Contains(i.Id)).ExecuteDeleteAsync();

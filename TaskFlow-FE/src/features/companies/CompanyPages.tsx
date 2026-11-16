@@ -1,3 +1,4 @@
+import { SavedViewPage } from '../views/SavedViews'
 import { WorkEntry } from '../work/WorkEntry'
 import { BoardEntry } from '../board/BoardEntry'
 import { InvitationManagerPage } from '../invitations/InvitationManager'
@@ -99,7 +100,8 @@ function CompanyContent({ client, workspaceId, lifecycleEnabled, invitationsEnab
     {lifecycleEnabled && <><Route path="team" element={<CompanyTeamPage client={scoped} company={company} refreshCompany={() => setAttempt(a => a + 1)} />} /><Route path="audit" element={<CompanyAuditPage client={scoped} />} /><Route path="policy" element={<CompanyPolicyPage client={scoped} owner={company.role === "Owner"} />} /></>}
     <Route path="invitations" element={<InvitationManagerPage client={scoped} />} />
     <Route path="projects/:projectId/invitations" element={<InvitationManagerPage client={scoped} />} />
-    <Route path="work" element={<WorkEntry client={scoped} />} />
+    <Route path="views/:viewId" element={<SavedViewPage client={scoped} />} />
+      <Route path="work" element={<WorkEntry client={scoped} />} />
     <Route path="dashboard" element={<DashboardPage client={scoped} />} />
     <Route path="projects" element={<ProjectsPage client={scoped} />} />
     <Route path="projects/new" element={company.role === "Guest" ? <section><h1>Guests cannot create projects.</h1><Link to={"/companies/" + workspaceId + "/projects"}>Back to projects</Link></section> : <NewProjectPage client={scoped} />} />

@@ -11,6 +11,8 @@ public sealed class TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> option
     : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>(options)
 {
     private readonly AuditCapture auditCapture = new();
+    public DbSet<SavedView> SavedViews => Set<SavedView>();
+    public DbSet<ViewPreference> ViewPreferences => Set<ViewPreference>();
     public DbSet<NotificationScheduleCursor> NotificationScheduleCursors => Set<NotificationScheduleCursor>();
     public DbSet<TaskWatcher> TaskWatchers => Set<TaskWatcher>();
     public DbSet<WatcherNotificationIntent> WatcherNotificationIntents => Set<WatcherNotificationIntent>();

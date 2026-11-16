@@ -17,6 +17,7 @@ function setup(path = '/companies/1/team', role: 'Owner' | 'Admin' | 'Member' | 
     if (c.baseURL === '/api/v1') return auth.adapter(c)
     if (c.baseURL === '/api/v2' && c.url?.startsWith('/workspaces?')) return reply(c, 200, { items: [], page: 1, pageSize: 20, totalCount: 0, totalPages: 0 })
     if (c.baseURL === '/api/v2') return reply(c, 200, { id: '1', name: 'Acme', role })
+    if (c.url?.startsWith('/view-preferences/')) return reply(c, 404, {})
     if (c.method !== 'get') { state.writes.push(c); await state.wait; return reply(c, state.status) }
     if (c.url?.startsWith('/members')) return reply(c, 200, { items: role === 'Member' ? members.map(m => ({ ...m, role: null, state: null })) : members, page: 1, pageSize: 20, totalCount: 2, totalPages: 1 })
     if (c.url?.startsWith('/audit')) return reply(c, 200, { items: [{ id: '9', actorUserId: '1', targetUserId: '2', projectId: '10', action: 'ProjectRoleChanged', fromRole: 'Editor', toRole: 'Viewer', createdAtUtc: '2026-10-28T10:00:00Z' }], page: 1, pageSize: 20, totalCount: 1, totalPages: 1 })

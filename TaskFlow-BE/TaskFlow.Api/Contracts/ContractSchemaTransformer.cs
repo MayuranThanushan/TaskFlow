@@ -35,13 +35,14 @@ public sealed class ContractSchemaTransformer : IOpenApiSchemaTransformer
             if (value is not OpenApiSchema property) continue;
             if (type == typeof(AddProjectMemberRequest) && name == "role") { SetEnum(property, ["Member"]); property.Default = JsonValue.Create("Member"); }
             if (type == typeof(CreateTaskRequest) && name == "priority") property.Default = JsonValue.Create("Medium");
+            if (type.Name.StartsWith("SavedView", StringComparison.Ordinal) && name == "surface") SetEnum(property, ["work", "tasks", "board"]);
             if (name == "email") property.Format = "email";
             if (type.Name == "NotificationDto" && name == "deliveryStatus") SetEnum(property, ["InAppDelivered"]);
             if (type.Name == "NotificationDto" && name == "kind") SetEnum(property, ["TaskAssigned", "TaskDue", "TaskDigest", "TaskMention", "TaskWatched"]);
             if (type.Name == "NotificationPreferencesDto" && name == "watcherDeliveryMode") SetEnum(property, ["Immediate", "Digest", "Off"]);
-            if (type.Name is "NotificationPreferencesDto" or "TaskWatcherDto" && name == "version") property.Pattern = "^(0|[1-9][0-9]*)$";
+            if (type.Name is "NotificationPreferencesDto" or "TaskWatcherDto" or "ViewPreferenceDto" && name == "version") property.Pattern = "^(0|[1-9][0-9]*)$";
             if (schema.Required?.Contains(name) == true && property.Type == JsonSchemaType.String && property.MinLength is null or 0) property.MinLength = 1;
-            if (name is "id" or "projectId" or "ownerId" or "userId" or "assigneeId" or "actorUserId" or "taskId" or "workspaceId" or "targetUserId" or "invitationId")
+            if (name is "id" or "projectId" or "ownerId" or "userId" or "assigneeId" or "actorUserId" or "taskId" or "workspaceId" or "targetUserId" or "invitationId" or "savedViewId")
             {
                 property.Pattern = IdPattern;
                 property.Description = "Positive signed BIGINT as an opaque decimal string (maximum numeric value 9223372036854775807). Inputs may include leading zeros; responses use canonical decimal. Never convert to a JavaScript number.";

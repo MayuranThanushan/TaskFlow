@@ -98,3 +98,7 @@ Current implementation, release boundaries and rollout gates: [documentation ind
 ## SaaS-033 verification
 
 [My work](saas/my-work.md) is implemented locally. `tests/browser/work-ui.cjs` reviews the production frontend with synthetic APIs only; set `TASKFLOW_WORK_UI_ORIGIN` to an explicit `http://127.0.0.1` preview origin and `TASKFLOW_WORK_UI_MOCKS=1`. It checks queue/filter navigation, empty/invalid/access-lost states, desktop/mobile axe scans and overflow. This does not verify a hosted account or email provider.
+
+## SaaS-034 update
+
+[Saved views and persisted defaults](saas/saved-views.md) adds personal/company visibility, authorized share links, captured revisions and unavailable-default recovery. Apply migration eighteen (SavedViews) before this binary; current API is 76 paths / 102 operations. Development company gates and Vite defaults now match, fixing disabled-gate workspace 404s after restart. Production remains explicitly configured. See the current documentation index for evidence and rollout gates.

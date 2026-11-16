@@ -1,7 +1,7 @@
 {
-  "release": "SaaS-033",
+  "release": "SaaS-034",
   "date": "2026-11-16",
-  "scope": "Company-scoped identity, collaboration, board moves and authorized My work search. Local verification; selected-host, provider and commercial acceptance gates remain open.",
+  "scope": "Current company-scoped collaboration, board/work APIs, personal/shared saved views and self defaults. Development company gates enabled by default; production rollout remains explicit. Local verification does not activate hosted email or paid resources.",
   "operations": [
     {
       "operationId": "AccountSecurity_Capabilities",
@@ -758,6 +758,111 @@
       "evidenceSources": [
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.cs",
         "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.WorkspaceLifecycle.cs"
+      ]
+    },
+    {
+      "operationId": "SavedViews_Create",
+      "method": "POST",
+      "path": "/api/v2/workspaces/{workspaceId}/views",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_Delete",
+      "method": "DELETE",
+      "path": "/api/v2/workspaces/{workspaceId}/views/{viewId}",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_Get",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/views/{viewId}",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_List",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/views",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_Preference",
+      "method": "GET",
+      "path": "/api/v2/workspaces/{workspaceId}/view-preferences/{context}",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_SetPreference",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/view-preferences/{context}",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
+      ]
+    },
+    {
+      "operationId": "SavedViews_Update",
+      "method": "PUT",
+      "path": "/api/v2/workspaces/{workspaceId}/views/{viewId}",
+      "controls": [
+        "Active company admission before binding; read/write gates, authenticated CSRF-protected mutations.",
+        "Personal definitions remain creator-only; company-shared management requires Owner/Admin. Project targets reauthorize on list, resolve, save and default use; saved filters confer no grant.",
+        "Workspace/membership row locks serialize mutations with lifecycle changes; captured revisions reject lost updates and deletes. Self default contexts enforce target matching and report unavailable deleted/private views.",
+        "Strict supported filter schema, maximum 100 views per creator/company, bounded deterministic list paging and redacted transactional shared-view audit/outbox."
+      ],
+      "evidenceSources": [
+        "TaskFlow-BE/TaskFlow.Tests/ProjectApiTests.SavedViews.cs",
+        "TaskFlow-FE/src/features/views/SavedViews.test.tsx"
       ]
     },
     {

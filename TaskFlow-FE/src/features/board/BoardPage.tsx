@@ -1,3 +1,4 @@
+import { SavedViews } from '../views/SavedViews'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DragEvent, KeyboardEvent } from 'react'
 import { ApiError, asApiError } from '../../api/client'
@@ -103,6 +104,7 @@ function BoardContent({ client, projectId, identity }: { client: ApiClient; proj
   }
   return <section className="projects-page board-page" aria-busy={reading || pending}>
     <Link className="text-link" to={path}>Back to project</Link>
+    <SavedViews client={client} surface="board" projectId={projectId} />
     <div className="page-heading"><div><p className="eyebrow">Project work</p><h1 ref={heading} tabIndex={-1}>Project board</h1>{data && <p className="muted board-project-name">{data.project.name}</p>}</div><div className="form-actions"><Link className="button subtle" to={path + '/tasks'}>List view</Link>{canWrite && <Link className="button primary" to={path + '/tasks/new'}>New task</Link>}<button className="button subtle" disabled={pending || reading} onClick={reload}>Reload board</button></div></div>
     <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
     {notice && <p className="notice">{notice}</p>}

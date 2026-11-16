@@ -99,3 +99,7 @@ Current implementation, release boundaries and rollout gates: [documentation ind
 ## SaaS-033 update
 
 [My work and authorized search](saas/my-work.md) adds one company-scoped GET route and a lazy screen with explicit assignment choices, deadline queues, URL filters and deterministic paging. Authorization is checked on every request; descriptions are excluded from summaries. Current contract: 73 paths / 95 operations, seventeen migrations unchanged. Local automated evidence is separate from hosted acceptance.
+
+## SaaS-034 update
+
+[Saved views and persisted defaults](saas/saved-views.md) adds personal/company visibility, authorized share links, captured revisions and unavailable-default recovery. Apply migration eighteen (SavedViews) before this binary; current API is 76 paths / 102 operations. Development company gates and Vite defaults now match, fixing disabled-gate workspace 404s after restart. Production remains explicitly configured. See the current documentation index for evidence and rollout gates.

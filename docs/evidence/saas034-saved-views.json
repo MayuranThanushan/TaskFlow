@@ -1,0 +1,89 @@
+{
+  "release": "SaaS-034",
+  "date": "2026-11-16",
+  "status": "implemented and verified locally; hosted rollout held pending coordinated migration eighteen",
+  "local404Fix": "Development enables matching company read/write/lifecycle gates; Vite development defaults and environment template match. Explicit overrides still win. Existing processes need restart; no user service stopped.",
+  "features": [
+    "personal and company-shared saved views with explicit management rules",
+    "authorized share resolver and reauthorization of project targets and filters",
+    "server-persisted self/company defaults for work, task lists and canonical boards",
+    "captured revisions, stale-write conflicts, confirmed deletion and unavailable-default recovery",
+    "workspace/member row locks, 100-view storage bound and deterministic list paging",
+    "redacted shared-view audit subjects with atomic outbox capture",
+    "queue selection avoids transient low-contrast background interpolation"
+  ],
+  "verification": {
+    "backend": {
+      "passed": 469,
+      "failed": 0,
+      "skipped": 0,
+      "newTests": 8,
+      "scope": "complete suite on dedicated disposable local MySQL schema, eighteen migrations applied; test schema removed"
+    },
+    "frontend": {
+      "passed": 221,
+      "failed": 0,
+      "files": 25,
+      "newTests": 9,
+      "finalFocusedSavedViewsPassed": 9,
+      "typecheck": "passed",
+      "lint": "passed",
+      "productionBuild": "passed",
+      "initialBundleKilobytes": 493.20,
+      "initialBundleGzipKilobytes": 144.58
+    },
+    "operations": {
+      "passed": 42,
+      "newTests": 2
+    },
+    "contract": {
+      "paths": 76,
+      "operations": 102,
+      "liveSnapshot": "passed in full backend suite",
+      "generatedTypesDrift": "passed",
+      "tenantControlInventory": "passed"
+    },
+    "browser": {
+      "scope": "loopback production build with fully synthetic API replies; no real account/database",
+      "savedViewJourneys": 5,
+      "savedViewAccessibilityScans": 10,
+      "existingWorkAccessibilityScans": 10,
+      "existingBoardAccessibilityScans": 14,
+      "totalAccessibilityScans": 34,
+      "widths": [
+        1440,
+        320
+      ],
+      "detectedViolations": 0,
+      "horizontalOverflow": false,
+      "scriptErrors": 0,
+      "visualReview": "desktop expanded controls and 320px confirmation reviewed; control sizing and error presentation refined and rescanned"
+    },
+    "documentation": {
+      "markdownGuidesChecked": 80,
+      "brokenLocalLinks": 0
+    }
+  },
+  "migration": {
+    "count": 18,
+    "new": "20261116143627_SavedViews",
+    "tables": [
+      "SavedViews",
+      "ViewPreferences"
+    ],
+    "hostedOrSharedApplied": false
+  },
+  "rollout": {
+    "main": "publish reviewed implementation",
+    "hostingBranch": "hold current healthy revision until coordinated database migration/runtime grants and rollout are ready",
+    "realEmailActivated": false,
+    "paidResourcesCreated": false
+  },
+  "limitations": [
+    "Boards persist canonical layout; custom board filters are not introduced.",
+    "Defaults use explicit saved snapshots, not automatic saving of every filter/page change.",
+    "Inaccessible project definitions remain retained and count toward the per-member bound; retention cleanup remains separate work.",
+    "Hosted migration, CI result, selected-host capacity and human assistive-technology acceptance remain open."
+  ],
+  "next": "SaaS-035 board scale, conflicts, accessibility and adoption verification"
+}

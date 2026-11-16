@@ -25,3 +25,7 @@ No migration or worker is added. Keep all seventeen existing migrations through 
 Saved personal/shared views and persisted list/board/filter preferences remain SaaS-034. Human assistive-technology review and selected-host verification remain separate from local automated tests.
 
 [Current documentation index](../documentation-index.md)
+
+## SaaS-034 update
+
+[Saved views and persisted defaults](saved-views.md) adds personal/company visibility, authorized share links, captured revisions and unavailable-default recovery. Apply migration eighteen (SavedViews) before this binary; current API is 76 paths / 102 operations. Development company gates and Vite defaults now match, fixing disabled-gate workspace 404s after restart. Production remains explicitly configured. See the current documentation index for evidence and rollout gates.

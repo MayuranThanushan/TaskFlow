@@ -1,0 +1,39 @@
+// Loopback-only production UI review. All API requests are synthetic.
+const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
+const { chromium } = require('playwright-core');
+const origin = process.env.TASKFLOW_VIEWS_UI_ORIGIN;
+if (!origin || new URL(origin).origin !== origin || new URL(origin).hostname !== '127.0.0.1' || process.env.TASKFLOW_VIEWS_UI_MOCKS !== '1') throw Error('Explicit loopback origin and TASKFLOW_VIEWS_UI_MOCKS=1 required');
+const output = path.resolve(__dirname, '../../TestResults/saas034-browser'); fs.mkdirSync(output, { recursive: true });
+(async () => {
+ const browser = await chromium.launch({headless:true, channel:'msedge'}), report = {scope:'mocked API production frontend; no real account/database', accessibility:[], errors:[], checks:[]};
+ try {
+ const context = await browser.newContext(), page = await context.newPage(); let status = 200, empty = false, conflict = false; const calls = [], writes = []; let views = [{id:'10',userId:'1',name:'Overdue work',surface:'work',projectId:null,shared:false,filters:{queue:'overdue'},version:'3',canManage:true}], preference = {context:'work',savedViewId:null,version:'0',available:true};
+ page.on('pageerror', () => report.errors.push('Browser script error'));
+ await context.route(origin + '/__views_axe.js', r => r.fulfill({contentType:'application/javascript',body:fs.readFileSync(require.resolve('axe-core/axe.min.js'),'utf8')}));
+ await context.route('**/api/**', r => {
+ const u=new URL(r.request().url()), json=(data,code=200)=>r.fulfill({status:code,contentType:'application/json',body:JSON.stringify(data)});
+ if(u.pathname.endsWith('/auth/me')) return json({id:'1',displayName:'Alex Morgan',email:'synthetic@example.test'});
+ if(u.pathname.endsWith('/auth/csrf')) return json({requestToken:'synthetic-token'});
+ if(u.pathname==='/api/v2/workspaces/1') return json({id:'1',name:'Product studio',role:'Member'});
+ if(u.pathname.startsWith('/api/v2/workspaces/1/view-preferences/')) { if(r.request().method()==='PUT'){writes.push({path:u.pathname,data:r.request().postDataJSON()});preference={...preference,...r.request().postDataJSON(),version:'1'};} return json({...preference,available:!preference.savedViewId||views.some(v=>v.id===preference.savedViewId),savedViewId:views.some(v=>v.id===preference.savedViewId)?preference.savedViewId:null}); }
+ if(u.pathname.startsWith('/api/v2/workspaces/1/views')) {
+  if(r.request().method()!=='GET') {const data=r.request().postDataJSON();writes.push({path:u.pathname,data});if(conflict)return json({status:409},409);if(r.request().method()==='DELETE'){views=views.filter(v=>v.id!==u.pathname.split('/').at(-1));return r.fulfill({status:204,body:''});}const view={...views[0],...data,id:'11',version:'1'};views.push(view);return json(view);}
+  if(u.pathname.endsWith('/views'))return json({items:views,page:1,pageSize:20,totalPages:1,totalCount:views.length});const view=views.find(v=>v.id===u.pathname.split('/').at(-1));return json(view??{},view?200:404);
+ }
+ if(u.pathname==='/api/v2/workspaces/1/work') {calls.push(u.search);return json({items:empty?[]:[{task:{id:'101',projectId:'41',title:'Review the product launch and customer onboarding checklist',status:'ToDo',priority:'High',assigneeId:'1',dueDateUtc:'2026-11-15T08:00:00Z',createdAtUtc:'2026-11-15T08:00:00Z',updatedAtUtc:'2026-11-15T08:00:00Z',version:'1'},projectName:'Quarterly product launch',assigneeName:'Alex Morgan'}],page:1,pageSize:20,totalCount:empty?0:1,totalPages:empty?0:1,counts:{open:1,due:0,overdue:1,total:1,completed:0},asOfUtc:'2026-11-16T08:00:00Z',dueThroughUtc:'2026-11-23T08:00:00Z'},status);}
+ return json({},404);
+ });
+ async function scan(name){for(const width of [1440,320]){await page.setViewportSize({width,height:1050});await page.addScriptTag({url:origin+'/__views_axe.js'});const result=await page.evaluate(async()=>({violations:(await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa','best-practice']}})).violations.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})),overflow:document.documentElement.scrollWidth>innerWidth}));report.accessibility.push({name,width,...result});assert.deepEqual(result.violations,[]);assert.equal(result.overflow,false);await page.screenshot({path:path.join(output,name+'-'+width+'.png'),fullPage:true});}}
+ await page.goto(origin+'/companies/1/work?queue=due&page=2');await page.getByRole('link',{name:'Review the product launch and customer onboarding checklist',exact:true}).waitFor();
+ await page.getByText('Saved views & preferences',{exact:true}).click();await page.getByRole('option',{name:/Overdue work/}).waitFor({state:'attached'});await scan('views-expanded');
+ await page.getByLabel('View name',{exact:true}).fill('Upcoming release');await page.getByRole('button',{name:'Save current view as new',exact:true}).click();await page.getByText('View saved.',{exact:true}).waitFor();assert.deepEqual(writes[0].data.filters,{queue:'due'});assert.equal(writes[0].data.shared,false);await scan('views-saved');report.checks.push('save current filters without transient page');
+ await page.getByLabel('Saved view',{exact:true}).selectOption('10');assert.equal(await page.getByRole('link',{name:'Share link',exact:true}).getAttribute('href'),'/companies/1/views/10');
+ await page.getByRole('button',{name:'Use as default',exact:true}).click();await page.getByText('Default saved for this screen.',{exact:true}).waitFor();assert.equal(writes.at(-1).data.expectedVersion,'0');report.checks.push('versioned self default');
+ conflict=true;const before=writes.length;await page.getByRole('button',{name:'Replace selected with current view',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(writes.length,before+1);assert.equal(writes.at(-1).data.expectedVersion,'3');await scan('views-conflict');conflict=false;report.checks.push('captured revision conflict without replay');
+ await page.getByRole('button',{name:'Delete selected view',exact:true}).click();await scan('views-delete-confirm');await page.getByRole('button',{name:'Cancel deletion',exact:true}).click();assert.equal(writes.length,before+1);
+ await page.getByRole('link',{name:'Share link',exact:true}).click();await page.getByRole('link',{name:'Open this view',exact:true}).waitFor();assert.equal(await page.getByRole('link',{name:'Open this view',exact:true}).getAttribute('href'),'/companies/1/work?queue=overdue');report.checks.push('authorized company-scoped share resolver');
+ await page.goto(origin+'/companies/1/work?queue=all');await page.getByRole('link',{name:'Review the product launch and customer onboarding checklist',exact:true}).waitFor();await page.getByText('Saved views & preferences',{exact:true}).click();await page.getByLabel('Saved view',{exact:true}).selectOption('10');await page.getByRole('button',{name:'Delete selected view',exact:true}).click();await page.getByRole('button',{name:'Confirm delete view',exact:true}).click();await page.getByText('View deleted.',{exact:true}).waitFor();assert.equal(writes.at(-1).data.expectedVersion,'3');
+ await page.goto(origin+'/companies/1/work');await page.getByRole('link',{name:'Review the product launch and customer onboarding checklist',exact:true}).waitFor();await page.getByText('Saved views & preferences',{exact:true}).click();await page.getByText('Your saved default is no longer available. Choose another view.',{exact:true}).waitFor();await scan('views-default-unavailable');report.checks.push('confirmed deletion and unavailable-default recovery');
+ assert.deepEqual(report.errors,[]);report.passed=true;fs.writeFileSync(path.join(output,'saved-views-ui.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({scans:report.accessibility.length,violations:0,overflow:false,checks:report.checks.length}));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});

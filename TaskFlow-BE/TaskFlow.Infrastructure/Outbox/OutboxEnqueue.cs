@@ -11,7 +11,7 @@ public static class OutboxEnqueue
         : kind is "Comment.Created" or "Comment.Edited" or "Comment.Deleted" or "Company.CompanyCreated" or "Company.CompanyRoleChanged" or "Company.CompanyMemberSuspended"
             or "Company.CompanyMemberReactivated" or "Company.CompanyMemberRemoved" or "Company.CompanyMemberLeft"
             or "Company.CompanyOwnershipTransferred" or "Company.ProjectRoleChanged" or "Company.ProjectOwnershipTransferred"
-            or "Company.ProjectMemberAdded" or "Company.ProjectMemberRemoved" or "Company.CompanyPolicyChanged" or "Company.InvitationCreated" or "Company.InvitationResent" or "Company.InvitationRevoked" or "Company.InvitationAccepted";
+            or "Company.ProjectMemberAdded" or "Company.ProjectMemberRemoved" or "Company.CompanyPolicyChanged" or "Company.InvitationCreated" or "Company.InvitationResent" or "Company.InvitationRevoked" or "Company.InvitationAccepted" or "Company.SavedViewCreated" or "Company.SavedViewUpdated" or "Company.SavedViewDeleted";
     public static async Task CaptureAsync(TaskFlowDbContext db, CancellationToken token = default)
     {
         if (db.Database.CurrentTransaction is null) throw new InvalidOperationException("Outbox requires the business transaction.");

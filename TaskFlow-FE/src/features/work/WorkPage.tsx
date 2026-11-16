@@ -1,3 +1,4 @@
+import { SavedViews } from '../views/SavedViews'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { ApiClient } from '../../api/client'
@@ -53,6 +54,7 @@ export function WorkPage({ client }: { client: ApiClient }) {
   function page(value: number) { const next = new URLSearchParams(params); next.set('page', String(value)); setParams(next) }
   return <section className="projects-page work-page">
     <div className="page-heading"><div><p className="eyebrow">Across your projects</p><h1>My work</h1><p className="muted">Find work in this company, across projects you can access.</p></div><div className="form-actions"><Link className="button subtle" to="/projects">Browse projects</Link><button className="button subtle" disabled={result.status === 'loading'} onClick={retry}>Refresh work</button></div></div>
+    <SavedViews client={client} surface="work" />
     <Filters key={query} params={params} apply={setParams} />
     <nav className="work-queues" aria-label="Work queues">{queues.map(q => <button type="button" key={q.value} className={'button ' + (queue === q.value ? 'primary' : 'subtle')} aria-pressed={queue === q.value} onClick={() => chooseQueue(q.value)}>{q.label}{result.status === 'ready' && <span className="work-queue-count">{result.data.counts[q.count]}</span>}</button>)}</nav>
     <p className="field-hint">Due soon means unfinished work due within the next seven days. Overdue excludes completed work. Tasks without a deadline stay in Open work.</p>

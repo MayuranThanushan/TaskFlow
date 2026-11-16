@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<TaskFlow.Application.Features.Dashboard.IDashboardService, DashboardService>();
         services.AddScoped<TaskFlow.Application.Features.Activity.IActivityService, ActivityService>();
         services.AddScoped<TaskFlow.Application.Features.Workspaces.IWorkspaceReads, TaskFlow.Infrastructure.Workspaces.WorkspaceReads>();
+        services.AddScoped<TaskFlow.Application.Features.Workspaces.ISavedViews, TaskFlow.Infrastructure.Workspaces.WorkspaceReads>();
         services.AddScoped<ResourcePrecondition>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IProjectMembersService, ProjectMembersService>();

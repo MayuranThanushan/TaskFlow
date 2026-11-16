@@ -52,3 +52,7 @@ SaaS-022 adds a default-off, deployment-wide [administrator MFA policy](mfa.md):
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](../documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
+
+## SaaS-034 update
+
+[Saved views and persisted defaults](saved-views.md) adds personal/company visibility, authorized share links, captured revisions and unavailable-default recovery. Apply migration eighteen (SavedViews) before this binary; current API is 76 paths / 102 operations. Development company gates and Vite defaults now match, fixing disabled-gate workspace 404s after restart. Production remains explicitly configured. See the current documentation index for evidence and rollout gates.

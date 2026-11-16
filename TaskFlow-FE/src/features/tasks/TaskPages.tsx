@@ -1,3 +1,4 @@
+import { SavedViews } from '../views/SavedViews'
 import { LazyPanelBoundary } from '../../components/LazyPanelBoundary'
 import { lazy, Suspense } from 'react'
 const TaskWatchControl = lazy(() => import('./TaskWatchControl').then(module => ({ default: module.TaskWatchControl })))
@@ -65,6 +66,7 @@ export function TasksPage({ client }: { client: ApiClient }) {
   return <section className="projects-page"><Link className="text-link" to={path}>Back to project</Link>
     <div className="page-heading"><div><p className="eyebrow">Project work</p><h1>Tasks</h1></div><div className="form-actions">{client.resourceKey.startsWith('workspace:') && <Link className="button subtle" to={path + '/board'}>Board view</Link>}{canWrite && <Link className="button primary" to={path + '/tasks/new'}>New task</Link>}</div></div>
     {location.state?.deleted && <p role="status" className="notice">Task deleted.</p>}
+    <SavedViews client={client} surface="tasks" projectId={projectId} />
     <TaskQuery key={query} params={params} apply={setParams} assignees={members.result.status === 'ready' ? members.result.data.items : []} assigneesFailed={members.result.status === 'error'} retryAssignees={members.retry} />
     {result.status === 'loading' && <p role="status">Loading tasks...</p>}
     {result.status === 'error' && (result.error.status === 400 ? <div className="error-summary" role="alert"><p>These task filters are invalid. Reset the filters or choose supported values and apply again.</p><button className="button subtle" onClick={() => setParams(new URLSearchParams())}>Reset invalid filters</button></div> : <Failure status={result.error.status} message={result.error.message} retry={retry} />)}

@@ -2,6 +2,43 @@
 
 Private projects, membership, tasks, dashboard progress, activity history and profiles. Follow this checklist in order to run the application manually on Windows. Commands use PowerShell and the existing D:\TaskFlow workspace.
 
+## Local company 404 fix and SaaS-034 update
+
+- [ ] Stop the running API and Vite in their terminals with **Ctrl+C**. Keep the database running.
+- [ ] Use a verified backup before applying the new database migration. Configure the database connection privately, as in the setup checklist below.
+- [ ] In the API terminal, run:
+
+```powershell
+Set-Location D:\TaskFlow
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+$env:WorkspaceReads__Enabled = 'true'
+$env:WorkspaceWrites__Enabled = 'true'
+$env:WorkspaceLifecycle__Enabled = 'true'
+# If using this checkout's local MySQL setup and no connection is already configured:
+if ([string]::IsNullOrWhiteSpace($env:ConnectionStrings__TaskFlow)) {
+    $env:ConnectionStrings__TaskFlow = (Get-Content .local/mysql/connections.json -Raw | ConvertFrom-Json).development
+}
+dotnet tool restore
+dotnet build TaskFlow.slnx --configuration Release
+dotnet ef database update --project TaskFlow-BE/TaskFlow.Infrastructure --startup-project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build
+dotnet run --project TaskFlow-BE/TaskFlow.Api --configuration Release --no-build --launch-profile http
+```
+
+- [ ] In a second terminal, start the frontend with matching flags:
+
+```powershell
+Set-Location D:\TaskFlow\TaskFlow-FE
+$env:VITE_WORKSPACES_ENABLED = 'true'
+$env:VITE_WORKSPACE_LIFECYCLE_ENABLED = 'true'
+npm.cmd ci
+npm.cmd run dev -- --host localhost --port 5173 --strictPort
+```
+
+- [ ] Open `http://localhost:5173`, sign in, then choose Companies. The Vite proxy defaults to API `http://localhost:5140`. Clear an outdated TASKFLOW_API_TARGET override if it points elsewhere.
+- [ ] Expand **Saved views & preferences** in My work, a project list, or a board. Save personal/company views, open share links and set your default. See [saved-view rules](docs/saas/saved-views.md).
+
+The 404 came from a disabled workspace feature gate. Development defaults now enable company mode; explicit old environment flags still override them, so the restart commands above set both sides consistently. Production rollout remains explicit. SaaS-034 adds migration eighteen, **SavedViews**, and brings the API to **76 paths / 102 operations**. Existing historical release counts below remain dated context; use the [documentation index](docs/documentation-index.md) for current status.
+
 ## Print the startup checklist or run with visible commands
 
 To print the complete manual commands with this checkout's paths, without starting services, installing dependencies or applying migrations:

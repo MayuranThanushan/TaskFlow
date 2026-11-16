@@ -67,3 +67,7 @@ The sanitized [step 22 evidence](evidence/step22.json) contains timings/checks f
 
 <!-- current-documentation-index -->
 Current implementation, release boundaries and rollout gates: [documentation index](documentation-index.md). Release-specific counts and follow-ups above describe their recorded release.
+
+## SaaS-034 database additions
+
+Migration eighteen adds SavedViews and ViewPreferences. The base-table backup discovers both automatically. Saved filters and names can contain private text: retain the existing private backup controls. Recovery does not recreate SQL account grants; review new-table runtime grants before starting the matching binary. See [saved-view rollout](saas/saved-views.md).
