@@ -5,7 +5,7 @@
     "review": "node run.cjs"
   },
   "dependencies": {
-    "axe-core": "4.14.0",
+    "axe-core": "4.14.1",
     "playwright-core": "1.64.1"
   },
   "version": "0.0.0"
